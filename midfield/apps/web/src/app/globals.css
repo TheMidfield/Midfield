@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+    --font-sans: var(--font-inter);
+    --font-display: var(--font-outfit);
+
+    --color-midfield-green: #10b981;
+    --color-midfield-dark: #0f172a;
+    --color-midfield-surface: #1e293b;
+}
+
+:root {
+    --background: #ffffff;
+    --foreground: #0f172a;
+
+    /* Brand Green - Tech/Football blend */
+    --primary: #059669;
+    /* Emerald 600 */
+    --primary-foreground: #ffffff;
+
+    --accent: #d1fae5;
+    /* Emerald 100 */
+    --accent-foreground: #065f46;
+
+    --muted: #f8fafc;
+    --muted-foreground: #64748b;
+
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+
+    --border: #e2e8f0;
+
+    --rating-high: #10b981;
+    --rating-med: #f59e0b;
+    --rating-low: #ef4444;
+}
+
+/* Force light mode default, can add dark overrides later if requested */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Keeping it light/bright as requested "bright mode should be default" */
+        --background: #ffffff;
+        --foreground: #0f172a;
+    }
+}
+
+body {
+    background-color: #f8fafc;
+    /* Slight off-white for app background */
+    color: var(--foreground);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+@media (prefers-color-scheme: dark) {
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+}
