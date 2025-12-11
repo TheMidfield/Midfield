@@ -1,14 +1,23 @@
 import { Navbar } from "@/components/Navbar";
 import { RightPanel } from "@/components/RightPanel";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import "./globals.css";
 import type { Metadata } from "next";
-import { Onest } from "next/font/google";
+import { DM_Sans, Onest } from "next/font/google";
 
-const onest = Onest({ subsets: ["latin"], variable: "--font-onest" });
+const dmSans = DM_Sans({
+    subsets: ["latin"],
+    variable: "--font-dm-sans",
+});
+
+const onest = Onest({
+    subsets: ["latin"],
+    variable: "--font-onest",
+});
 
 export const metadata: Metadata = {
     title: "Midfield",
-    description: "The structured home for intelligent football discussion.",
+    description: "Football intelligence platform",
 };
 
 export default function RootLayout({
@@ -17,21 +26,41 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className={`${onest.variable}`}>
-            <body className="min-h-screen bg-background antialiased selection:bg-primary/20 flex flex-col">
-                <Navbar />
+        <html lang="en" className={`${dmSans.variable} ${onest.variable}`} suppressHydrationWarning>
+            <head>
+                <script dangerouslySetInnerHTML={{
+                    __html: `
+                    (function () {
+                        try {
+                            var theme = localStorage.getItem('midfield-theme');
+                            var root = document.documentElement;
+                            root.classList.remove('dark');
+                            if (theme === 'dark') {
+                                root.classList.add('dark');
+                            }
+                        } catch (e) {}
+                    })();
+                `
+                }} />
+            </head>
+            <body className="min-h-screen antialiased selection:bg-emerald-100 dark:selection:bg-emerald-900/50 flex flex-col">
+                <ThemeProvider>
+                    <Navbar />
 
-                <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 py-8 items-start min-h-[calc(100vh-4rem)]">
-                        {/* Main Content (now full width on left, with right sidebar widgets) */}
-                        <main className="flex-1 min-w-0">
-                            {children}
-                        </main>
+                    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+                            {/* Main Content */}
+                            <main className="w-full overflow-hidden">
+                                {children}
+                            </main>
 
-                        {/* Right Widgets - Desktop */}
-                        <RightPanel />
+                            {/* Right Widgets - Desktop */}
+                            <aside className="hidden lg:block sticky top-20">
+                                <RightPanel />
+                            </aside>
+                        </div>
                     </div>
-                </div>
+                </ThemeProvider>
             </body>
         </html>
     );

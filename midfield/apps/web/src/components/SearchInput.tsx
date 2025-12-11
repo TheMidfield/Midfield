@@ -46,33 +46,33 @@ export function SearchInput() {
 
     return (
         <div ref={wrapperRef} className="relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400 pointer-events-none" />
             <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.length >= 2 && setIsOpen(true)}
                 placeholder="Find player or club..."
-                className="h-10 w-64 rounded-full bg-white/10 border border-white/5 pl-10 pr-4 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+                className="h-10 w-64 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-300 dark:border-neutral-700 pl-10 pr-4 text-sm text-slate-900 dark:text-neutral-100 placeholder:text-slate-500 dark:placeholder:text-neutral-400 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 transition-colors"
             />
 
             {isOpen && results.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[100]">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl shadow-2xl overflow-hidden z-[100]">
                     {results.map((topic) => (
                         <Link
                             key={topic.id}
                             href={`/topic/${topic.slug}`}
                             onClick={handleSelect}
-                            className="flex items-center gap-3 p-3 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0"
+                            className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-slate-200 dark:border-white/5 last:border-0"
                         >
                             <img
                                 src={topic.type === 'club' ? topic.metadata?.badge_url : topic.metadata?.avatar_url}
                                 alt={topic.title}
-                                className="w-8 h-8 object-contain bg-white/5 rounded-md p-0.5"
+                                className="w-8 h-8 object-contain bg-slate-50 dark:bg-white/5 rounded-md p-0.5"
                             />
                             <div>
-                                <div className="text-sm font-semibold text-white">{topic.title}</div>
-                                <div className="text-xs text-gray-400 capitalize">{topic.type}</div>
+                                <div className="text-sm font-semibold text-slate-900 dark:text-white">{topic.title}</div>
+                                <div className="text-xs text-slate-500 dark:text-gray-400 capitalize">{topic.type}</div>
                             </div>
                         </Link>
                     ))}

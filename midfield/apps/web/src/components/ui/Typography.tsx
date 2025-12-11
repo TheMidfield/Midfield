@@ -3,18 +3,18 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const typographyVariants = cva(
-    "text-slate-900 transition-colors",
+    "text-slate-900 dark:text-neutral-100 transition-colors",
     {
         variants: {
             variant: {
-                h1: "scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl",
-                h2: "scroll-m-20 text-3xl font-bold tracking-tight first:mt-0",
-                h3: "scroll-m-20 text-2xl font-bold tracking-tight",
-                h4: "text-xl font-bold tracking-tight",
-                body: "text-base leading-7 lg:leading-8 text-slate-700",
+                h1: "scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl font-[family-name:var(--font-brand)]",
+                h2: "scroll-m-20 text-3xl font-bold tracking-tight first:mt-0 font-[family-name:var(--font-brand)]",
+                h3: "scroll-m-20 text-2xl font-bold tracking-tight font-[family-name:var(--font-brand)]",
+                h4: "text-xl font-bold tracking-tight font-[family-name:var(--font-brand)]",
+                body: "text-base leading-7 lg:leading-8 text-slate-700 dark:text-neutral-300",
                 small: "text-sm font-medium leading-none",
-                tiny: "text-xs font-medium text-slate-500",
-                muted: "text-sm text-slate-500",
+                tiny: "text-xs font-medium text-slate-500 dark:text-neutral-400",
+                muted: "text-sm text-slate-500 dark:text-neutral-400",
             },
             weight: {
                 default: "",

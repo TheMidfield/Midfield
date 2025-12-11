@@ -4,68 +4,118 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import { Typography } from "@/components/ui/Typography";
 import { Input } from "@/components/ui/Input";
+import { SearchInput } from "@/components/ui/SearchInput";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { Separator } from "@/components/ui/Separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/Tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/Dialog";
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/Command";
-import { AlertCircle, Check, Terminal, User, ArrowRight, Zap, Search, Shield, Layout, MousePointer2 } from "lucide-react";
+import { IconButton } from "@/components/ui/IconButton";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { StatCard } from "@/components/ui/StatCard";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { PlayerCard } from "@/components/ui/PlayerCard";
+import { ClubCard } from "@/components/ui/ClubCard";
+import {
+    AlertCircle, Check, Terminal, User, ArrowRight, Zap, Search, Shield, Layout, MousePointer2,
+    Download, Upload, Plus, Settings, Trash2, Edit, Heart, Share2, Star, TrendingUp, Users,
+    Activity, BarChart3, Target, Trophy, Mail, Bell, Filter, Calendar, ExternalLink, Info,
+    Eye, Box, Grid, Palette
+} from "lucide-react";
 
 export default function DesignSystemPage() {
     return (
-        <div className="max-w-[1200px] mx-auto p-12 space-y-24 pb-32">
+        <div className="w-full max-w-[1200px] mx-auto p-4 sm:p-8 lg:p-12 space-y-24 pb-32">
 
             <header className="space-y-6">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="w-12 h-12 rounded-lg bg-slate-900 text-white flex items-center justify-center">
-                        <Zap className="w-6 h-6 fill-current" />
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                            <Terminal className="w-7 h-7" />
+                        </div>
                     </div>
+                    <ThemeToggle />
                 </div>
-                <h1 className="text-5xl font-black tracking-tight text-slate-900">Midfield Design System</h1>
-                <p className="text-xl text-slate-600 max-w-2xl leading-relaxed">
-                    Squarish, intentional, and congruent. Every element respects the constitution.
+                <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-neutral-100">Design System</h1>
+                <p className="text-xl text-slate-600 dark:text-neutral-400 leading-relaxed max-w-3xl">
+                    A complete reference of components, patterns, and principles. Every element is intentional, standardized, and accessible.
                 </p>
             </header>
 
             <Separator />
 
-            {/* Design Constitution */}
-            <section className="space-y-8">
-                <SectionHeader title="The Constitution" description="Four immutable laws that govern the Midfield aesthetic." />
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <ConstitutionCard
+            {/* Core Design Principles */}
+            <section className="space-y-6">
+                <SectionHeader title="Core Design Principles" description="Four immutable laws that govern every element in Midfield." />
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <PrincipleCard
                         icon={MousePointer2}
                         title="Mandatory Hover"
-                        description="Every clickable element MUST have hover feedback. No exceptions. Clickable without hover is forbidden."
+                        description="Every clickable element MUST have visible hover feedback. No exceptions. Elements without hover are forbidden."
                     />
-                    <ConstitutionCard
+                    <PrincipleCard
                         icon={Layout}
-                        title="Darken on Hover"
-                        description="In light mode, hovering always darkens—never lightens. Borders get darker, backgrounds get darker."
-                    />
-                    <ConstitutionCard
-                        icon={Shield}
-                        title="Intentional Spacing"
-                        description="All radius, padding, and spacing values follow a consistent 4px scale. Every measurement is deliberate."
-                    />
-                    <ConstitutionCard
-                        icon={Zap}
                         title="Visual Congruence"
-                        description="Similar elements share similar styling. Buttons feel like buttons, cards feel like cards, everywhere."
+                        description="Similar elements look similar everywhere. Maximum consistency in styling, spacing, and behavior across all components."
+                    />
+                    <PrincipleCard
+                        icon={Grid}
+                        title="Harmonious Spacing"
+                        description="All measurements follow a 4px scale. Generous, intentional breathing room. Strong borders (slate-300+) for clarity."
+                    />
+                    <PrincipleCard
+                        icon={Palette}
+                        title="Neutral & Emerald"
+                        description="Pure neutral grays with emerald as the sole accent. No blue tints, no competing colors, maximum focus."
                     />
                 </div>
             </section>
 
-            {/* Variants Showcase */}
+            {/* Typography */}
             <section className="space-y-8">
-                <SectionHeader title="Component Variants" description="Expanded set for high-density interfaces." />
+                <SectionHeader title="Typography" description="Type scale using DM Sans for body and Onest for headings. Clean, geometric, and highly readable." />
+                <div className="space-y-6 p-8 border-2 border-slate-300 dark:border-neutral-800 rounded-lg bg-slate-50/50 dark:bg-neutral-900/50">
+                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
+                        <span className="text-sm text-slate-400 dark:text-slate-500 font-mono">Display (H1)</span>
+                        <Typography variant="h1">The Quick Brown Fox</Typography>
+                    </div>
+                    <Separator />
+                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
+                        <span className="text-sm text-slate-400 dark:text-slate-500 font-mono">Page Title (H2)</span>
+                        <Typography variant="h2">Jumps Over The Lazy Dog</Typography>
+                    </div>
+                    <Separator />
+                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
+                        <span className="text-sm text-slate-400 dark:text-slate-500 font-mono">Section (H3)</span>
+                        <Typography variant="h3">Midfield Intelligence</Typography>
+                    </div>
+                    <Separator />
+                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
+                        <span className="text-sm text-slate-400 dark:text-slate-500 font-mono">Body</span>
+                        <Typography variant="body">
+                            Football is a game of spaces. The design system reflects this with generous padding, clear hierarchy, and distinct boundaries defined by strokes, not shadows.
+                        </Typography>
+                    </div>
+                    <Separator />
+                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
+                        <span className="text-sm text-slate-400 dark:text-slate-500 font-mono">Tiny & Muted</span>
+                        <div className="flex gap-4">
+                            <Typography variant="tiny">LEGAL TEXT</Typography>
+                            <Typography variant="muted">Metadata text</Typography>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Core Primitives */}
+            <section className="space-y-8">
+                <SectionHeader title="Core Primitives" description="Buttons, cards, and inputs that form the foundation." />
 
                 <div className="grid md:grid-cols-2 gap-12">
                     <div className="space-y-6">
-                        <Typography variant="h4">Button Physics</Typography>
-                        <div className="p-8 border border-slate-200 rounded-lg space-y-6 bg-white">
+                        <Typography variant="h4">Button Variants</Typography>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-800 rounded-lg space-y-6 bg-white dark:bg-neutral-900">
                             <div className="space-y-3">
-                                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">Solid Variants</span>
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Solid Variants</span>
                                 <div className="flex flex-wrap gap-3">
                                     <Button variant="default">Primary</Button>
                                     <Button variant="feature">Feature</Button>
@@ -75,7 +125,7 @@ export default function DesignSystemPage() {
                             </div>
                             <Separator />
                             <div className="space-y-3">
-                                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">Ghost Variants</span>
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Ghost Variants</span>
                                 <div className="flex flex-wrap gap-3">
                                     <Button variant="ghost">Ghost</Button>
                                     <Button variant="ghost-dark">Ghost Dark</Button>
@@ -85,48 +135,166 @@ export default function DesignSystemPage() {
                             </div>
                             <Separator />
                             <div className="space-y-3">
-                                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider">Outlined</span>
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Outlined</span>
                                 <div className="flex flex-wrap gap-3">
                                     <Button variant="outline">Outline</Button>
                                     <Button variant="stroke">Heavy Stroke</Button>
                                 </div>
+                            </div>
+                            <Separator />
+                            <div className="space-y-3">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Pill Buttons (Rounded)</span>
+                                <div className="flex flex-wrap gap-3">
+                                    <Button variant="pill" size="pill">Follow</Button>
+                                    <Button variant="pill-outline" size="pill">Following</Button>
+                                    <Button variant="pill-secondary" size="pill">Subscribe</Button>
+                                    <Button variant="pill" size="pill-sm">Small Pill</Button>
+                                    <Button variant="pill" size="pill-lg">Large Pill</Button>
+                                </div>
+                                <p className="text-xs text-slate-400 dark:text-neutral-500">✓ Used for CTAs ✓ Navbar actions ✓ Profile buttons</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Card Variants */}
                     <div className="space-y-6">
-                        <Typography variant="h4">Card Physics</Typography>
+                        <Typography variant="h4">Card Variants</Typography>
                         <div className="space-y-4">
                             <Card variant="interactive" className="p-6">
-                                <div className="font-bold text-slate-900">Interactive Card</div>
-                                <div className="text-sm text-slate-600">Hover: Border darkens + subtle bg shift</div>
+                                <div className="font-bold text-slate-900 dark:text-neutral-100">Interactive Card</div>
+                                <div className="text-sm text-slate-600 dark:text-neutral-400">Hover: Border darkens + subtle bg shift</div>
                             </Card>
                             <Card variant="highlight" className="p-6">
-                                <div className="font-bold text-green-900">Highlight Card</div>
-                                <div className="text-sm text-green-700">For promoted items. Green tint darkens on hover.</div>
+                                <div className="font-bold text-green-900 dark:text-green-100">Highlight Card</div>
+                                <div className="text-sm text-green-700 dark:text-green-300">For promoted items. Green tint darkens on hover.</div>
                             </Card>
                             <Card variant="flat" className="p-6">
-                                <div className="font-bold text-slate-900">Flat Card</div>
-                                <div className="text-sm text-slate-600">Subtle border appears on hover.</div>
+                                <div className="font-bold text-slate-900 dark:text-neutral-100">Flat Card</div>
+                                <div className="text-sm text-slate-600 dark:text-neutral-400">Subtle border appears on hover.</div>
                             </Card>
                             <Card variant="ghost" className="p-6">
-                                <div className="font-bold text-slate-900">Ghost Card</div>
-                                <div className="text-sm text-slate-600">Invisible until hover. Perfect for lists.</div>
+                                <div className="font-bold text-slate-900 dark:text-neutral-100">Ghost Card</div>
+                                <div className="text-sm text-slate-600 dark:text-neutral-400">Subtle border, perfect for minimal emphasis.</div>
                             </Card>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Forms & Inputs */}
+                <div className="space-y-6 mt-12">
+                    <Typography variant="h4">Forms & Inputs</Typography>
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <div className="space-y-4 p-6 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900">
+                            <div className="space-y-2">
+                                <Typography variant="small">Email Address</Typography>
+                                <Input placeholder="name@example.com" />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="flex justify-between">
+                                    <Typography variant="small">Password</Typography>
+                                    <Typography variant="tiny" className="text-green-600 dark:text-green-400 cursor-pointer hover:text-green-700 dark:hover:text-green-300 transition-colors">Forgot?</Typography>
+                                </div>
+                                <Input type="password" placeholder="••••••••" />
+                            </div>
+                        </div>
+                        <div className="p-6 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 space-y-4">
+                            <Typography variant="small">Search Input</Typography>
+                            <SearchInput placeholder="Search players, clubs..." />
+                            <p className="text-xs text-slate-400 dark:text-neutral-500">✓ Icon included ✓ No shadow ✓ Green focus</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Overlays & Command */}
+            {/* Domain Components - Player & Club Cards */}
             <section className="space-y-8">
-                <SectionHeader title="Overlays & Search" description="Complex interactions and data finding." />
+                <SectionHeader title="Domain Components" description="Player and club cards that embody the Midfield aesthetic." />
+                
+                <div className="space-y-6">
+                    <Typography variant="h4">Player Cards</Typography>
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <PlayerCard
+                            name="Erling Haaland"
+                            position="Striker"
+                            rating="91"
+                            age="23"
+                            club={{
+                                name: "Man City",
+                                slug: "man-city",
+                            }}
+                            avatarUrl="https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=400&h=400&fit=crop"
+                            followers="4.2M"
+                            activityLevel="high"
+                        />
+                        <PlayerCard
+                            name="Kevin De Bruyne"
+                            position="Midfielder"
+                            rating="89"
+                            age="32"
+                            club={{
+                                name: "Man City",
+                                slug: "man-city",
+                            }}
+                            followers="3.1M"
+                            activityLevel="medium"
+                            variant="highlight"
+                        />
+                        <PlayerCard
+                            name="Jude Bellingham"
+                            position="Midfielder"
+                            rating="88"
+                            age="20"
+                            club={{
+                                name: "Real Madrid",
+                                slug: "real-madrid",
+                            }}
+                            followers="2.8M"
+                            activityLevel="high"
+                        />
+                    </div>
+                </div>
+
+                <div className="space-y-6 mt-12">
+                    <Typography variant="h4">Club Cards (Horizontal Layout)</Typography>
+                    <p className="text-sm text-slate-600 dark:text-neutral-400">Clubs use a landscape orientation to differentiate from player cards.</p>
+                    <div className="grid gap-4">
+                        <ClubCard
+                            name="Manchester City"
+                            league="Premier League"
+                            country="England"
+                            followers="52M"
+                            activityLevel="high"
+                            trophies={34}
+                        />
+                        <ClubCard
+                            name="Real Madrid"
+                            league="La Liga"
+                            country="Spain"
+                            followers="128M"
+                            activityLevel="high"
+                            trophies={96}
+                            variant="highlight"
+                        />
+                        <ClubCard
+                            name="Bayern Munich"
+                            league="Bundesliga"
+                            country="Germany"
+                            followers="45M"
+                            activityLevel="medium"
+                            trophies={76}
+                        />
+                    </div>
+                </div>
+            </section>
+
+            {/* Overlays & Search */}
+            <section className="space-y-8">
+                <SectionHeader title="Overlays & Search" description="Modals, dialogs, and search interfaces." />
                 <div className="grid md:grid-cols-2 gap-12">
                     {/* Dialog */}
-                    <div className="p-8 border border-slate-200 rounded-[24px] flex flex-col items-center justify-center space-y-4 text-center">
+                    <div className="p-8 border-2 border-slate-300 dark:border-neutral-800 rounded-lg flex flex-col items-center justify-center space-y-4 text-center bg-white dark:bg-neutral-900">
                         <Typography variant="h3">Modal Dialog</Typography>
-                        <p className="text-slate-500">Click to see the backdrop blur and animation.</p>
+                        <p className="text-slate-500 dark:text-neutral-400">Click to see the backdrop blur and animation.</p>
 
                         <Dialog>
                             <DialogTrigger asChild>
@@ -154,145 +322,175 @@ export default function DesignSystemPage() {
                         </Dialog>
                     </div>
 
-                    {/* Command */}
-                    <div className="border border-slate-200 rounded-[24px] overflow-hidden bg-white h-[350px]">
-                        <Command className="rounded-none border-none shadow-none">
-                            <CommandInput placeholder="Type a command or search..." />
-                            <CommandList>
-                                <CommandEmpty>No results found.</CommandEmpty>
-                                <CommandGroup heading="Suggestions">
-                                    <CommandItem><Search className="mr-2 h-4 w-4" /> Calendar</CommandItem>
-                                    <CommandItem><Search className="mr-2 h-4 w-4" /> Search Emoji</CommandItem>
-                                    <CommandItem><Search className="mr-2 h-4 w-4" /> Calculator</CommandItem>
-                                </CommandGroup>
-                                <CommandGroup heading="Settings">
-                                    <CommandItem><User className="mr-2 h-4 w-4" /> Profile</CommandItem>
-                                    <CommandItem><Shield className="mr-2 h-4 w-4" /> Privacy</CommandItem>
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </div>
-                </div>
-            </section>
-
-            {/* Typography */}
-            <section className="space-y-8">
-                <SectionHeader title="Typography" description="The Onest type scale. Clean, geometric, and highly readable." />
-                <div className="space-y-6 p-8 border border-slate-100 rounded-[24px] bg-slate-50/50">
-                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
-                        <span className="text-sm text-slate-400 font-mono">Display (H1)</span>
-                        <Typography variant="h1">The Quick Brown Fox</Typography>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
-                        <span className="text-sm text-slate-400 font-mono">Page Title (H2)</span>
-                        <Typography variant="h2">Jumps Over The Lazy Dog</Typography>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
-                        <span className="text-sm text-slate-400 font-mono">Section (H3)</span>
-                        <Typography variant="h3">Midfield Intelligence</Typography>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
-                        <span className="text-sm text-slate-400 font-mono">Body</span>
-                        <Typography variant="body">
-                            Football is a game of spaces. The design system reflects this with generous padding, clear hierarchy, and distinct boundaries defined by strokes, not shadows.
-                        </Typography>
-                    </div>
-                    <Separator />
-                    <div className="grid gap-8 items-center md:grid-cols-[200px_1fr]">
-                        <span className="text-sm text-slate-400 font-mono">Tiny & Muted</span>
-                        <div className="flex gap-4">
-                            <Typography variant="tiny">LEGAL TEXT</Typography>
-                            <Typography variant="muted">Metadata text</Typography>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Interaction Lab */}
-            <section className="space-y-8">
-                <SectionHeader title="Interaction Lab" description="Strict Rule: No shadows. Hover = Border Color Shift." />
-
-                <div className="grid md:grid-cols-2 gap-8">
-                    {/* Card Interaction */}
-                    <div className="space-y-4">
-                        <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Card Primitive</span>
-                        <Card className="hover:border-slate-400 cursor-pointer group">
-                            <CardHeader>
-                                <CardTitle className="group-hover:text-green-600 transition-colors">Hover This Card</CardTitle>
-                                <CardDescription>Notice the border darkens. No shadow.</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="h-24 rounded-lg bg-slate-50 border border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-sm">
-                                    Content Area
-                                </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Button Interactions */}
-                    <div className="space-y-4">
-                        <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">Button Primitive</span>
-                        <div className="p-8 border border-slate-200 rounded-[24px] space-y-4 flex flex-col items-start bg-white">
-                            <Button>Standard Button</Button>
-                            <p className="text-xs text-slate-400">Hover: Opacity 90%. No Lift.</p>
-
-                            <div className="flex gap-4">
-                                <Button variant="outline">Outline</Button>
-                                <Button variant="ghost">Ghost Hover</Button>
+                    {/* Search Input */}
+                    <div className="space-y-6">
+                        <Typography variant="h4">Search Input</Typography>
+                        <p className="text-sm text-slate-500 dark:text-neutral-400">Two search bar styles for different contexts</p>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 space-y-6">
+                            <div className="space-y-2">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Default (Forms)</span>
+                                <SearchInput placeholder="Search players, clubs..." />
+                                <p className="text-xs text-slate-400 dark:text-neutral-500">✓ Rectangular ✓ Form-friendly ✓ Strong borders</p>
                             </div>
-                            <p className="text-xs text-slate-400">Hover: Background Fade. No Shadow.</p>
+                            <Separator />
+                            <div className="space-y-2">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Pill (Navbar)</span>
+                                <SearchInput variant="pill" placeholder="Find player or club..." />
+                                <p className="text-xs text-slate-400 dark:text-neutral-500">✓ Rounded ✓ Compact ✓ Clean topbar style</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Components Grid */}
+            {/* Icon Buttons & Combinations */}
             <section className="space-y-8">
-                <SectionHeader title="Interface Components" description="Building blocks for data and controls." />
+                <SectionHeader title="Icons & Actions" description="Icon buttons, text+icon combinations, and action states." />
 
                 <div className="grid md:grid-cols-2 gap-12">
-                    {/* Forms */}
+                    {/* Icon-Only Buttons */}
                     <div className="space-y-6">
-                        <Typography variant="h4">Forms & Inputs</Typography>
-                        <div className="space-y-4 p-6 border border-slate-200 rounded-2xl">
-                            <div className="space-y-2">
-                                <Typography variant="small">Email Address</Typography>
-                                <Input placeholder="name@example.com" />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <Typography variant="small">Password</Typography>
-                                    <Typography variant="tiny" className="text-green-600 cursor-pointer">Forgot?</Typography>
+                        <Typography variant="h4">Icon Buttons</Typography>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg space-y-6 bg-white dark:bg-neutral-900">
+                            <div className="space-y-3">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Ghost (Default)</span>
+                                <div className="flex items-center gap-2">
+                                    <IconButton icon={Settings} variant="ghost" />
+                                    <IconButton icon={Heart} variant="ghost" />
+                                    <IconButton icon={Share2} variant="ghost" />
+                                    <IconButton icon={Bell} variant="ghost" />
+                                    <IconButton icon={Filter} variant="ghost" />
                                 </div>
-                                <Input type="password" value="secret123" />
+                            </div>
+                            <Separator />
+                            <div className="space-y-3">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Variants & Sizes</span>
+                                <div className="flex items-center gap-2">
+                                    <IconButton icon={Trash2} variant="outline" />
+                                    <IconButton icon={Edit} variant="subtle" />
+                                    <IconButton icon={Plus} variant="default" />
+                                    <IconButton icon={Star} variant="ghost" size="sm" />
+                                    <IconButton icon={Star} variant="ghost" size="lg" />
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Navigation */}
+                    {/* Text + Icon Buttons */}
                     <div className="space-y-6">
-                        <Typography variant="h4">Segmented Controls</Typography>
-                        <div className="p-6 border border-slate-200 rounded-2xl h-full">
-                            <Tabs defaultValue="stats" className="w-full">
-                                <TabsList className="w-full grid grid-cols-3">
-                                    <TabsTrigger value="stats">Stats</TabsTrigger>
-                                    <TabsTrigger value="lineup">Lineup</TabsTrigger>
-                                    <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
-                                </TabsList>
-                                <TabsContent value="stats" className="p-4 bg-slate-50 rounded-lg mt-4 border border-slate-100 text-center text-sm text-slate-500">
-                                    Game Statistics View
-                                </TabsContent>
-                                <TabsContent value="lineup" className="p-4 bg-slate-50 rounded-lg mt-4 border border-slate-100 text-center text-sm text-slate-500">
-                                    Player Positions View
-                                </TabsContent>
-                                <TabsContent value="heatmap" className="p-4 bg-slate-50 rounded-lg mt-4 border border-slate-100 text-center text-sm text-slate-500">
-                                    Movement Map View
-                                </TabsContent>
-                            </Tabs>
+                        <Typography variant="h4">Buttons with Icons</Typography>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg flex flex-col gap-3 bg-white dark:bg-neutral-900">
+                            <Button icon={Download} iconPosition="left">Download Report</Button>
+                            <Button icon={Upload} iconPosition="left" variant="outline">Upload Data</Button>
+                            <Button icon={Plus} iconPosition="left" variant="secondary">Add New</Button>
+                            <Button icon={ArrowRight} iconPosition="right" variant="ghost">Continue</Button>
+                            <Button icon={ExternalLink} iconPosition="right" variant="link">View Details</Button>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Data Visualization */}
+            <section className="space-y-8">
+                <SectionHeader title="Data Components" description="Stats, metrics, and empty states." />
+
+                <div className="space-y-8">
+                    {/* Stats */}
+                    <div>
+                        <Typography variant="h4" className="mb-4">Stat Cards</Typography>
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <StatCard
+                                label="Total Goals"
+                                value="142"
+                                icon={Target}
+                                trend={{ value: 12, isPositive: true }}
+                            />
+                            <StatCard
+                                label="Active Players"
+                                value="2.4K"
+                                icon={Users}
+                                variant="highlight"
+                            />
+                            <StatCard
+                                label="Win Rate"
+                                value="68%"
+                                icon={Trophy}
+                                trend={{ value: 5, isPositive: true }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Empty States */}
+                    <div>
+                        <Typography variant="h4" className="mb-4">Empty States</Typography>
+                        <div className="grid md:grid-cols-2 gap-8 items-stretch">
+                            <EmptyState
+                                icon={Search}
+                                title="No results found"
+                                description="Try adjusting your search or filter to find what you're looking for."
+                                action={<Button variant="outline" icon={Filter}>Change Filters</Button>}
+                            />
+                            <EmptyState
+                                icon={Mail}
+                                title="Inbox Zero"
+                                description="You're all caught up! No new notifications."
+                                variant="muted"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Interaction Patterns */}
+            <section className="space-y-8">
+                <SectionHeader title="Interaction Patterns" description="Hover feedback through color shifts, never shadows or transforms." />
+
+                <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 space-y-6">
+                    <div className="space-y-3">
+                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Interactive Card</span>
+                        <Card className="hover:border-slate-400 dark:hover:border-neutral-600 cursor-pointer group transition-colors">
+                            <CardHeader className="pb-4">
+                                <CardTitle className="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Hover This Card</CardTitle>
+                                <CardDescription>Border darkens, title shifts to emerald. Zero elevation changes.</CardDescription>
+                            </CardHeader>
+                        </Card>
+                    </div>
+                    <Separator />
+                    <div className="space-y-3">
+                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Button States</span>
+                        <div className="flex flex-wrap gap-3">
+                            <Button>Primary (Opacity shift)</Button>
+                            <Button variant="outline">Outline (Border darkens)</Button>
+                            <Button variant="ghost">Ghost (Background fades in)</Button>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-neutral-500 italic">All hover states modify color only—no scale, lift, or shadow effects.</p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Tabs & Navigation */}
+            <section className="space-y-8">
+                <SectionHeader title="Navigation Components" description="Tabs and segmented controls." />
+
+                <div className="space-y-6">
+                    <Typography variant="h4">Segmented Controls</Typography>
+                    <div className="p-6 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900">
+                        <Tabs defaultValue="stats" className="w-full">
+                            <TabsList className="w-full grid grid-cols-3">
+                                <TabsTrigger value="stats">Stats</TabsTrigger>
+                                <TabsTrigger value="lineup">Lineup</TabsTrigger>
+                                <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="stats" className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg mt-4 border-2 border-slate-300 dark:border-neutral-700 text-center text-sm text-slate-500 dark:text-neutral-400">
+                                Game Statistics View
+                            </TabsContent>
+                            <TabsContent value="lineup" className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg mt-4 border-2 border-slate-300 dark:border-neutral-700 text-center text-sm text-slate-500 dark:text-neutral-400">
+                                Player Positions View
+                            </TabsContent>
+                            <TabsContent value="heatmap" className="p-4 bg-slate-50 dark:bg-neutral-800 rounded-lg mt-4 border-2 border-slate-300 dark:border-neutral-700 text-center text-sm text-slate-500 dark:text-neutral-400">
+                                Movement Map View
+                            </TabsContent>
+                        </Tabs>
                     </div>
                 </div>
             </section>
@@ -307,11 +505,11 @@ export default function DesignSystemPage() {
                             <Skeleton className="h-4 w-[100px]" />
                         </CardHeader>
                         <CardContent>
-                            <Skeleton className="h-[100px] w-full rounded-xl" />
+                            <Skeleton className="h-[100px] w-full rounded-lg" />
                         </CardContent>
                     </Card>
 
-                    <div className="col-span-2 space-y-4 p-6 border border-slate-200 rounded-[24px]">
+                    <div className="col-span-2 space-y-4 p-6 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900">
                         <div className="flex items-center gap-4">
                             <Badge variant="default">Default</Badge>
                             <Badge variant="secondary">Secondary</Badge>
@@ -332,26 +530,26 @@ export default function DesignSystemPage() {
 
 function SectionHeader({ title, description }: { title: string, description: string }) {
     return (
-        <div className="space-y-2 mb-6">
-            <h2 className="text-3xl font-bold tracking-tight text-slate-900 border-l-4 border-green-500 pl-4">{title}</h2>
-            <p className="text-lg text-slate-500 pl-5">{description}</p>
+        <div className="space-y-2 mb-8">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-neutral-100 border-l-4 border-emerald-500 dark:border-emerald-400 pl-4">{title}</h2>
+            <p className="text-lg text-slate-600 dark:text-neutral-400 pl-5">{description}</p>
         </div>
     )
 }
 
-function ConstitutionCard({ icon: Icon, title, description }: { icon: any, title: string, description: string }) {
+function PrincipleCard({ icon: Icon, title, description }: { icon: any, title: string, description: string }) {
     return (
-        <div className="p-6 bg-slate-50 border border-slate-100 rounded-lg space-y-3 hover:border-slate-200 hover:bg-slate-100 transition-all cursor-pointer">
-            <div className="w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-900">
+        <div className="p-4 bg-white dark:bg-neutral-900 border-2 border-slate-300 dark:border-neutral-700 rounded-lg space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <Icon className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-slate-900 text-lg">{title}</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">{description}</p>
+            <h3 className="font-bold text-slate-900 dark:text-neutral-100 text-base">{title}</h3>
+            <p className="text-xs text-slate-600 dark:text-neutral-400 leading-relaxed">{description}</p>
         </div>
     )
 }
 
 function ColorCard({ name, variable, text, border }: { name: string, variable: string, text: string, border?: boolean }) {
     /* ... retained ... */
-    return <div className={`h-24 rounded-xl flex items-center justify-center font-bold shadow-sm ${variable} ${text} ${border ? 'border border-slate-200' : ''}`}>{name}</div>
+    return <div className={`h-24 rounded-xl flex items-center justify-center font-bold shadow-sm ${variable} ${text} ${border ? 'border border-slate-200 dark:border-neutral-700' : ''}`}>{name}</div>
 }

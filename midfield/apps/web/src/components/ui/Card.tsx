@@ -3,16 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const cardVariants = cva(
-    "rounded-lg border transition-all duration-200",
+    "rounded-md border transition-all duration-200",
     {
         variants: {
             variant: {
-                default: "bg-white border-slate-200 text-card-foreground",
-                interactive: "bg-white border-slate-200 text-card-foreground hover:border-slate-400 hover:bg-slate-50 cursor-pointer",
-                highlight: "bg-green-50/40 border-green-200 text-green-900 hover:border-green-400 hover:bg-green-50/60 cursor-pointer",
-                flat: "bg-slate-50 border-slate-100 text-slate-900 hover:bg-slate-100 hover:border-slate-200 cursor-pointer",
-                ghost: "bg-transparent border-transparent text-slate-900 hover:bg-slate-50 hover:border-slate-100 cursor-pointer",
-                dark: "bg-slate-900 border-slate-800 text-white hover:bg-slate-800 cursor-pointer"
+                default: "bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-neutral-100",
+                interactive: "bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-neutral-100 hover:border-slate-400 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer",
+                highlight: "bg-green-50/50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-900 dark:text-green-100 hover:border-green-300 dark:hover:border-green-800 hover:bg-green-100/50 dark:hover:bg-green-950/50 cursor-pointer",
+                flat: "bg-slate-50 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-900 dark:text-neutral-100 hover:bg-slate-100 dark:hover:bg-neutral-700 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer",
+                ghost: "bg-white dark:bg-transparent border-slate-200 dark:border-neutral-700 text-slate-900 dark:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer",
+                dark: "bg-slate-900 dark:bg-neutral-800 border-slate-800 dark:border-neutral-700 text-white hover:bg-slate-800 dark:hover:bg-neutral-700 cursor-pointer"
             },
         },
         defaultVariants: {
@@ -55,7 +55,7 @@ const CardTitle = React.forwardRef<
     <h3
         ref={ref}
         className={cn(
-            "text-2xl font-semibold leading-none tracking-tight",
+            "text-2xl font-semibold leading-none tracking-tight text-slate-900 dark:text-neutral-100",
             className
         )}
         {...props}
@@ -69,7 +69,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
     <p
         ref={ref}
-        className={cn("text-sm text-muted-foreground", className)}
+        className={cn("text-sm text-slate-500 dark:text-neutral-400", className)}
         {...props}
     />
 ))

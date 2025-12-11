@@ -1,9 +1,6 @@
 import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
-
-function cn(...inputs: (string | undefined | null | false)[]) {
-    return inputs.filter(Boolean).join(" ")
-}
+import { cn } from "@/lib/utils"
 
 const Avatar = React.forwardRef<
     React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -12,7 +9,7 @@ const Avatar = React.forwardRef<
     <AvatarPrimitive.Root
         ref={ref}
         className={cn(
-            "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+            "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-md",
             className
         )}
         {...props}
@@ -39,7 +36,7 @@ const AvatarFallback = React.forwardRef<
     <AvatarPrimitive.Fallback
         ref={ref}
         className={cn(
-            "flex h-full w-full items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-400",
+            "flex h-full w-full items-center justify-center rounded-md bg-slate-100 dark:bg-neutral-800 font-semibold text-slate-600 dark:text-neutral-400",
             className
         )}
         {...props}

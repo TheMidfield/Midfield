@@ -40,17 +40,17 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
 
     return (
-        <div className="max-w-[1400px] mx-auto pb-24 px-4 sm:px-6">
+        <div className="w-full max-w-[1400px] mx-auto pb-24">
             {/* Back Nav */}
             <div className="py-6">
-                <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-green-600 transition-colors">
+                <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-neutral-400 hover:text-green-600 dark:hover:text-green-400 transition-colors">
                     <ChevronLeft className="w-4 h-4" />
                     Back to Home
                 </Link>
             </div>
 
             {/* Hero Card */}
-            <div className="relative mb-12 rounded-[2rem] overflow-hidden bg-white border border-slate-200 shadow-xl">
+            <div className="relative mb-12 rounded-[2rem] overflow-hidden bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 shadow-xl dark:shadow-green-900/10">
 
                 {/* Banner / Cover */}
                 <div className="relative h-64 md:h-96 w-full bg-slate-900 group">
@@ -142,21 +142,21 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                 </div>
 
                 {/* Description & Details Body */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10 bg-slate-50/50">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-6 md:p-10 bg-slate-50/50 dark:bg-neutral-900/50">
                     <div className="lg:col-span-2">
                         <TopicDescription description={topic.description} />
                     </div>
                     <div className="space-y-4">
                         {/* Stats or other widgets can go here later */}
-                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wide mb-4">Community Stats</h3>
+                        <div className="bg-white dark:bg-neutral-800 p-6 rounded-lg border border-slate-200 dark:border-neutral-700 shadow-sm">
+                            <h3 className="text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wide mb-4">Community Stats</h3>
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-slate-600 font-medium">Followers</span>
-                                <span className="text-slate-900 font-bold">12.5k</span>
+                                <span className="text-slate-600 dark:text-neutral-400 font-medium">Followers</span>
+                                <span className="text-slate-900 dark:text-neutral-100 font-bold">12.5k</span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span className="text-slate-600 font-medium">Discussion Rank</span>
-                                <span className="text-green-600 font-bold">#3 Trending</span>
+                                <span className="text-slate-600 dark:text-neutral-400 font-medium">Discussion Rank</span>
+                                <span className="text-green-600 dark:text-green-400 font-bold">#3 Trending</span>
                             </div>
                         </div>
                     </div>
@@ -166,12 +166,12 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             {/* Squad List (Grouped) */}
             {isClub && squad.length > 0 && (
                 <div className="mb-12 space-y-10">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-                        <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-900">
-                            <Users className="w-6 h-6 text-green-600" />
+                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-neutral-800 pb-4">
+                        <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
+                            <Users className="w-6 h-6 text-green-600 dark:text-green-400" />
                             Current Squad
                         </h2>
-                        <span className="text-sm font-medium text-slate-500">{squad.length} Players</span>
+                        <span className="text-sm font-medium text-slate-500 dark:text-neutral-400">{squad.length} Players</span>
                     </div>
 
                     {positionOrder.map((pos) => {
@@ -180,7 +180,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
 
                         return (
                             <div key={pos}>
-                                <h3 className="text-lg font-bold text-slate-400 uppercase tracking-wider mb-4 pl-1">{pos}</h3>
+                                <h3 className="text-lg font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-4 pl-1">{pos}</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {players.map((player) => (
                                         <TopicCard key={player.id} topic={player} />
@@ -193,8 +193,8 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             )}
 
             <div className="grid grid-cols-1 gap-8">
-                <div className="bg-slate-50 rounded-3xl p-6 md:p-8 border border-slate-200">
-                    <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 mb-6">
+                <div className="bg-slate-50 dark:bg-neutral-900/50 rounded-3xl p-6 md:p-8 border border-slate-200 dark:border-neutral-800">
+                    <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100 mb-6">
                         Discussion Board
                     </h2>
                     <PostComposer topicSlug={slug} />

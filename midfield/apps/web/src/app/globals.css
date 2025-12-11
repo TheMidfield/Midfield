@@ -1,43 +1,43 @@
 @import "tailwindcss";
 
 @theme {
-    --font-sans: var(--font-onest);
+    /* Font families */
+    --font-sans: var(--font-dm-sans);
+    --font-brand: var(--font-onest);
+    --font-display: var(--font-onest);
 
     /* Spacing Scale - Intentional 4px base */
     --spacing-xs: 0.25rem;
-    /* 4px */
     --spacing-sm: 0.5rem;
-    /* 8px */
     --spacing-md: 0.75rem;
-    /* 12px */
     --spacing-lg: 1rem;
-    /* 16px */
     --spacing-xl: 1.5rem;
-    /* 24px */
     --spacing-2xl: 2rem;
-    /* 32px */
 
     /* Radius Scale - Squarish aesthetic */
     --radius-sm: 0.25rem;
-    /* 4px - Badges, tags */
     --radius-md: 0.375rem;
-    /* 6px - Buttons, inputs */
     --radius-lg: 0.5rem;
-    /* 8px - Cards, panels */
     --radius-xl: 0.75rem;
-    /* 12px - Large containers */
 
+    /* Define primary color for Tailwind utilities */
+    --color-primary: #059669;
     --color-midfield-green: #10b981;
-    --color-midfield-dark: #0f172a;
-    --color-midfield-surface: #1e293b;
+    --color-midfield-dark: #1A1A1A;
+    --color-midfield-surface: #262626;
 }
+
+/* Configure dark mode */
+@variant dark (&:is(.dark *));
 
 :root {
     --background: #ffffff;
+    --body-background: #f8fafc;
+    /* Subtle off-white for the OG light theme feel */
     --foreground: #0f172a;
 
-    /* Primary: Midfield Green */
-    --primary: #10b981;
+    /* Primary: Midfield Green (Original emerald 600) */
+    --primary: #059669;
     --primary-foreground: #ffffff;
 
     /* Secondary: Slate Blue for depth */
@@ -69,12 +69,12 @@
     /* Focus ring matches primary */
 
     /* Radius System */
-    --radius: 0.75rem;
-    /* 12px default */
-    --radius-lg: 1rem;
+    --radius: 0.5rem;
+    /* 8px default */
+    --radius-lg: 0.75rem;
+    /* 12px */
+    --radius-xl: 1rem;
     /* 16px */
-    --radius-xl: 1.5rem;
-    /* 24px */
 
     /* Chart/Rating Colors */
     --rating-high: #10b981;
@@ -82,21 +82,66 @@
     --rating-low: #ef4444;
 }
 
-/* Force light mode default, can add dark overrides later if requested */
-@media (prefers-color-scheme: dark) {
-    :root {
-        /* Keeping it light/bright as requested "bright mode should be default" */
-        --background: #ffffff;
-        --foreground: #0f172a;
-    }
+* {
+    box-sizing: border-box;
+}
+
+html {
+    width: 100%;
+    overflow-x: hidden;
 }
 
 body {
-    background-color: #f8fafc;
-    /* Slight off-white for app background */
-    color: var(--foreground);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    width: 100%;
+    min-width: 320px;
+    font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--body-background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+}
+
+/* Dark Mode Overrides - Clean Neutral Dark Palette */
+.dark {
+    --background: #1A1A1A;
+    --body-background: #1A1A1A;
+    /* Deep neutral dark */
+    --foreground: #f5f5f5;
+
+    /* Primary: Emerald green accent */
+    --primary: #10b981;
+    --primary-foreground: #ffffff;
+
+    /* Destructive stays the same */
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    /* Secondary: Elevated surface */
+    --secondary: #262626;
+    --secondary-foreground: #f5f5f5;
+
+    /* Muted: Subtle backgrounds */
+    --muted: #1D1D1D;
+    --muted-foreground: #a3a3a3;
+
+    /* Accent: Highlighted elements */
+    --accent: #262626;
+    --accent-foreground: #f5f5f5;
+
+    /* Card: Elevated surfaces */
+    --card: #1D1D1D;
+    --card-foreground: #f5f5f5;
+
+    /* Borders & Inputs */
+    --border: #373636;
+    --input: #373636;
+    --ring: #10b981;
+
+    /* Popover: Elevated UI */
+    --popover: #262626;
+    --popover-foreground: #f5f5f5;
 }
 
 /* Glassmorphism utility */
@@ -107,9 +152,7 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-@media (prefers-color-scheme: dark) {
-    .glass-panel {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
+.dark .glass-panel {
+    background: rgba(26, 26, 26, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
