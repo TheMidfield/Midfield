@@ -2,10 +2,9 @@ import { Navbar } from "@/components/Navbar";
 import { RightPanel } from "@/components/RightPanel";
 import "./globals.css";
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Onest } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const onest = Onest({ subsets: ["latin"], variable: "--font-onest" });
 
 export const metadata: Metadata = {
     title: "Midfield",
@@ -18,7 +17,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en" className={`${inter.variable} ${outfit.variable}`}>
+        <html lang="en" className={`${onest.variable}`}>
             <body className="min-h-screen bg-background antialiased selection:bg-primary/20 flex flex-col">
                 <Navbar />
 

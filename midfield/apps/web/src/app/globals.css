@@ -1,8 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-    --font-sans: var(--font-inter);
-    --font-display: var(--font-outfit);
+    --font-sans: var(--font-onest);
+
+    /* Spacing Scale - Intentional 4px base */
+    --spacing-xs: 0.25rem;
+    /* 4px */
+    --spacing-sm: 0.5rem;
+    /* 8px */
+    --spacing-md: 0.75rem;
+    /* 12px */
+    --spacing-lg: 1rem;
+    /* 16px */
+    --spacing-xl: 1.5rem;
+    /* 24px */
+    --spacing-2xl: 2rem;
+    /* 32px */
+
+    /* Radius Scale - Squarish aesthetic */
+    --radius-sm: 0.25rem;
+    /* 4px - Badges, tags */
+    --radius-md: 0.375rem;
+    /* 6px - Buttons, inputs */
+    --radius-lg: 0.5rem;
+    /* 8px - Cards, panels */
+    --radius-xl: 0.75rem;
+    /* 12px - Large containers */
 
     --color-midfield-green: #10b981;
     --color-midfield-dark: #0f172a;
@@ -13,23 +36,47 @@
     --background: #ffffff;
     --foreground: #0f172a;
 
-    /* Brand Green - Tech/Football blend */
-    --primary: #059669;
-    /* Emerald 600 */
+    /* Primary: Midfield Green */
+    --primary: #10b981;
     --primary-foreground: #ffffff;
 
-    --accent: #d1fae5;
-    /* Emerald 100 */
-    --accent-foreground: #065f46;
+    /* Secondary: Slate Blue for depth */
+    --secondary: #f1f5f9;
+    --secondary-foreground: #0f172a;
 
+    /* Destructive: Red */
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    /* Muted: Subtle backgrounds */
     --muted: #f8fafc;
     --muted-foreground: #64748b;
 
+    /* Accent: Highlights */
+    --accent: #d1fae5;
+    --accent-foreground: #064e3b;
+
+    /* Popover/Cards */
+    --popover: #ffffff;
+    --popover-foreground: #0f172a;
     --card: #ffffff;
     --card-foreground: #0f172a;
 
+    /* Borders & Inputs */
     --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #10b981;
+    /* Focus ring matches primary */
 
+    /* Radius System */
+    --radius: 0.75rem;
+    /* 12px default */
+    --radius-lg: 1rem;
+    /* 16px */
+    --radius-xl: 1.5rem;
+    /* 24px */
+
+    /* Chart/Rating Colors */
     --rating-high: #10b981;
     --rating-med: #f59e0b;
     --rating-low: #ef4444;
