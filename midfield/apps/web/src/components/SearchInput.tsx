@@ -46,7 +46,7 @@ export function SearchInput() {
 
     return (
         <div ref={wrapperRef} className="relative hidden sm:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-slate-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 dark:text-neutral-400 pointer-events-none" />
             <input
                 type="text"
                 value={query}
@@ -72,7 +72,7 @@ export function SearchInput() {
                             />
                             <div>
                                 <div className="text-sm font-semibold text-slate-900 dark:text-white">{topic.title}</div>
-                                <div className="text-xs text-slate-500 dark:text-gray-400 capitalize">{topic.type}</div>
+                                <div className="text-xs text-slate-500 dark:text-neutral-400 capitalize">{topic.type}</div>
                             </div>
                         </Link>
                     ))}

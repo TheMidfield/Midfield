@@ -23,21 +23,21 @@ export function RightPanel() {
             <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-[24px] p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors duration-300">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-extrabold text-lg flex items-center gap-2 text-slate-900 dark:text-neutral-100">
-                        <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         Trending
                     </h3>
                 </div>
                 <div className="space-y-1">
                     {trending.map((item, index) => (
                         <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 group cursor-pointer transition-colors">
-                            <span className="text-lg font-black text-slate-300 dark:text-neutral-600 w-4 text-center group-hover:text-green-500 dark:group-hover:text-green-400 transition-colors">
+                            <span className="text-lg font-black text-slate-300 dark:text-neutral-600 w-4 text-center group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
                                 {index + 1}
                             </span>
                             <div className="flex-1">
-                                <div className="font-bold text-slate-900 dark:text-neutral-100 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors">#{item.tag}</div>
+                                <div className="font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">#{item.tag}</div>
                                 <div className="text-xs font-medium text-slate-400 dark:text-neutral-500">{item.posts} posts</div>
                             </div>
-                            <button className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 dark:text-neutral-500 group-hover:text-green-600 dark:group-hover:text-green-400 transition-all">
+                            <button className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all">
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </div>
@@ -58,7 +58,7 @@ export function RightPanel() {
                                 <span className="font-bold text-slate-400 dark:text-neutral-500 text-xs">{user.name.substring(0, 2).toUpperCase()}</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="font-bold text-sm text-slate-900 dark:text-neutral-100 truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">{user.name}</div>
+                                <div className="font-bold text-sm text-slate-900 dark:text-neutral-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{user.name}</div>
                                 <div className="text-xs font-semibold text-slate-400 dark:text-neutral-500 truncate">{user.handle}</div>
                             </div>
                             <Button variant="pill" size="pill-sm">

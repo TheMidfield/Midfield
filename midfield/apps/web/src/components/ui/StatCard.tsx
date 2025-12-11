@@ -23,7 +23,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
                     "rounded-lg border p-4 transition-all",
                     clickable && "hover:border-slate-400 dark:hover:border-neutral-500 cursor-pointer",
                     variant === "highlight"
-                        ? "bg-green-50/30 dark:bg-green-950/30 border-green-200 dark:border-green-900" + (clickable ? " hover:border-green-400 dark:hover:border-green-700" : "")
+                        ? "bg-emerald-50/30 dark:bg-green-950/30 border-emerald-200 dark:border-green-900" + (clickable ? " hover:border-emerald-400 dark:hover:border-emerald-700" : "")
                         : "bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800",
                     className
                 )}
@@ -43,7 +43,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
                         {trend && (
                             <p className={cn(
                                 "text-xs font-medium mt-2",
-                                trend.isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                                trend.isPositive ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
                             )}>
                                 {trend.isPositive ? "+" : ""}{trend.value}%
                             </p>
@@ -53,7 +53,7 @@ const StatCard = React.forwardRef<HTMLDivElement, StatCardProps>(
                         <div className={cn(
                             "rounded-md p-2",
                             variant === "highlight"
-                                ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
+                                ? "bg-emerald-100 dark:bg-green-900/50 text-emerald-700 dark:text-emerald-300"
                                 : "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400"
                         )}>
                             <Icon size={20} />

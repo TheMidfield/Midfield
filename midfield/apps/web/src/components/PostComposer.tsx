@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "./ui/Button";
 
 export function PostComposer({ topicSlug }: { topicSlug: string }) {
     const [content, setContent] = useState("");
@@ -15,18 +16,18 @@ export function PostComposer({ topicSlug }: { topicSlug: string }) {
     return (
         <form onSubmit={handleSubmit} className="mb-6">
             <textarea
-                className="w-full p-4 border-2 border-slate-200 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-green-500 dark:focus:border-green-400 transition-colors resize-none"
+                className="w-full p-4 border-2 border-slate-300 dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 dark:focus:border-emerald-400 transition-colors resize-none"
                 placeholder="Share your take..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={3}
             />
-            <button
+            <Button
                 type="submit"
-                className="mt-3 px-6 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-neutral-900 rounded-lg text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-200 transition-colors cursor-pointer"
+                className="mt-3"
             >
                 Post
-            </button>
+            </Button>
         </form>
     );
 }

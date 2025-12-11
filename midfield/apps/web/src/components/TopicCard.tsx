@@ -11,7 +11,7 @@ export function TopicCard({ topic }: { topic: any }) {
         const p = pos?.toLowerCase() || "";
         if (p.includes("goalkeeper")) return "bg-yellow-100 text-yellow-800";
         if (p.includes("defen") || p.includes("back")) return "bg-blue-100 text-blue-800";
-        if (p.includes("midfield")) return "bg-green-100 text-green-800";
+        if (p.includes("midfield")) return "bg-emerald-100 text-emerald-800";
         if (p.includes("forward") || p.includes("wing") || p.includes("striker")) return "bg-red-100 text-red-800";
         return "bg-slate-100 text-slate-700";
     };
@@ -21,7 +21,7 @@ export function TopicCard({ topic }: { topic: any }) {
     return (
         <Link
             href={`/topic/${topic.slug}`}
-            className="group relative flex flex-col bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-5 transition-all duration-300 hover:border-green-500 dark:hover:border-green-400 overflow-hidden h-[240px] cursor-pointer"
+            className="group relative flex flex-col bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-5 transition-all duration-300 hover:border-emerald-500 dark:hover:border-emerald-400 overflow-hidden h-[240px] cursor-pointer"
         >
             {/* Club Artistic Watermark */}
             {isClub && imageUrl && (
@@ -75,14 +75,14 @@ export function TopicCard({ topic }: { topic: any }) {
                 </div>
 
                 {/* Arrow */}
-                <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-slate-300 dark:text-neutral-600 group-hover:bg-green-50 dark:group-hover:bg-green-950/30 group-hover:text-green-600 dark:group-hover:text-green-400 transition-all shrink-0">
+                <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-slate-300 dark:text-neutral-600 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all shrink-0">
                     <ArrowRight className="w-4 h-4" />
                 </div>
             </div>
 
             {/* Middle: Info */}
             <div className="relative z-10 flex-1 flex flex-col justify-center">
-                <h3 className="text-[20px] font-extrabold text-slate-900 dark:text-neutral-100 leading-[1.1] mb-2 group-hover:text-green-700 dark:group-hover:text-green-400 transition-colors line-clamp-2">
+                <h3 className="text-[20px] font-extrabold text-slate-900 dark:text-neutral-100 leading-[1.1] mb-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
                     {topic.title}
                 </h3>
 
@@ -115,7 +115,7 @@ export function TopicCard({ topic }: { topic: any }) {
                     <span>2.4k</span>
                 </div>
 
-                <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-[11px] font-bold">
+                <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
                     <Activity className="w-3.5 h-3.5" />
                     <span>High Activity</span>
                 </div>

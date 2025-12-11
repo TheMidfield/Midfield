@@ -9,7 +9,7 @@ const cardVariants = cva(
             variant: {
                 default: "bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-neutral-100",
                 interactive: "bg-white dark:bg-neutral-900 border-slate-200 dark:border-neutral-800 text-slate-900 dark:text-neutral-100 hover:border-slate-400 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800 cursor-pointer",
-                highlight: "bg-green-50/50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-900 dark:text-green-100 hover:border-green-300 dark:hover:border-green-800 hover:bg-green-100/50 dark:hover:bg-green-950/50 cursor-pointer",
+                highlight: "bg-emerald-50/50 dark:bg-green-950/30 border-emerald-200 dark:border-green-900 text-green-900 dark:text-green-100 hover:border-emerald-300 dark:hover:border-emerald-800 hover:bg-emerald-100/50 dark:hover:bg-green-950/50 cursor-pointer",
                 flat: "bg-slate-50 dark:bg-neutral-800 border-slate-200 dark:border-neutral-700 text-slate-900 dark:text-neutral-100 hover:bg-slate-100 dark:hover:bg-neutral-700 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer",
                 ghost: "bg-white dark:bg-transparent border-slate-200 dark:border-neutral-700 text-slate-900 dark:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800 hover:border-slate-300 dark:hover:border-neutral-600 cursor-pointer",
                 dark: "bg-slate-900 dark:bg-neutral-800 border-slate-800 dark:border-neutral-700 text-white hover:bg-slate-800 dark:hover:bg-neutral-700 cursor-pointer"

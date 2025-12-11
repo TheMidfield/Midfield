@@ -61,7 +61,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                         <img
                             src={topic.metadata.banner}
                             alt="Banner"
-                            className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000 ease-out"
+                            className="absolute inset-0 w-full h-full object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-90"
                         />
                     )}
 

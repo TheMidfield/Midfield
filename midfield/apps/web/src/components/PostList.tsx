@@ -33,7 +33,7 @@ export function PostList({ topicSlug, posts = [] }: { topicSlug: string; posts?:
                             <div className="flex justify-between items-start mb-2">
                                 <div>
                                     <div className="flex items-center gap-2 mb-0.5">
-                                        <span className="font-bold text-slate-900 dark:text-neutral-100 text-[15px] hover:text-green-600 dark:hover:text-green-400 transition-colors cursor-pointer">
+                                        <span className="font-bold text-slate-900 dark:text-neutral-100 text-[15px] hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">
                                             User {post.user_id ? post.user_id.substring(0, 6) : "Anonymous"}
                                         </span>
                                         <span className="text-slate-300 dark:text-neutral-600">•</span>
@@ -71,7 +71,7 @@ function ActionButton({ icon: Icon, count, color }: { icon: any, count: string |
     const colorClasses: Record<string, string> = {
         blue: "hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30",
         pink: "hover:text-pink-500 hover:bg-pink-50 dark:hover:bg-pink-950/30",
-        green: "hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-950/30"
+        green: "hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-green-950/30"
     };
 
     return (
