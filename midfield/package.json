@@ -6,11 +6,15 @@
         "dev:web": "turbo run dev --filter=web",
         "dev:mobile": "turbo run dev --filter=mobile",
         "build": "turbo run build",
-        "lint": "turbo run lint"
+        "lint": "turbo run lint",
+        "seed": "tsx scripts/seed-supabase.ts",
+        "types:generate": "supabase gen types typescript --project-id bocldhavewgfxmbuycxy > packages/types/src/supabase.ts"
     },
     "devDependencies": {
-        "turbo": "latest",
-        "prettier": "latest"
+        "dotenv": "^17.2.3",
+        "prettier": "latest",
+        "tsx": "^4.21.0",
+        "turbo": "latest"
     },
     "packageManager": "pnpm@10.25.0"
 }

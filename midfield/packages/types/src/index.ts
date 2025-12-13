@@ -1,41 +1,24 @@
-import { z } from "zod";
+// Export Supabase-generated types
+export type { Database, Tables, TablesInsert, TablesUpdate } from './supabase';
+import type { Tables, TablesInsert } from './supabase';
 
-export const UserSchema = z.object({
-    id: z.string().uuid(),
-    username: z.string().min(3),
-    email: z.string().email().optional(),
-    avatar_url: z.string().url().optional(),
-    created_at: z.string().datetime(),
-});
+// Convenience type exports (mapped from Supabase types)
+export type User = Tables<'users'>;
+export type Topic = Tables<'topics'>;
+export type Post = Tables<'posts'>;
+export type TopicRelationship = Tables<'topic_relationships'>;
+export type Follow = Tables<'follows'>;
 
-export const TopicSchema = z.object({
-    id: z.string().uuid(),
-    slug: z.string(),
-    title: z.string(),
-    description: z.string().optional(),
-    image_url: z.string().url().optional(),
-    type: z.enum(["player", "club", "team", "other"]),
-});
+// Insert types for mutations
+export type UserInsert = TablesInsert<'users'>;
+export type TopicInsert = TablesInsert<'topics'>;
+export type PostInsert = TablesInsert<'posts'>;
+export type TopicRelationshipInsert = TablesInsert<'topic_relationships'>;
+export type FollowInsert = TablesInsert<'follows'>;
 
-export const PostSchema = z.object({
-    id: z.string().uuid(),
-    topic_id: z.string().uuid(),
-    user_id: z.string().uuid(),
-    content: z.string().min(1),
-    created_at: z.string().datetime(),
-});
+// Type constants
+export const TOPIC_TYPES = ['club', 'player', 'competition', 'match', 'transfer'] as const;
+export const RELATIONSHIP_TYPES = ['plays_for', 'competes_in', 'participates_in', 'transferred_from', 'transferred_to'] as const;
 
-export const CommentSchema = z.object({
-    id: z.string().uuid(),
-    post_id: z.string().uuid(),
-    user_id: z.string().uuid(),
-    content: z.string().min(1),
-    created_at: z.string().datetime(),
-});
-
-export type User = z.infer<typeof UserSchema>;
-export type Topic = z.infer<typeof TopicSchema> & {
-    metadata?: any;
-};
-export type Post = z.infer<typeof PostSchema>;
-export type Comment = z.infer<typeof CommentSchema>;
+export type TopicType = typeof TOPIC_TYPES[number];
+export type RelationshipType = typeof RELATIONSHIP_TYPES[number];
