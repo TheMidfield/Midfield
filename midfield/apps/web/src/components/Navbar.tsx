@@ -20,10 +20,8 @@ export function Navbar() {
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
-                        <NavLink href="/" active>Discovery</NavLink>
-                        <NavLink href="/clubs">Clubs</NavLink>
-                        <NavLink href="/matches">Matches</NavLink>
-                        <NavLink href="/transfers">Transfers</NavLink>
+                        <NavLink href="/" active>Home</NavLink>
+                        <NavLink href="/leagues">Leagues</NavLink>
                     </div>
                 </div>
 

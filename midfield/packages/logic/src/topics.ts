@@ -85,3 +85,48 @@ export const getPlayersByClub = async (clubId: string): Promise<Topic[]> => {
     // Extract the nested topic data
     return (data?.map((rel: any) => rel.child_topic).filter(Boolean) || []) as Topic[];
 };
+
+/**
+ * Get clubs by league
+ */
+export const getClubsByLeague = async (leagueName: string): Promise<Topic[]> => {
+    const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .eq('type', 'club')
+        .eq('is_active', true)
+        .filter('metadata->>league', 'eq', leagueName)
+        .order('title', { ascending: true });
+    
+    if (error) {
+        console.error('Error fetching clubs by league:', error);
+        return [];
+    }
+    
+    return data || [];
+};
+
+/**
+ * Get all unique leagues
+ */
+export const getLeagues = async (): Promise<string[]> => {
+    const { data, error } = await supabase
+        .from('topics')
+        .select('metadata')
+        .eq('type', 'club')
+        .eq('is_active', true);
+    
+    if (error) {
+        console.error('Error fetching leagues:', error);
+        return [];
+    }
+    
+    // Extract unique leagues from metadata
+    const leagues = new Set<string>();
+    data?.forEach((topic: any) => {
+        const league = topic.metadata?.league;
+        if (league) leagues.add(league);
+    });
+    
+    return Array.from(leagues).sort();
+};

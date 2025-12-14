@@ -8,7 +8,14 @@
         "build": "turbo run build",
         "lint": "turbo run lint",
         "seed": "tsx scripts/seed-supabase.ts",
-        "types:generate": "supabase gen types typescript --project-id bocldhavewgfxmbuycxy > packages/types/src/supabase.ts"
+        "types:generate": "supabase gen types typescript --project-id bocldhavewgfxmbuycxy > packages/types/src/supabase.ts",
+        "import:test:dry": "tsx scripts/import-thesportsdb.ts --test --dry-run",
+        "import:test": "tsx scripts/import-thesportsdb.ts --test",
+        "import:full:dry": "tsx scripts/import-thesportsdb.ts --dry-run",
+        "import:full": "tsx scripts/import-thesportsdb.ts",
+        "clean:mock": "tsx scripts/clean-mock-data.ts",
+        "reset:db": "tsx scripts/reset-database.ts",
+        "validate": "tsx scripts/validate-importer.ts"
     },
     "devDependencies": {
         "dotenv": "^17.2.3",

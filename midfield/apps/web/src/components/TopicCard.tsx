@@ -4,7 +4,7 @@ import { MessageSquare, ArrowRight, Activity, Users, Shield } from "lucide-react
 export function TopicCard({ topic }: { topic: any }) {
     const isClub = topic.type === 'club';
     const rating = topic.metadata?.rating || topic.rating || "88";
-    const imageUrl = topic.metadata?.avatar_url || topic.metadata?.badge_url;
+    const imageUrl = topic.metadata?.photo_url || topic.metadata?.badge_url;
 
     // Position Color Helper
     const getPositionColor = (pos: string) => {
@@ -89,7 +89,7 @@ export function TopicCard({ topic }: { topic: any }) {
                 <div className="flex flex-wrap gap-2 items-center">
                     {isClub ? (
                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400">
-                            {topic.metadata?.leagues?.[0] || "League"}
+                            {topic.metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') || "League"}
                         </span>
                     ) : (
                         <>

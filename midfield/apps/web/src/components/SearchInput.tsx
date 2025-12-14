@@ -66,7 +66,7 @@ export function SearchInput() {
                             className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-slate-200 dark:border-white/5 last:border-0"
                         >
                             <img
-                                src={topic.type === 'club' ? topic.metadata?.badge_url : topic.metadata?.avatar_url}
+                                src={topic.type === 'club' ? (topic.metadata as any)?.badge_url : (topic.metadata as any)?.photo_url}
                                 alt={topic.title}
                                 className="w-8 h-8 object-contain bg-slate-50 dark:bg-white/5 rounded-md p-0.5"
                             />

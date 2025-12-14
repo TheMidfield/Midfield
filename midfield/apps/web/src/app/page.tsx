@@ -1,44 +1,93 @@
 import { TopicCard } from "@/components/TopicCard";
 import { Hero } from "@/components/Hero";
-import { getTopicsByType } from "@midfield/logic/src/topics";
-import { Flame, Shield, Activity } from "lucide-react";
+import { getTopicsByType, getLeagues, getClubsByLeague } from "@midfield/logic/src/topics";
+import { Flame, Shield, Trophy, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
-export default async function Home() {
-    // Fetch real seeded clubs
-    const clubs = await getTopicsByType('club');
+// League display info
+const LEAGUE_INFO: Record<string, { flag: string; color: string }> = {
+  "English Premier League": { flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "from-purple-500 to-pink-500" },
+  "Spanish La Liga": { flag: "🇪🇸", color: "from-red-500 to-yellow-500" },
+  "Italian Serie A": { flag: "🇮🇹", color: "from-blue-500 to-green-500" },
+  "German Bundesliga": { flag: "🇩🇪", color: "from-gray-800 to-red-600" },
+  "French Ligue 1": { flag: "🇫🇷", color: "from-blue-600 to-red-600" },
+};
 
-    // Fetch some top rated players for trending
+export default async function Home() {
+    // Fetch leagues and featured clubs
+    const leagues = await getLeagues();
+    const allClubs = await getTopicsByType('club');
+    
+    // Get 6 featured clubs (2 from each of 3 leagues)
+    const featuredClubs = leagues.slice(0, 3).flatMap(league => 
+        allClubs.filter((club: any) => club.metadata?.league === league).slice(0, 2)
+    ).slice(0, 6);
+
+    // Fetch trending players (random selection for now)
     const players = (await getTopicsByType('player'))
-        .sort((a: any, b: any) => (b.metadata?.rating || 0) - (a.metadata?.rating || 0))
-        .slice(0, 4);
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 8);
 
     return (
         <div className="w-full">
             <Hero />
 
-            {/* Club Hubs Section */}
+            {/* Leagues Section */}
+            <section className="mb-12">
+                <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
+                        <Trophy className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                        Top Leagues
+                    </h2>
+                    <Link href="/leagues" className="text-sm font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+                        View All
+                        <ChevronRight className="w-4 h-4" />
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {leagues.map((league) => {
+                        const info = LEAGUE_INFO[league];
+                        const slug = league.toLowerCase().replace(/\s+/g, '-');
+                        
+                        return (
+                            <Link key={league} href={`/leagues/${slug}`}>
+                                <Card variant="interactive" className="group p-4 text-center">
+                                    <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">
+                                        {info?.flag || "🏆"}
+                                    </div>
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
+                                        {league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
+                                    </h3>
+                                </Card>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </section>
+
+            {/* Featured Clubs Section */}
             <section className="mb-12">
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
                         <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        Club Hubs
+                        Featured Clubs
                     </h2>
-                    <Link href="/clubs" className="text-sm font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-                        View All Leagues →
+                    <Link href="/leagues" className="text-sm font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+                        Browse by League
+                        <ChevronRight className="w-4 h-4" />
                     </Link>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {clubs.map((club) => (
+                    {featuredClubs.map((club: any) => (
                         <Link key={club.id} href={`/topic/${club.slug}`}>
                             <Card variant="interactive" className="p-5 flex items-center gap-4 group">
-                                <div className="w-14 h-14 rounded-xl border-2 border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 p-2 flex items-center justify-center shrink-0">
+                                <div className="w-14 h-14 rounded-xl border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-2 flex items-center justify-center shrink-0">
                                     <img
-                                        src={club.metadata.badge_url}
+                                        src={club.metadata?.badge_url}
                                         alt={club.title}
                                         className="w-full h-full object-contain group-hover:scale-110 transition-transform"
                                     />
@@ -49,12 +98,8 @@ export default async function Home() {
                                     </h3>
                                     <div className="flex items-center gap-2 mt-1.5">
                                         <Badge variant="secondary" className="text-[10px]">
-                                            {club.metadata.leagues?.[0] || "League"}
+                                            {club.metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') || "League"}
                                         </Badge>
-                                        <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
-                                            <Activity className="w-3 h-3" />
-                                            <span>Active</span>
-                                        </div>
                                     </div>
                                 </div>
                             </Card>
@@ -68,15 +113,11 @@ export default async function Home() {
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
                         <Flame className="w-5 h-5 text-orange-500 dark:text-orange-400" />
-                        Trending Players
+                        Featured Players
                     </h2>
-                    <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
-                        Updated hourly
-                    </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4">
                     {players.map((t) => (
                         <TopicCard key={t.id} topic={t} />
                     ))}

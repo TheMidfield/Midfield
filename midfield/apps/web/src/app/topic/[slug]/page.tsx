@@ -57,9 +57,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10 z-10" />
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 z-10" />
 
-                    {topic.metadata?.banner && (
+                    {(topic.metadata as any)?.banner && (
                         <img
-                            src={topic.metadata.banner}
+                            src={(topic.metadata as any).banner}
                             alt="Banner"
                             className="absolute inset-0 w-full h-full object-cover opacity-80 transition-opacity duration-300 group-hover:opacity-90"
                         />
@@ -71,9 +71,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                         <div className={`relative shrink-0 p-1 bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 ${isClub ? 'w-32 h-32 md:w-48 md:h-48' : 'w-32 h-32 md:w-40 md:h-40'}`}>
                             <div className="w-full h-full bg-white rounded-[20px] overflow-hidden p-4 md:p-6 flex items-center justify-center">
                                 <img
-                                    src={isClub ? topic.metadata?.badge_url : topic.metadata?.avatar_url}
+                                    src={isClub ? (topic.metadata as any)?.badge_url : (topic.metadata as any)?.photo_url}
                                     alt={topic.title}
-                                    className={`w-full h-full ${isClub ? 'object-contain' : 'object-cover'}`}
+                                    className={`w-full h-full ${isClub ? 'object-contain' : 'object-cover rounded-xl'}`}
                                 />
                             </div>
                         </div>
@@ -85,9 +85,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                                     }`}>
                                     {topic.type}
                                 </span>
-                                {topic.metadata?.leagues?.[0] && (
+                                {(topic.metadata as any)?.league && (
                                     <span className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider bg-white/10 border border-white/20 text-white backdrop-blur-sm">
-                                        {topic.metadata.leagues[0]}
+                                        {(topic.metadata as any).league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                     </span>
                                 )}
                             </div>
@@ -100,40 +100,42 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                             <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-200">
                                 {isClub ? (
                                     <>
-                                        {topic.metadata?.stadium && (
+                                        {(topic.metadata as any)?.stadium && (
                                             <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md hover:bg-white/20 transition-colors">
                                                 <MapPin className="w-4 h-4 text-green-400" />
-                                                {topic.metadata.stadium}
+                                                {(topic.metadata as any).stadium}
                                             </div>
                                         )}
-                                        {topic.metadata?.formed_year && (
+                                        {(topic.metadata as any)?.founded && (
                                             <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md">
                                                 <Calendar className="w-4 h-4 text-green-400" />
-                                                Est. {topic.metadata.formed_year}
+                                                Est. {(topic.metadata as any).founded}
                                             </div>
                                         )}
                                     </>
                                 ) : (
                                     <>
-                                        <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md">
-                                            <Activity className="w-4 h-4 text-green-400" />
-                                            {topic.metadata?.position}
-                                        </div>
-                                        {topic.metadata?.club_slug && (
-                                            <Link href={`/topic/${topic.metadata.club_slug}`} className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md hover:bg-white/20 transition-colors">
-                                                <Users className="w-4 h-4 text-green-400" />
-                                                {topic.metadata.club_name}
-                                            </Link>
+                                        {(topic.metadata as any)?.position && (
+                                            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md">
+                                                <Activity className="w-4 h-4 text-green-400" />
+                                                {(topic.metadata as any).position}
+                                            </div>
+                                        )}
+                                        {(topic.metadata as any)?.nationality && (
+                                            <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 backdrop-blur-md">
+                                                <Globe className="w-4 h-4 text-green-400" />
+                                                {(topic.metadata as any).nationality}
+                                            </div>
                                         )}
                                     </>
                                 )}
 
                                 {/* Socials (if club) */}
-                                {isClub && topic.metadata?.socials && (
+                                {isClub && (topic.metadata as any)?.socials && (
                                     <div className="flex items-center gap-3 ml-2 pl-4 border-l border-white/20 opacity-80 hover:opacity-100 transition-opacity">
-                                        {topic.metadata.socials.website && <a href={`https://${topic.metadata.socials.website}`} target="_blank" className="hover:text-green-400 transition-colors"><Globe className="w-5 h-5" /></a>}
-                                        {topic.metadata.socials.twitter && <a href={`https://${topic.metadata.socials.twitter}`} target="_blank" className="hover:text-green-400 transition-colors"><Twitter className="w-5 h-5" /></a>}
-                                        {topic.metadata.socials.instagram && <a href={`https://${topic.metadata.socials.instagram}`} target="_blank" className="hover:text-green-400 transition-colors"><Instagram className="w-5 h-5" /></a>}
+                                        {(topic.metadata as any).socials.website && <a href={`https://${(topic.metadata as any).socials.website}`} target="_blank" rel="noopener noreferrer" className="hover:text-green-400 transition-colors"><Globe className="w-5 h-5" /></a>}
+                                        {(topic.metadata as any).socials.twitter && <a href={`https://${(topic.metadata as any).socials.twitter}`} target="_blank" rel="noopener noreferrer" className="hover:text-green-400 transition-colors"><Twitter className="w-5 h-5" /></a>}
+                                        {(topic.metadata as any).socials.instagram && <a href={`https://${(topic.metadata as any).socials.instagram}`} target="_blank" rel="noopener noreferrer" className="hover:text-green-400 transition-colors"><Instagram className="w-5 h-5" /></a>}
                                     </div>
                                 )}
                             </div>
