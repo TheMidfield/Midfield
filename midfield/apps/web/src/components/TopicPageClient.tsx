@@ -19,21 +19,22 @@ interface TopicPageClientProps {
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
 
-// Position abbreviations
-const getPositionAbbr = (pos: string) => {
+// Position info with colors - matches FeaturedPlayers
+const getPositionInfo = (pos: string) => {
     const normalized = pos?.toLowerCase().trim() || "";
-    if (normalized.includes("goalkeeper")) return "GK";
-    if (normalized.includes("right-back") || normalized.includes("right back")) return "RB";
-    if (normalized.includes("left-back") || normalized.includes("left back")) return "LB";
-    if (normalized.includes("centre-back") || normalized.includes("center-back") || normalized.includes("central defender")) return "CB";
-    if (normalized.includes("defensive mid")) return "CDM";
-    if (normalized.includes("central mid")) return "CM";
-    if (normalized.includes("attacking mid")) return "CAM";
-    if (normalized.includes("right mid") || normalized.includes("right wing")) return "RW";
-    if (normalized.includes("left mid") || normalized.includes("left wing")) return "LW";
-    if (normalized.includes("striker") || normalized.includes("centre-forward")) return "ST";
-    if (normalized.includes("forward")) return "FW";
-    return pos?.substring(0, 3).toUpperCase() || "MID";
+    // Goalkeepers - Orange
+    if (normalized.includes("goalkeeper") || normalized === "gk")
+        return { abbr: "GK", color: "bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900" };
+    // Defenders - Yellow
+    if (normalized.includes("back") || normalized.includes("defender") || normalized === "cb" || normalized === "lb" || normalized === "rb")
+        return { abbr: normalized.includes("left") ? "LB" : normalized.includes("right") ? "RB" : "CB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900" };
+    // Midfielders - Green
+    if (normalized.includes("midfield") || normalized === "cm" || normalized === "cdm" || normalized === "cam")
+        return { abbr: normalized.includes("defensive") ? "CDM" : normalized.includes("attacking") ? "CAM" : "CM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" };
+    // Attackers - Blue
+    if (normalized.includes("wing") || normalized.includes("forward") || normalized.includes("striker") || normalized === "st" || normalized === "lw" || normalized === "rw")
+        return { abbr: normalized.includes("left") ? "LW" : normalized.includes("right") ? "RW" : "ST", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900" };
+    return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
 export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: TopicPageClientProps) {
@@ -82,53 +83,49 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
         </div>
     );
 
-    // Mini Player Card - EXACT match to FeaturedPlayers list view
+    // Mini Player Card - Compact version with position colors
     const PlayerMiniCard = ({ player }: { player: any }) => {
         const rating = player.metadata?.rating;
         const position = player.metadata?.position || "";
-        const posAbbr = getPositionAbbr(position);
+        const posInfo = getPositionInfo(position);
 
         return (
             <Link href={`/topic/${player.slug}`}>
-                <Card variant="interactive" className="p-3 flex items-center gap-3 group">
-                    {/* Player Photo - Same as FeaturedPlayers (w-12 h-12) */}
-                    <div className="relative shrink-0">
-                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden">
-                            {player.metadata?.photo_url ? (
-                                <img
-                                    src={player.metadata.photo_url}
-                                    alt={player.title}
-                                    className={PLAYER_IMAGE_STYLE.className}
-                                    style={PLAYER_IMAGE_STYLE.style}
-                                />
-                            ) : (
-                                <span className="w-full h-full flex items-center justify-center text-sm text-slate-400">
-                                    {player.title?.charAt(0)}
-                                </span>
-                            )}
-                        </div>
+                <Card variant="interactive" className="p-2 flex items-center gap-2.5 group">
+                    {/* Player Photo - Compact (w-9 h-9) */}
+                    <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
+                        {player.metadata?.photo_url ? (
+                            <img
+                                src={player.metadata.photo_url}
+                                alt={player.title}
+                                className={PLAYER_IMAGE_STYLE.className}
+                                style={PLAYER_IMAGE_STYLE.style}
+                            />
+                        ) : (
+                            <span className="w-full h-full flex items-center justify-center text-xs text-slate-400">
+                                {player.title?.charAt(0)}
+                            </span>
+                        )}
                     </div>
 
-                    {/* Player Info - Same layout as FeaturedPlayers */}
-                    <div className="flex-1 min-w-0 flex items-center justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate mb-1">
-                                {player.title}
-                            </h3>
-                            <div className="flex items-center gap-2">
-                                {/* Rating Badge */}
-                                {rating && (
-                                    <div className="px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[10px] font-bold text-white dark:text-neutral-900">
-                                        {rating}
-                                    </div>
-                                )}
-                                {/* Position Badge */}
-                                {position && (
-                                    <Badge variant="secondary" className="text-[9px]">
-                                        {posAbbr}
-                                    </Badge>
-                                )}
-                            </div>
+                    {/* Player Info */}
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                            {player.title}
+                        </h3>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            {/* Rating Badge */}
+                            {rating && (
+                                <div className="px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[10px] font-bold text-white dark:text-neutral-900">
+                                    {rating}
+                                </div>
+                            )}
+                            {/* Position Badge WITH COLOR */}
+                            {position && (
+                                <Badge variant="secondary" className={`text-[9px] ${posInfo.color}`}>
+                                    {posInfo.abbr}
+                                </Badge>
+                            )}
                         </div>
                     </div>
                 </Card>
@@ -136,8 +133,35 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
         );
     };
 
+    // Custom scrollbar styles
+    const scrollStyles = `
+        .squad-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .squad-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .squad-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 2px;
+        }
+        .squad-scroll::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        @media (prefers-color-scheme: dark) {
+            .squad-scroll::-webkit-scrollbar-thumb {
+                background: #404040;
+            }
+            .squad-scroll::-webkit-scrollbar-thumb:hover {
+                background: #525252;
+            }
+        }
+    `;
+
     return (
         <div className="min-h-screen">
+            <style>{scrollStyles}</style>
+
             {/* Header */}
             <EntityHeader
                 title={topic.title}
@@ -206,38 +230,13 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
                                         {/* Section Content */}
                                         {isExpanded && (
                                             <div className="px-4 pb-4 border-t border-slate-100 dark:border-neutral-800">
-                                                {/* Players Section (Clubs) - ALL players with hidden scrollbar */}
+                                                {/* Players Section (Clubs) */}
                                                 {section.id === "players" && isClub && (
                                                     squad.length > 0 ? (
                                                         <div
-                                                            className="pt-4 pr-2 space-y-4 overflow-y-auto"
-                                                            style={{
-                                                                maxHeight: '480px',
-                                                            }}
+                                                            className="squad-scroll pt-4 space-y-4 overflow-y-auto"
+                                                            style={{ maxHeight: '480px' }}
                                                         >
-                                                            <style jsx>{`
-                                                                div::-webkit-scrollbar {
-                                                                    width: 6px;
-                                                                }
-                                                                div::-webkit-scrollbar-track {
-                                                                    background: transparent;
-                                                                }
-                                                                div::-webkit-scrollbar-thumb {
-                                                                    background: #d1d5db;
-                                                                    border-radius: 3px;
-                                                                }
-                                                                div::-webkit-scrollbar-thumb:hover {
-                                                                    background: #9ca3af;
-                                                                }
-                                                                @media (prefers-color-scheme: dark) {
-                                                                    div::-webkit-scrollbar-thumb {
-                                                                        background: #404040;
-                                                                    }
-                                                                    div::-webkit-scrollbar-thumb:hover {
-                                                                        background: #525252;
-                                                                    }
-                                                                }
-                                                            `}</style>
                                                             {positionOrder.map((pos) => {
                                                                 const players = groupedSquad[pos];
                                                                 if (!players || players.length === 0) return null;
@@ -252,7 +251,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
                                                                                 {players.length}
                                                                             </span>
                                                                         </div>
-                                                                        <div className="space-y-2">
+                                                                        <div className="space-y-2.5">
                                                                             {players.map((player) => (
                                                                                 <PlayerMiniCard key={player.id} player={player} />
                                                                             ))}
