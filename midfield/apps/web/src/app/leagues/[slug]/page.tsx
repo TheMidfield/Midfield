@@ -51,7 +51,7 @@ export default async function LeaguePage({ params }: { params: { slug: string } 
       </div>
 
       {/* League Header */}
-      <div className={`mb-12 rounded-[2rem] overflow-hidden bg-gradient-to-br ${leagueInfo.color} shadow-2xl`}>
+      <div className={`mb-12 rounded-lg overflow-hidden bg-gradient-to-br ${leagueInfo.color}`}>
         <div className="relative h-64 md:h-80">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/45-degree-fabric-light.png')] opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />

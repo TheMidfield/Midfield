@@ -33,7 +33,7 @@ export default async function LeaguesPage() {
       {/* Header */}
       <div className="py-12">
         <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg">
+          <div className="p-3 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
             <Trophy className="w-8 h-8 text-white" />
           </div>
           <div>

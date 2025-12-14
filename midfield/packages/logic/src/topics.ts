@@ -10,12 +10,12 @@ export const getTopics = async (): Promise<Topic[]> => {
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
-    
+
     if (error) {
         console.error('Error fetching topics:', error);
         return [];
     }
-    
+
     return data || [];
 };
 
@@ -29,12 +29,12 @@ export const getTopicBySlug = async (slug: string): Promise<Topic | undefined> =
         .eq('slug', slug)
         .eq('is_active', true)
         .single();
-    
+
     if (error) {
         console.error('Error fetching topic:', error);
         return undefined;
     }
-    
+
     return data || undefined;
 };
 
@@ -55,12 +55,12 @@ export const getTopicsByType = async (type: TopicType): Promise<Topic[]> => {
         .eq('type', type)
         .eq('is_active', true)
         .order('follower_count', { ascending: false });
-    
+
     if (error) {
         console.error('Error fetching topics by type:', error);
         return [];
     }
-    
+
     return data || [];
 };
 
@@ -74,15 +74,14 @@ export const getPlayersByClub = async (clubId: string): Promise<Topic[]> => {
             child_topic:topics!topic_relationships_child_topic_id_fkey(*)
         `)
         .eq('parent_topic_id', clubId)
-        .eq('relationship_type', 'plays_for')
-        .not('valid_until', 'lt', new Date().toISOString()); // Only current relationships
-    
+        .eq('relationship_type', 'plays_for');
+
     if (error) {
         console.error('Error fetching players by club:', error);
         return [];
     }
-    
-    // Extract the nested topic data
+
+    // Extract the nested topic data and filter out nulls
     return (data?.map((rel: any) => rel.child_topic).filter(Boolean) || []) as Topic[];
 };
 
@@ -97,12 +96,12 @@ export const getClubsByLeague = async (leagueName: string): Promise<Topic[]> => 
         .eq('is_active', true)
         .filter('metadata->>league', 'eq', leagueName)
         .order('title', { ascending: true });
-    
+
     if (error) {
         console.error('Error fetching clubs by league:', error);
         return [];
     }
-    
+
     return data || [];
 };
 
@@ -115,18 +114,39 @@ export const getLeagues = async (): Promise<string[]> => {
         .select('metadata')
         .eq('type', 'club')
         .eq('is_active', true);
-    
+
     if (error) {
         console.error('Error fetching leagues:', error);
         return [];
     }
-    
+
     // Extract unique leagues from metadata
     const leagues = new Set<string>();
     data?.forEach((topic: any) => {
         const league = topic.metadata?.league;
         if (league) leagues.add(league);
     });
-    
+
     return Array.from(leagues).sort();
+};
+
+/**
+ * Get a player's club (using topic_relationships)
+ */
+export const getPlayerClub = async (playerId: string): Promise<Topic | null> => {
+    const { data, error } = await supabase
+        .from('topic_relationships')
+        .select(`
+            parent_topic:topics!topic_relationships_parent_topic_id_fkey(*)
+        `)
+        .eq('child_topic_id', playerId)
+        .eq('relationship_type', 'plays_for')
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching player club:', error);
+        return null;
+    }
+
+    return (data?.parent_topic as Topic) || null;
 };
