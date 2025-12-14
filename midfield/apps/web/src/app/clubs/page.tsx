@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Shield } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { SearchInput } from "@/components/SearchInput";
+
 
 export default async function ClubsPage() {
     const clubs = await getTopicsByType('club');
@@ -25,14 +25,6 @@ export default async function ClubsPage() {
                         Browse football clubs from top leagues
                     </p>
                 </div>
-            </div>
-
-            <div className="mb-10">
-                <SearchInput
-                    className="w-full max-w-md h-10"
-                    placeholder="Search for clubs..."
-                    type="club"
-                />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

@@ -1,7 +1,7 @@
 import { FeaturedPlayers } from "@/components/FeaturedPlayers";
 import { supabase } from "@midfield/logic/src/supabase";
 import { User, Search } from "lucide-react";
-import { SearchInput } from "@/components/SearchInput";
+
 
 export default async function PlayersPage() {
     // Fetch random players WITH their club information via relationships
@@ -47,14 +47,6 @@ export default async function PlayersPage() {
                         Discover top talent from around the world
                     </p>
                 </div>
-            </div>
-
-            <div className="mb-10">
-                <SearchInput
-                    className="w-full max-w-md h-10"
-                    placeholder="Search for players..."
-                    type="player"
-                />
             </div>
 
             <FeaturedPlayers players={playersWithClubs} />

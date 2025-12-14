@@ -1,6 +1,8 @@
 import { Navbar } from "@/components/Navbar";
 import { RightPanel } from "@/components/RightPanel";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { SearchProvider } from "@/context/SearchContext";
+import { GlobalSearchLayout } from "@/components/GlobalSearchLayout";
 import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Onest } from "next/font/google";
@@ -45,21 +47,25 @@ export default function RootLayout({
             </head>
             <body className="min-h-screen antialiased selection:bg-emerald-100 dark:selection:bg-emerald-900/50 flex flex-col">
                 <ThemeProvider>
-                    <Navbar />
+                    <SearchProvider>
+                        <Navbar />
 
-                    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <div className="flex flex-col lg:flex-row gap-8 items-start">
-                            {/* Main Content */}
-                            <main className="flex-1 min-w-0 w-full">
-                                {children}
-                            </main>
+                        <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                            <GlobalSearchLayout>
+                                <div className="flex flex-col lg:flex-row gap-8 items-start">
+                                    {/* Main Content */}
+                                    <main className="flex-1 min-w-0 w-full">
+                                        {children}
+                                    </main>
 
-                            {/* Right Widgets - Desktop */}
-                            <aside className="hidden lg:block w-[320px] shrink-0 sticky top-20">
-                                <RightPanel />
-                            </aside>
+                                    {/* Right Widgets - Desktop */}
+                                    <aside className="hidden lg:block w-[320px] shrink-0 sticky top-20">
+                                        <RightPanel />
+                                    </aside>
+                                </div>
+                            </GlobalSearchLayout>
                         </div>
-                    </div>
+                    </SearchProvider>
                 </ThemeProvider>
             </body>
         </html>

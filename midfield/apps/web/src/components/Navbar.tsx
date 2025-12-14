@@ -6,7 +6,7 @@ import { User, Terminal } from "lucide-react";
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
-import { SearchInput } from "./SearchInput";
+import { NavbarSearch } from "./NavbarSearch";
 import { Logo } from "./Logo";
 
 export function Navbar() {
@@ -46,7 +46,7 @@ export function Navbar() {
                         </Button>
                     </Link>
 
-                    <SearchInput className="w-64 h-10 hidden sm:block" />
+                    <NavbarSearch />
 
                     <ThemeToggle />
 
