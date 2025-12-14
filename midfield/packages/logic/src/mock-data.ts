@@ -364,3 +364,4 @@ export const mockData = {
   posts: mockPosts,
   follows: mockFollows,
 };
+

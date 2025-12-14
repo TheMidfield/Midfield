@@ -121,3 +121,4 @@ const { data, error } = await supabase
 - Relationships = graph layer (unified feeds)
 - JSONB metadata = flexible rich data
 - Simple, scalable, composable 🚀
+
