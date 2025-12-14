@@ -90,7 +90,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
         const posInfo = getPositionInfo(position);
 
         return (
-            <Link href={`/topic/${player.slug}`}>
+            <Link href={`/topic/${player.slug}`} className="block">
                 <Card variant="interactive" className="p-2 flex items-center gap-2.5 group">
                     {/* Player Photo - Compact (w-9 h-9) */}
                     <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
@@ -234,8 +234,10 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
                                                 {section.id === "players" && isClub && (
                                                     squad.length > 0 ? (
                                                         <div
-                                                            className="squad-scroll pt-4 space-y-4 overflow-y-auto"
-                                                            style={{ maxHeight: '480px' }}
+                                                            className="squad-scroll pt-4 -mr-3 pr-4 space-y-4 overflow-y-auto"
+                                                            style={{
+                                                                maxHeight: '480px',
+                                                            }}
                                                         >
                                                             {positionOrder.map((pos) => {
                                                                 const players = groupedSquad[pos];
@@ -251,7 +253,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
                                                                                 {players.length}
                                                                             </span>
                                                                         </div>
-                                                                        <div className="space-y-2.5">
+                                                                        <div className="space-y-1">
                                                                             {players.map((player) => (
                                                                                 <PlayerMiniCard key={player.id} player={player} />
                                                                             ))}

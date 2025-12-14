@@ -1,11 +1,22 @@
+"use client";
+
 import Link from "next/link";
-import { User, Zap, Terminal } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { User, Terminal } from "lucide-react";
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
 import { SearchInput } from "./SearchInput";
+import { Logo } from "./Logo";
 
 export function Navbar() {
+    const pathname = usePathname();
+
+    const isActive = (path: string) => {
+        if (path === "/") return pathname === "/";
+        return pathname?.startsWith(path);
+    };
+
     return (
         <nav className="sticky top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-slate-300 dark:border-neutral-800 shadow-sm">
             <div className="w-full max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -13,15 +24,17 @@ export function Navbar() {
                 {/* Left: Brand + Nav */}
                 <div className="flex items-center gap-8">
                     <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-600 dark:bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-500 dark:hover:bg-emerald-400 transition-colors shadow-sm">
-                            <Zap className="w-5 h-5 fill-current" />
+                        <div className="w-10 h-10 transition-transform group-hover:scale-105">
+                            <Logo className="w-full h-full" />
                         </div>
                         <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-neutral-100">Midfield</span>
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
-                        <NavLink href="/" active>Home</NavLink>
-                        <NavLink href="/leagues">Leagues</NavLink>
+                        <NavLink href="/" active={isActive("/")}>Home</NavLink>
+                        <NavLink href="/players" active={isActive("/players")}>Players</NavLink>
+                        <NavLink href="/clubs" active={isActive("/clubs")}>Clubs</NavLink>
+                        <NavLink href="/leagues" active={isActive("/leagues")}>Leagues</NavLink>
                     </div>
                 </div>
 
@@ -33,7 +46,7 @@ export function Navbar() {
                         </Button>
                     </Link>
 
-                    <SearchInput />
+                    <SearchInput className="w-64 h-10 hidden sm:block" />
 
                     <ThemeToggle />
 
@@ -51,7 +64,7 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
         <Link
             href={href}
             className={`
-                px-4 py-2 rounded-lg text-sm font-semibold transition-colors duration-200
+                px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200
                 ${active
                     ? "text-slate-900 dark:text-neutral-100 bg-slate-100 dark:bg-neutral-800"
                     : "text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800"
