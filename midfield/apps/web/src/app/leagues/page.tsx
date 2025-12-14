@@ -15,7 +15,7 @@ const LEAGUE_INFO: Record<string, { country: string; flag: string; color: string
 
 export default async function LeaguesPage() {
   const leagues = await getLeagues();
-  
+
   // Get club counts for each league
   const leaguesWithCounts = await Promise.all(
     leagues.map(async (league) => {
@@ -64,7 +64,7 @@ export default async function LeaguesPage() {
               <div className={`h-32 bg-gradient-to-br ${league.color} relative overflow-hidden`}>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/45-degree-fabric-light.png')] opacity-20" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                
+
                 {/* Flag */}
                 <div className="absolute top-4 right-4 text-5xl opacity-90 group-hover:scale-110 transition-transform">
                   {league.flag}
@@ -106,7 +106,7 @@ export default async function LeaguesPage() {
 
       {/* Coming Soon Section */}
       <div className="mt-16 p-8 rounded-3xl border-2 border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/30 text-center">
-        <div className="max-w-md mx-auto">
+        <div className="mx-auto" style={{ maxWidth: '500px' }}>
           <p className="text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2">
             Coming Soon
           </p>

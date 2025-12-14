@@ -19,7 +19,7 @@ export default function AuthPage() {
     if (sent) {
         return (
             <div className="w-full py-12 px-4">
-                <div className="text-center max-w-md w-full mx-auto">
+                <div className="text-center w-full mx-auto" style={{ maxWidth: '500px', minWidth: '320px' }}>
                     <div className="mb-6 w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto">
                         <Mail className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
                     </div>
@@ -33,7 +33,7 @@ export default function AuthPage() {
 
     return (
         <div className="w-full py-12 px-4">
-            <div className="max-w-md w-full mx-auto">
+            <div className="w-full mx-auto" style={{ maxWidth: '500px', minWidth: '320px' }}>
                 <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-neutral-100">Sign in / Sign up</h1>
                 <p className="text-sm text-slate-600 dark:text-neutral-400 mb-8">
                     Enter your email to receive a magic link

@@ -7,7 +7,7 @@ export function Hero() {
             <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-emerald-50 dark:from-emerald-950/30 to-transparent opacity-50" />
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-100 dark:bg-emerald-900/20 rounded-full blur-3xl opacity-40" />
 
-            <div className="relative max-w-3xl w-full">
+            <div className="relative w-full" style={{ maxWidth: '900px', minWidth: '320px' }}>
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-wide mb-8">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                     Beta Live
@@ -18,7 +18,7 @@ export function Hero() {
                     <span className="text-emerald-600 dark:text-emerald-400">football discussion.</span>
                 </h1>
 
-                <p className="text-lg md:text-xl text-slate-600 dark:text-neutral-400 mb-10 leading-relaxed max-w-2xl">
+                <p className="text-lg md:text-xl text-slate-600 dark:text-neutral-400 mb-10 leading-relaxed" style={{ maxWidth: '700px' }}>
                     Debate players, analyze stats, and connect with real fans without the noise.
                     Structured topics, data-driven context, and toxic-free zones.
                 </p>

@@ -48,14 +48,14 @@ export default function RootLayout({
                     <Navbar />
 
                     <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+                        <div className="flex flex-col lg:flex-row gap-8 items-start">
                             {/* Main Content */}
-                            <main className="w-full overflow-hidden">
+                            <main className="flex-1 min-w-0 w-full">
                                 {children}
                             </main>
 
                             {/* Right Widgets - Desktop */}
-                            <aside className="hidden lg:block sticky top-20">
+                            <aside className="hidden lg:block w-[320px] shrink-0 sticky top-20">
                                 <RightPanel />
                             </aside>
                         </div>

@@ -16,7 +16,7 @@ export function RightPanel() {
     ];
 
     return (
-        <aside className="hidden lg:block w-[320px] shrink-0 sticky top-24 h-fit space-y-8">
+        <div className="w-full space-y-6">
             {/* Search Widget could go here */}
 
             {/* Trending Widget */}
@@ -75,6 +75,6 @@ export function RightPanel() {
                 <a href="#" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">Cookies</a>
                 <span className="text-slate-300 dark:text-neutral-600">Midfield © 2024</span>
             </div>
-        </aside>
+        </div>
     );
 }
