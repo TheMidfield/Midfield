@@ -6,6 +6,7 @@ import { Flame, Shield, Trophy, ChevronRight, User } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { supabase } from "@midfield/logic/src/supabase";
 
 // League display info
 const LEAGUE_INFO: Record<string, { flag: string; color: string }> = {
@@ -26,17 +27,41 @@ export default async function Home() {
         allClubs.filter((club: any) => club.metadata?.league === league).slice(0, 2)
     ).slice(0, 6);
 
-    // Fetch 10 random players
-    const players = (await getTopicsByType('player'))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 10);
+    // Fetch 10 random players WITH their club information via relationships
+    const { data: playerRelationships } = await supabase
+        .from('topics')
+        .select(`
+            *,
+            club_relationship:topic_relationships!topic_relationships_child_topic_id_fkey(
+                parent_topic:topics!topic_relationships_parent_topic_id_fkey(
+                    id,
+                    title,
+                    metadata
+                )
+            )
+        `)
+        .eq('type', 'player')
+        .eq('is_active', true)
+        .limit(50);
+
+    // Process players with club data and randomly select 10
+    const playersWithClubs = (playerRelationships || []).map((player: any) => {
+        const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
+        return {
+            ...player,
+            clubInfo: clubData ? {
+                name: clubData.title,
+                badge_url: clubData.metadata?.badge_url
+            } : null
+        };
+    }).sort(() => Math.random() - 0.5).slice(0, 10);
 
     return (
         <div className="w-full">
             <Hero />
 
             {/* Featured Players Section - NOW FIRST */}
-            <FeaturedPlayers players={players} />
+            <FeaturedPlayers players={playersWithClubs} />
 
             {/* Leagues Section */}
             <section className="mb-12">
