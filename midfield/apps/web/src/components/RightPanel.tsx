@@ -20,7 +20,7 @@ export function RightPanel() {
             {/* Search Widget could go here */}
 
             {/* Trending Widget */}
-            <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-[24px] p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors duration-300">
+            <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="font-extrabold text-lg flex items-center gap-2 text-slate-900 dark:text-neutral-100">
                         <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -29,7 +29,7 @@ export function RightPanel() {
                 </div>
                 <div className="space-y-1">
                     {trending.map((item, index) => (
-                        <div key={item.id} className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-neutral-800 group cursor-pointer transition-colors">
+                        <div key={item.id} className="flex items-center gap-4 p-3 rounded-md hover:bg-slate-50 dark:hover:bg-neutral-800 group cursor-pointer transition-colors">
                             <span className="text-lg font-black text-slate-300 dark:text-neutral-600 w-4 text-center group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
                                 {index + 1}
                             </span>
@@ -43,18 +43,20 @@ export function RightPanel() {
                         </div>
                     ))}
                 </div>
-                <button className="w-full mt-4 py-2.5 text-sm text-slate-500 dark:text-neutral-400 font-bold hover:text-slate-900 dark:hover:text-slate-100 transition-colors border-t border-slate-200 dark:border-neutral-800">
-                    Show more
-                </button>
+                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-neutral-800">
+                    <Button variant="ghost" className="w-full">
+                        Show more
+                    </Button>
+                </div>
             </div>
 
             {/* Predicted to Follow */}
-            <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-[24px] p-6 hover:border-slate-300 dark:hover:border-slate-700 transition-colors duration-300">
+            <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-6">
                 <h3 className="font-extrabold text-lg mb-4 text-slate-900 dark:text-neutral-100">Who to follow</h3>
                 <div className="space-y-4">
                     {suggested.map((user) => (
                         <div key={user.id} className="flex items-center gap-3 cursor-pointer group">
-                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-neutral-800 flex items-center justify-center border border-slate-200 dark:border-neutral-700 group-hover:bg-slate-200 dark:group-hover:bg-neutral-700 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-neutral-800 flex items-center justify-center border border-slate-200 dark:border-neutral-700 group-hover:border-slate-300 dark:group-hover:border-neutral-600 transition-colors">
                                 <span className="font-bold text-slate-400 dark:text-neutral-500 text-xs">{user.name.substring(0, 2).toUpperCase()}</span>
                             </div>
                             <div className="flex-1 min-w-0">

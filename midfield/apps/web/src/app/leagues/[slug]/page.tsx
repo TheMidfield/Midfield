@@ -25,7 +25,7 @@ const LEAGUE_INFO: Record<string, { country: string; flag: string; color: string
 export default async function LeaguePage({ params }: { params: { slug: string } }) {
   const { slug } = await params;
   const leagueName = LEAGUE_NAMES[slug];
-  
+
   if (!leagueName) {
     return notFound();
   }
@@ -55,7 +55,7 @@ export default async function LeaguePage({ params }: { params: { slug: string } 
         <div className="relative h-64 md:h-80">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/45-degree-fabric-light.png')] opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-          
+
           {/* Content */}
           <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 z-10">
             <div className="flex items-end justify-between">
@@ -98,13 +98,11 @@ export default async function LeaguePage({ params }: { params: { slug: string } 
             <Link key={club.id} href={`/topic/${club.slug}`}>
               <Card variant="interactive" className="group p-5">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-xl border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-2 flex items-center justify-center shrink-0">
-                    <img
-                      src={(club.metadata as any)?.badge_url}
-                      alt={club.title}
-                      className="w-full h-full object-contain group-hover:scale-110 transition-transform"
-                    />
-                  </div>
+                  <img
+                    src={(club.metadata as any)?.badge_url}
+                    alt={club.title}
+                    className="w-20 h-20 object-contain shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
                       {club.title}

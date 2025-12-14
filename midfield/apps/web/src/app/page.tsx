@@ -1,38 +1,42 @@
 import { TopicCard } from "@/components/TopicCard";
 import { Hero } from "@/components/Hero";
+import { FeaturedPlayers } from "@/components/FeaturedPlayers";
 import { getTopicsByType, getLeagues, getClubsByLeague } from "@midfield/logic/src/topics";
-import { Flame, Shield, Trophy, ChevronRight } from "lucide-react";
+import { Flame, Shield, Trophy, ChevronRight, User } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
 // League display info
 const LEAGUE_INFO: Record<string, { flag: string; color: string }> = {
-  "English Premier League": { flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "from-purple-500 to-pink-500" },
-  "Spanish La Liga": { flag: "🇪🇸", color: "from-red-500 to-yellow-500" },
-  "Italian Serie A": { flag: "🇮🇹", color: "from-blue-500 to-green-500" },
-  "German Bundesliga": { flag: "🇩🇪", color: "from-gray-800 to-red-600" },
-  "French Ligue 1": { flag: "🇫🇷", color: "from-blue-600 to-red-600" },
+    "English Premier League": { flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "from-purple-500 to-pink-500" },
+    "Spanish La Liga": { flag: "🇪🇸", color: "from-red-500 to-yellow-500" },
+    "Italian Serie A": { flag: "🇮🇹", color: "from-blue-500 to-green-500" },
+    "German Bundesliga": { flag: "🇩🇪", color: "from-gray-800 to-red-600" },
+    "French Ligue 1": { flag: "🇫🇷", color: "from-blue-600 to-red-600" },
 };
 
 export default async function Home() {
     // Fetch leagues and featured clubs
     const leagues = await getLeagues();
     const allClubs = await getTopicsByType('club');
-    
+
     // Get 6 featured clubs (2 from each of 3 leagues)
-    const featuredClubs = leagues.slice(0, 3).flatMap(league => 
+    const featuredClubs = leagues.slice(0, 3).flatMap(league =>
         allClubs.filter((club: any) => club.metadata?.league === league).slice(0, 2)
     ).slice(0, 6);
 
-    // Fetch trending players (random selection for now)
+    // Fetch 10 random players
     const players = (await getTopicsByType('player'))
         .sort(() => Math.random() - 0.5)
-        .slice(0, 8);
+        .slice(0, 10);
 
     return (
         <div className="w-full">
             <Hero />
+
+            {/* Featured Players Section - NOW FIRST */}
+            <FeaturedPlayers players={players} />
 
             {/* Leagues Section */}
             <section className="mb-12">
@@ -51,11 +55,11 @@ export default async function Home() {
                     {leagues.map((league) => {
                         const info = LEAGUE_INFO[league];
                         const slug = league.toLowerCase().replace(/\s+/g, '-');
-                        
+
                         return (
                             <Link key={league} href={`/leagues/${slug}`}>
                                 <Card variant="interactive" className="group p-4 text-center">
-                                    <div className="text-4xl mb-2 group-hover:scale-110 transition-transform">
+                                    <div className="text-4xl mb-2 transition-transform">
                                         {info?.flag || "🏆"}
                                     </div>
                                     <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
@@ -85,13 +89,11 @@ export default async function Home() {
                     {featuredClubs.map((club: any) => (
                         <Link key={club.id} href={`/topic/${club.slug}`}>
                             <Card variant="interactive" className="p-5 flex items-center gap-4 group">
-                                <div className="w-14 h-14 rounded-xl border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 p-2 flex items-center justify-center shrink-0">
-                                    <img
-                                        src={club.metadata?.badge_url}
-                                        alt={club.title}
-                                        className="w-full h-full object-contain group-hover:scale-110 transition-transform"
-                                    />
-                                </div>
+                                <img
+                                    src={club.metadata?.badge_url}
+                                    alt={club.title}
+                                    className="w-16 h-16 object-contain shrink-0"
+                                />
                                 <div className="flex-1 min-w-0">
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
                                         {club.title}
@@ -104,22 +106,6 @@ export default async function Home() {
                                 </div>
                             </Card>
                         </Link>
-                    ))}
-                </div>
-            </section>
-
-            {/* Trending Players Section */}
-            <section>
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
-                        <Flame className="w-5 h-5 text-orange-500 dark:text-orange-400" />
-                        Featured Players
-                    </h2>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-4">
-                    {players.map((t) => (
-                        <TopicCard key={t.id} topic={t} />
                     ))}
                 </div>
             </section>

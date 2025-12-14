@@ -66,7 +66,7 @@ export default async function LeaguesPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
                 {/* Flag */}
-                <div className="absolute top-4 right-4 text-5xl opacity-90 group-hover:scale-110 transition-transform">
+                <div className="absolute top-4 right-4 text-5xl opacity-90">
                   {league.flag}
                 </div>
 
@@ -96,7 +96,7 @@ export default async function LeaguesPage() {
                     </div>
                   </div>
 
-                  <ChevronRight className="w-5 h-5 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+                  <ChevronRight className="w-5 h-5 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors" />
                 </div>
               </div>
             </Card>
