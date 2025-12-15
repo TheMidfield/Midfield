@@ -2,15 +2,48 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { User, Terminal } from "lucide-react";
+import { User as UserIcon, Terminal } from "lucide-react";
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
 import { NavbarSearch } from "./NavbarSearch";
 import { Logo } from "./Logo";
+import { useEffect, useState } from "react";
 
 export function Navbar() {
     const pathname = usePathname();
+    const [userAvatar, setUserAvatar] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        // Fetch user profile for avatar
+        async function loadUserProfile() {
+            try {
+                const response = await fetch('/api/user-profile');
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserAvatar(data.avatar_url);
+                }
+            } catch (error) {
+                console.error('Failed to load user profile:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadUserProfile();
+
+        // Listen for avatar updates from profile page
+        const handleAvatarUpdate = (event: CustomEvent) => {
+            setUserAvatar(event.detail.avatarUrl);
+        };
+
+        window.addEventListener('avatar-updated', handleAvatarUpdate as EventListener);
+
+        return () => {
+            window.removeEventListener('avatar-updated', handleAvatarUpdate as EventListener);
+        };
+    }, []);
 
     const isActive = (path: string) => {
         if (path === "/") return pathname === "/";
@@ -18,8 +51,8 @@ export function Navbar() {
     };
 
     return (
-        <nav className="sticky top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-slate-300 dark:border-neutral-800 shadow-sm">
-            <div className="w-full max-w-[1600px] mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        <nav className="fixed top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-slate-300 dark:border-neutral-800">
+            <div className="w-full max-w-[1600px] mx-auto flex h-16 items-center justify-between px-10 sm:px-16 lg:px-24">
 
                 {/* Left: Brand + Nav */}
                 <div className="flex items-center gap-8">
@@ -50,8 +83,18 @@ export function Navbar() {
 
                     <ThemeToggle />
 
-                    <Link href="/auth">
-                        <IconButton icon={User} variant="subtle" />
+                    <Link href="/profile">
+                        {!isLoading && userAvatar ? (
+                            <div className="h-10 w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-600 transition-all cursor-pointer">
+                                <img
+                                    src={userAvatar}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                        ) : (
+                            <IconButton icon={UserIcon} variant="ghost" />
+                        )}
                     </Link>
                 </div>
             </div>

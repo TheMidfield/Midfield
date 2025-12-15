@@ -70,13 +70,6 @@ export function RightPanel() {
                     ))}
                 </div>
             </div>
-
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-[11px] font-medium text-slate-400 dark:text-neutral-500 px-4 justify-center">
-                <a href="#" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">Privacy</a>
-                <a href="#" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">Terms</a>
-                <a href="#" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">Cookies</a>
-                <span className="text-slate-300 dark:text-neutral-600">Midfield © 2024</span>
-            </div>
         </div>
     );
 }

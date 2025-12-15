@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { searchTopics } from "@/app/actions";
 import { Topic } from "@midfield/types";
+import { usePathname } from "next/navigation";
 
 type SearchFilter = 'all' | 'club' | 'player';
 
@@ -24,6 +25,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     const [results, setResults] = useState<Topic[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [filter, setFilter] = useState<SearchFilter>('all');
+    const pathname = usePathname();
 
     // Derived state
     const isSearching = query.length >= 2;
@@ -62,6 +64,23 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         setResults([]);
         setFilter('all');
     };
+
+    // Close on route change
+    useEffect(() => {
+        closeSearch();
+    }, [pathname]);
+
+    // Global keyboard shortcuts
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && isSearching) {
+                closeSearch();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isSearching]);
 
     return (
         <SearchContext.Provider

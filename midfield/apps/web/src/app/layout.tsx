@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/Navbar";
-import { RightPanel } from "@/components/RightPanel";
+import { Footer } from "@/components/Footer";
+import { LayoutContent } from "@/components/LayoutContent";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SearchProvider } from "@/context/SearchContext";
 import { GlobalSearchLayout } from "@/components/GlobalSearchLayout";
@@ -50,21 +51,15 @@ export default function RootLayout({
                     <SearchProvider>
                         <Navbar />
 
-                        <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <div className="flex-1 w-full max-w-[1600px] mx-auto px-10 sm:px-16 lg:px-24 pt-28 pb-16">
                             <GlobalSearchLayout>
-                                <div className="flex flex-col lg:flex-row gap-8 items-start">
-                                    {/* Main Content */}
-                                    <main className="flex-1 min-w-0 w-full">
-                                        {children}
-                                    </main>
-
-                                    {/* Right Widgets - Desktop */}
-                                    <aside className="hidden lg:block w-[320px] shrink-0 sticky top-20">
-                                        <RightPanel />
-                                    </aside>
-                                </div>
+                                <LayoutContent>
+                                    {children}
+                                </LayoutContent>
                             </GlobalSearchLayout>
                         </div>
+
+                        <Footer />
                     </SearchProvider>
                 </ThemeProvider>
             </body>

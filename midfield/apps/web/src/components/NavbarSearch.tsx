@@ -3,12 +3,33 @@
 import { useSearch } from "@/context/SearchContext";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 
 export function NavbarSearch() {
-    const { query, setQuery, isSearching } = useSearch();
+    const { query, setQuery, isSearching, closeSearch } = useSearch();
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Global shortcut to focus search
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "/" && !isFocused && !isSearching) {
+                // Prevent "/" from being typed
+                e.preventDefault();
+                inputRef.current?.focus();
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [isFocused, isSearching]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Escape") {
+            inputRef.current?.blur();
+            closeSearch();
+        }
+    };
 
     return (
         <div
@@ -22,7 +43,7 @@ export function NavbarSearch() {
                     "flex h-10 w-full items-center rounded-full border-2 transition-colors",
                     "bg-slate-100 dark:bg-neutral-800",
                     isFocused
-                        ? "border-emerald-500 dark:border-emerald-400 bg-white dark:bg-neutral-900 shadow-lg ring-4 ring-emerald-500/10"
+                        ? "border-emerald-500 dark:border-emerald-400 bg-white dark:bg-neutral-900 ring-4 ring-emerald-500/10"
                         : "border-slate-300 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-600"
                 )}
             >
@@ -34,14 +55,23 @@ export function NavbarSearch() {
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
+                    onKeyDown={handleKeyDown}
                     placeholder="Search clubs, players..."
                     className="flex-1 min-w-0 bg-transparent py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 />
-                {query && (
-                    <div className="mr-3 ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
-                        ESC
-                    </div>
-                )}
+
+                {/* Badges */}
+                <div className="mr-1.5 flex items-center">
+                    {(isFocused || query) ? (
+                        <div className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400 min-w-[34px] text-center">
+                            ESC
+                        </div>
+                    ) : (
+                        <div className="text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
+                            /
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

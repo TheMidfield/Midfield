@@ -1,6 +1,7 @@
 import { getTopicBySlug, getPlayersByClub, getPlayerClub } from "@midfield/logic/src/topics";
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
+import { getTakes } from "@/app/actions";
 
 export default async function TopicPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
@@ -38,12 +39,16 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         playerClub = await getPlayerClub(topic.id);
     }
 
+    // Fetch takes (posts) for this topic
+    const posts = await getTakes(topic.id);
+
     return (
         <TopicPageClient
             topic={topic}
             squad={squad}
             groupedSquad={groupedSquad}
             playerClub={playerClub}
+            posts={posts}
         />
     );
 }

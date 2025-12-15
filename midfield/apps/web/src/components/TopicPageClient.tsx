@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { PostComposer } from "@/components/PostComposer";
-import { PostList } from "@/components/PostList";
+import { TakeComposer } from "@/components/TakeComposer";
+import { TakeFeed } from "@/components/TakeFeed";
 import { EntityHeader } from "@/components/EntityHeader";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +15,7 @@ interface TopicPageClientProps {
     squad: any[];
     groupedSquad: Record<string, any[]>;
     playerClub?: any;
+    posts?: any[];
 }
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
@@ -37,7 +38,7 @@ const getPositionInfo = (pos: string) => {
     return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts = [] }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const metadata = topic.metadata as any;
@@ -349,15 +350,13 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub }: Topi
                     <div className="flex items-center gap-2 mb-5">
                         <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
-                            Discussion
+                            Takes
                         </h2>
                     </div>
 
-                    <PostComposer topicSlug={topic.slug} />
+                    <TakeComposer topicId={topic.id} topicTitle={topic.title} />
 
-                    <div className="mt-6">
-                        <PostList topicSlug={topic.slug} />
-                    </div>
+                    <TakeFeed posts={posts} />
                 </main>
             </div>
         </div>
