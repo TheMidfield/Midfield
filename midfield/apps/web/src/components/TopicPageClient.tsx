@@ -16,6 +16,10 @@ interface TopicPageClientProps {
     groupedSquad: Record<string, any[]>;
     playerClub?: any;
     posts?: any[];
+    currentUser?: {
+        avatar_url: string | null;
+        username: string | null;
+    };
 }
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
@@ -38,12 +42,15 @@ const getPositionInfo = (pos: string) => {
     return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts = [] }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts = [], currentUser }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const metadata = topic.metadata as any;
     // Players section always open for clubs
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isClub ? ["players"] : ["stats"]));
+
+    // Local posts state for optimistic updates
+    const [localPosts, setLocalPosts] = useState(posts);
 
     const toggleSection = (section: string) => {
         setExpandedSections(prev => {
@@ -52,6 +59,11 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
             else next.add(section);
             return next;
         });
+    };
+
+    // Handle new post - add to top of feed
+    const handlePostSuccess = (newPost: any) => {
+        setLocalPosts(prev => [newPost, ...prev]);
     };
 
     // Define sections based on entity type
@@ -354,9 +366,15 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                         </h2>
                     </div>
 
-                    <TakeComposer topicId={topic.id} topicTitle={topic.title} />
+                    <TakeComposer
+                        topicId={topic.id}
+                        topicTitle={topic.title}
+                        userAvatar={currentUser?.avatar_url}
+                        username={currentUser?.username}
+                        onSuccess={handlePostSuccess}
+                    />
 
-                    <TakeFeed posts={posts} />
+                    <TakeFeed posts={localPosts} currentUser={currentUser} />
                 </main>
             </div>
         </div>

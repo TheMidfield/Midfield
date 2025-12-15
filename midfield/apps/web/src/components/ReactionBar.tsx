@@ -24,34 +24,26 @@ export function ReactionBar({ postId, initialCounts, userReaction: initialUserRe
     const [isPending, startTransition] = useTransition();
 
     const handleReaction = (type: ReactionType) => {
-        // Optimistic update
         const previousReaction = userReaction;
-        const previousCounts = { ...counts };
 
         if (userReaction === type) {
-            // Removing reaction
             setUserReaction(null);
             setCounts(prev => ({ ...prev, [type]: Math.max(0, prev[type] - 1) }));
         } else {
-            // Adding or changing reaction
             if (userReaction) {
-                // Decrement old reaction
                 setCounts(prev => ({ ...prev, [userReaction]: Math.max(0, prev[userReaction] - 1) }));
             }
-            // Increment new reaction
             setUserReaction(type);
             setCounts(prev => ({ ...prev, [type]: prev[type] + 1 }));
         }
 
-        // Server update
         startTransition(async () => {
-            const result = await toggleReaction(postId, type);
-            // If server fails, we could revert, but for MVP we'll trust optimistic updates
+            await toggleReaction(postId, type);
         });
     };
 
     return (
-        <div className="flex items-center gap-1">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             {REACTIONS.map(({ type, emoji, label }) => {
                 const count = counts[type];
                 const isActive = userReaction === type;
@@ -62,19 +54,19 @@ export function ReactionBar({ postId, initialCounts, userReaction: initialUserRe
                         onClick={() => handleReaction(type)}
                         disabled={isPending}
                         className={`
-                            flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-                            transition-all duration-200 cursor-pointer
+                            h-8 px-2 flex items-center gap-1 rounded-md text-sm font-medium
+                            transition-colors cursor-pointer
                             ${isActive
-                                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 ring-2 ring-emerald-500/20'
-                                : 'bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 hover:bg-slate-200 dark:hover:bg-neutral-700'
+                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400'
+                                : 'text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
                             }
-                            ${isPending ? 'opacity-50' : ''}
+                            ${isPending ? 'opacity-50 pointer-events-none' : ''}
                         `}
                         title={label}
                     >
-                        <span className="text-base">{emoji}</span>
+                        <span style={{ fontSize: '14px' }}>{emoji}</span>
                         {count > 0 && (
-                            <span className="text-xs font-bold">{count}</span>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>{count}</span>
                         )}
                     </button>
                 );

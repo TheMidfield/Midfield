@@ -2,6 +2,7 @@ import { getTopicBySlug, getPlayersByClub, getPlayerClub } from "@midfield/logic
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
 import { getTakes } from "@/app/actions";
+import { getUserProfile } from "@/app/profile/actions";
 
 export default async function TopicPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
@@ -42,6 +43,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     // Fetch takes (posts) for this topic
     const posts = await getTakes(topic.id);
 
+    // Fetch current user for composer avatar
+    const userData = await getUserProfile();
+
     return (
         <TopicPageClient
             topic={topic}
@@ -49,6 +53,10 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             groupedSquad={groupedSquad}
             playerClub={playerClub}
             posts={posts}
+            currentUser={{
+                avatar_url: userData?.profile?.avatar_url || null,
+                username: userData?.profile?.username || null,
+            }}
         />
     );
 }

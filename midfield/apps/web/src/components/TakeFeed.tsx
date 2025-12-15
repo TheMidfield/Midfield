@@ -1,38 +1,83 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { TakeCard } from "./TakeCard";
+import { ReactionType } from "@/app/actions";
 
-interface TakeFeedProps {
-    posts: any[];
-    onRefresh?: () => void;
+interface Post {
+    id: string;
+    content: string;
+    created_at: string;
+    author_id: string;
+    topic_id?: string;
+    reply_count?: number;
+    reaction_count?: number;
+    author?: {
+        username?: string;
+        avatar_url?: string;
+    };
+    reactionCounts?: Record<ReactionType, number>;
+    userReaction?: ReactionType | null;
 }
 
-export function TakeFeed({ posts, onRefresh }: TakeFeedProps) {
+interface TakeFeedProps {
+    posts: Post[];
+    emptyTitle?: string;
+    emptyMessage?: string;
+    currentUser?: {
+        avatar_url: string | null;
+        username: string | null;
+    };
+}
+
+export function TakeFeed({ posts, emptyTitle, emptyMessage, currentUser }: TakeFeedProps) {
     if (!posts || posts.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 px-4 rounded-2xl border-2 border-dashed border-slate-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/30">
-                <div className="w-16 h-16 bg-white dark:bg-neutral-800 rounded-full flex items-center justify-center border border-slate-200 dark:border-neutral-700 mb-4">
-                    <MessageSquare className="w-8 h-8 text-slate-300 dark:text-neutral-600" />
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '48px 24px',
+                    borderRadius: '8px',
+                    border: '1px dashed',
+                }}
+                className="border-slate-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/20"
+            >
+                <div
+                    style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '16px'
+                    }}
+                    className="bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10"
+                >
+                    <Sparkles className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 dark:text-neutral-100 mb-1">No takes yet</h3>
-                <p className="text-slate-500 dark:text-neutral-400 font-medium text-center">
-                    Be the first to share your take!
+                <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100 mb-1">
+                    {emptyTitle || "No takes yet"}
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-neutral-400 text-center" style={{ maxWidth: '280px' }}>
+                    {emptyMessage || "Be the first to share your perspective on this topic."}
                 </p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {posts.map((post) => (
                 <TakeCard
                     key={post.id}
                     post={post}
-                    onReplyClick={() => {
-                        // TODO: Open reply composer
-                        console.log('Reply to:', post.id);
-                    }}
+                    reactionCounts={post.reactionCounts}
+                    userReaction={post.userReaction}
+                    currentUser={currentUser}
                 />
             ))}
         </div>
