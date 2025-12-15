@@ -56,7 +56,8 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             currentUser={{
                 avatar_url: userData?.profile?.avatar_url || null,
                 username: userData?.profile?.username || null,
-            }}
+            }
+            }
         />
     );
 }

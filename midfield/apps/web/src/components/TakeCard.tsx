@@ -198,7 +198,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                         const isLast = !isReplying && index === replies.length - 1;
 
                         return (
-                            <div key={reply.id} className="grid grid-cols-[48px_40px_1fr] gap-x-0 relative group">
+                            <div key={reply.id} className="grid grid-cols-[48px_48px_1fr] gap-x-0 relative group">
                                 {/* Col 1: Spine Line */}
                                 <div className="relative">
                                     {/* Main vertical line */}
@@ -211,7 +211,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                     {/* Curve */}
                                     {/* Top 12px + Height 20px = Ends at 32px (Center of Avatar) */}
                                     {/* Width 42px = reaches into Col 2 to touch avatar */}
-                                    <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
+                                    <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
                                 </div>
 
                                 {/* Col 2: Reply Avatar */}
@@ -246,7 +246,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
 
                     {/* Reply Composer */}
                     {isReplying && (
-                        <div className="grid grid-cols-[48px_40px_1fr] gap-x-0 relative pt-2">
+                        <div className="grid grid-cols-[48px_48px_1fr] gap-x-0 relative pt-2">
                             {/* Col 1: Spine */}
                             <div className="relative">
                                 {/* Last item logic: This IS the last item now. */}
@@ -257,7 +257,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                 />
 
                                 {/* Curve */}
-                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
+                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
                             </div>
 
                             {/* Col 2: User Avatar */}
@@ -311,7 +311,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                     <div className="relative">
                         {/* Short spine stub */}
                         <div className="absolute left-[23px] -top-6 h-6 w-[2px] bg-slate-100 dark:bg-neutral-800" />
-                        <div className="absolute left-[23px] top-0 w-[12px] h-[16px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
+                        <div className="absolute left-[23px] top-0 w-[16px] h-[16px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
                     </div>
                     <button
                         onClick={() => setIsExpanded(true)}
