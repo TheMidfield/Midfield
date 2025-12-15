@@ -176,7 +176,18 @@ export async function createReply(rootPostId: string, parentPostId: string, topi
         return { success: false, error: error.message };
     }
 
-    // TODO: Increment reply_count on root post (requires DB trigger or RPC function)
+    // Increment reply_count on root post manually since we don't have triggers yet
+    // This ensures page refresh shows the correct count immediately
+    // Note: RPC method caused build issues due to strict typing. Relying on fetch-update pattern.
+
+    // Simple fetch-and-increment (MVP solution)
+    const { data: rootPost } = await supabase.from('posts').select('reply_count').eq('id', rootPostId).single();
+    if (rootPost) {
+        await supabase
+            .from('posts')
+            .update({ reply_count: (rootPost.reply_count || 0) + 1 })
+            .eq('id', rootPostId);
+    }
 
     return { success: true, post: data };
 }

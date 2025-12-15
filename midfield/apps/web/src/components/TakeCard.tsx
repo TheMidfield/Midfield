@@ -41,7 +41,8 @@ interface TakeCardProps {
 }
 
 export function TakeCard({ post, reactionCounts, userReaction, currentUser }: TakeCardProps) {
-    const [isExpanded, setIsExpanded] = useState(false);
+    // Default expanded if there are replies (Always show full replies)
+    const [isExpanded, setIsExpanded] = useState((post.reply_count || 0) > 0);
     const [isReplying, setIsReplying] = useState(false);
     const [replyContent, setReplyContent] = useState("");
     const [replies, setReplies] = useState<Reply[]>([]);
@@ -72,8 +73,12 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
     }, [isReplying]);
 
     const handleReplyClick = () => {
-        setIsReplying(true);
-        setIsExpanded(true);
+        if (isReplying) {
+            setIsReplying(false);
+        } else {
+            setIsReplying(true);
+            setIsExpanded(true);
+        }
     };
 
     const handleSubmitReply = () => {
@@ -103,29 +108,37 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
         setIsReplying(false);
     };
 
-    return (
-        <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg">
-            <div style={{ padding: '20px' }}>
-                {/* Header */}
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                    {/* Avatar */}
-                    <div style={{ flexShrink: 0 }}>
-                        {post.author?.avatar_url ? (
-                            <img
-                                src={post.author.avatar_url}
-                                alt={authorHandle}
-                                className="w-10 h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer"
-                            />
-                        ) : (
-                            <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center">
-                                <User className="w-5 h-5 text-slate-400 dark:text-neutral-500" />
-                            </div>
-                        )}
-                    </div>
+    const hasRepliesOrReplying = (isExpanded && replies.length > 0) || isReplying;
 
-                    {/* Author info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    return (
+        <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-5">
+            <div className="grid grid-cols-[48px_1fr] gap-x-0">
+                {/* --- Left Column: Avatar & Spine --- */}
+                <div className="relative flex flex-col items-center">
+                    {/* Main Avatar */}
+                    {post.author?.avatar_url ? (
+                        <img
+                            src={post.author.avatar_url}
+                            alt={authorHandle}
+                            className="w-10 h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
+                            <User className="w-5 h-5 text-slate-400 dark:text-neutral-500" />
+                        </div>
+                    )}
+
+                    {/* The continuous Spine - stops at last reply curve */}
+                    {hasRepliesOrReplying && (
+                        <div className="absolute top-10 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
+                    )}
+                </div>
+
+                {/* --- Right Column: Main Content --- */}
+                <div className="min-w-0 pl-2">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-1 h-5">
+                        <div className="flex items-center gap-2">
                             <span className="font-semibold text-slate-900 dark:text-neutral-100 text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">
                                 @{authorHandle}
                             </span>
@@ -134,121 +147,121 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                 {formatDate(new Date(post.created_at))}
                             </span>
                         </div>
+                        <button className="text-slate-300 dark:text-neutral-600 hover:text-slate-600 dark:hover:text-neutral-400 transition-colors">
+                            <MoreHorizontal className="w-4 h-4" />
+                        </button>
                     </div>
 
-                    {/* More menu */}
-                    <button className="w-8 h-8 flex items-center justify-center text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-md transition-colors cursor-pointer">
-                        <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                </div>
-
-                {/* Content */}
-                <div style={{ marginBottom: '16px' }}>
-                    <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-[15px] whitespace-pre-wrap">
+                    {/* Post Text */}
+                    <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-[15px] whitespace-pre-wrap mb-3">
                         {post.content}
                     </p>
-                </div>
 
-                {/* Action Bar - More subtle divider */}
-                <div
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '12px', borderTop: '1px solid' }}
-                    className="border-slate-100/70 dark:border-neutral-800/70"
-                >
-                    {/* Left: Reactions */}
-                    <ReactionBar
-                        postId={post.id}
-                        initialCounts={reactionCounts}
-                        userReaction={userReaction}
-                    />
+                    {/* Action Bar */}
+                    <div className="flex items-center justify-between">
+                        <ReactionBar
+                            postId={post.id}
+                            initialCounts={reactionCounts}
+                            userReaction={userReaction}
+                        />
 
-                    {/* Right: Actions */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {/* Reply Button - Text button */}
-                        <Button
-                            onClick={handleReplyClick}
-                            variant="ghost"
-                            size="sm"
-                            icon={MessageCircle}
-                            className="text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400"
-                        >
-                            Reply{localReplyCount > 0 && ` (${localReplyCount})`}
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                onClick={handleReplyClick}
+                                variant="ghost"
+                                size="sm"
+                                icon={MessageCircle}
+                                className={`text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 h-8 px-2 ${isReplying && 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20'}`}
+                            >
+                                Reply{localReplyCount > 0 && ` (${localReplyCount})`}
+                            </Button>
 
-                        {/* Bookmark */}
-                        <button className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
-                            <Bookmark className="w-4 h-4" />
-                        </button>
+                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
+                                <Bookmark className="w-4 h-4" />
+                            </button>
 
-                        {/* Share */}
-                        <button className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
-                            <Share className="w-4 h-4" />
-                        </button>
+                            <button className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
+                                <Share className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                {/* Show/Hide replies toggle */}
-                {localReplyCount > 0 && !isExpanded && (
-                    <button
-                        onClick={() => setIsExpanded(true)}
-                        style={{ marginTop: '12px' }}
-                        className="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
-                    >
-                        <ChevronDown className="w-4 h-4" />
-                        Show {localReplyCount} {localReplyCount === 1 ? 'reply' : 'replies'}
-                    </button>
-                )}
+                {/* --- Replies Section (Full Width, inside Grid) --- */}
             </div>
 
-            {/* Expanded Thread Area */}
-            {(isExpanded || isReplying) && (
-                <div style={{ borderTop: '1px solid' }} className="border-slate-100/70 dark:border-neutral-800/70">
-                    {/* Replies List */}
-                    {replies.length > 0 && (
-                        <div style={{ padding: '16px 20px 0 20px' }}>
-                            {replies.map((reply) => (
-                                <div key={reply.id} style={{ display: 'flex', gap: '12px', marginBottom: '16px', paddingLeft: '16px', borderLeft: '2px solid' }} className="border-slate-200 dark:border-neutral-700">
-                                    {/* Reply Avatar */}
-                                    <div style={{ flexShrink: 0 }}>
-                                        {reply.author?.avatar_url ? (
-                                            <img src={reply.author.avatar_url} alt="" className="w-8 h-8 rounded-md object-cover" />
-                                        ) : (
-                                            <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
-                                                <User className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    {/* Reply Content */}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                                            <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs">
-                                                @{reply.author?.username || 'anon'}
-                                            </span>
-                                            <span className="text-slate-300 dark:text-neutral-600 text-xs">•</span>
-                                            <span className="text-slate-400 dark:text-neutral-500 text-xs">
-                                                {formatDate(new Date(reply.created_at))}
-                                            </span>
-                                        </div>
-                                        <p className="text-slate-700 dark:text-neutral-300 text-sm leading-relaxed">
-                                            {reply.content}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+            {/* Replies List */}
+            {hasRepliesOrReplying && (
+                <div className="mt-0 flex flex-col gap-0">
+                    {/* Render Replies */}
+                    {replies.map((reply, index) => {
+                        const isLast = !isReplying && index === replies.length - 1;
 
-                    {/* Loading state */}
-                    {isLoadingReplies && (
-                        <div style={{ padding: '16px 20px' }} className="text-sm text-slate-400 dark:text-neutral-500">
-                            Loading replies...
-                        </div>
-                    )}
+                        return (
+                            <div key={reply.id} className="grid grid-cols-[48px_40px_1fr] gap-x-0 relative group">
+                                {/* Col 1: Spine Line */}
+                                <div className="relative">
+                                    {/* Main vertical line */}
+                                    {/* isLast: Height = 24px (from top-6) + 12px (to start of curve) = 36px */}
+                                    <div
+                                        className="absolute left-[23px] -top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
+                                        style={isLast ? { height: '36px' } : { bottom: 0 }}
+                                    />
+
+                                    {/* Curve */}
+                                    {/* Top 12px + Height 20px = Ends at 32px (Center of Avatar) */}
+                                    {/* Width 42px = reaches into Col 2 to touch avatar */}
+                                    <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
+                                </div>
+
+                                {/* Col 2: Reply Avatar */}
+                                <div className="relative z-10 pt-4 flex justify-center">
+                                    {reply.author?.avatar_url ? (
+                                        <img src={reply.author.avatar_url} alt="" className="w-8 h-8 rounded-md object-cover" />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                            <User className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Col 3: Reply Content */}
+                                <div className="pt-4 pl-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs">
+                                            @{reply.author?.username || 'anon'}
+                                        </span>
+                                        <span className="text-slate-300 dark:text-neutral-600 text-xs">•</span>
+                                        <span className="text-slate-400 dark:text-neutral-500 text-xs">
+                                            {formatDate(new Date(reply.created_at))}
+                                        </span>
+                                    </div>
+                                    <p className="text-slate-700 dark:text-neutral-300 text-sm leading-relaxed pb-3">
+                                        {reply.content}
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    })}
 
                     {/* Reply Composer */}
                     {isReplying && (
-                        <div style={{ padding: '16px 20px', display: 'flex', gap: '12px' }} className="bg-slate-50/50 dark:bg-neutral-800/30">
-                            {/* User Avatar */}
-                            <div style={{ flexShrink: 0 }}>
+                        <div className="grid grid-cols-[48px_40px_1fr] gap-x-0 relative pt-2">
+                            {/* Col 1: Spine */}
+                            <div className="relative">
+                                {/* Last item logic: This IS the last item now. */}
+                                {/* Line stops at curve start (12px) */}
+                                <div
+                                    className="absolute left-[23px] -top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
+                                    style={{ height: '36px' }}
+                                />
+
+                                {/* Curve */}
+                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
+                            </div>
+
+                            {/* Col 2: User Avatar */}
+                            <div className="relative z-10 pt-4 flex justify-center">
                                 {currentUser?.avatar_url ? (
                                     <img src={currentUser.avatar_url} alt="You" className="w-8 h-8 rounded-md object-cover" />
                                 ) : (
@@ -257,14 +270,15 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                     </div>
                                 )}
                             </div>
-                            {/* Input */}
-                            <div style={{ flex: 1, minWidth: 0 }}>
+
+                            {/* Col 3: Input */}
+                            <div className="pt-4 pl-1 pr-1">
                                 <textarea
                                     ref={replyInputRef}
                                     value={replyContent}
                                     onChange={(e) => setReplyContent(e.target.value)}
                                     placeholder={`Reply to @${authorHandle}...`}
-                                    className="w-full p-3 text-sm bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-md text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                                    className="w-full p-3 text-sm bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700 rounded-md text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 resize-none transition-all"
                                     rows={2}
                                     disabled={isPending}
                                     onKeyDown={(e) => {
@@ -277,7 +291,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                         }
                                     }}
                                 />
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                                <div className="flex justify-end gap-2 mt-2">
                                     <Button onClick={handleCancelReply} variant="ghost" size="sm" disabled={isPending}>
                                         Cancel
                                     </Button>
@@ -288,19 +302,24 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                             </div>
                         </div>
                     )}
+                </div>
+            )}
 
-                    {/* Collapse button when expanded */}
-                    {isExpanded && !isReplying && (
-                        <div style={{ padding: '12px 20px' }}>
-                            <button
-                                onClick={() => setIsExpanded(false)}
-                                className="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
-                            >
-                                <ChevronUp className="w-4 h-4" />
-                                Hide replies
-                            </button>
-                        </div>
-                    )}
+            {/* Expander text if hidden */}
+            {localReplyCount > 0 && !isExpanded && !isReplying && (
+                <div className="grid grid-cols-[48px_1fr] gap-x-0 mt-3">
+                    <div className="relative">
+                        {/* Short spine stub */}
+                        <div className="absolute left-[23px] -top-6 h-6 w-[2px] bg-slate-100 dark:bg-neutral-800" />
+                        <div className="absolute left-[23px] top-0 w-[12px] h-[16px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
+                    </div>
+                    <button
+                        onClick={() => setIsExpanded(true)}
+                        className="flex items-center gap-1.5 text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pl-3 pt-2"
+                    >
+                        <ChevronDown className="w-4 h-4" />
+                        Show {localReplyCount} {localReplyCount === 1 ? 'reply' : 'replies'}
+                    </button>
                 </div>
             )}
         </article>
