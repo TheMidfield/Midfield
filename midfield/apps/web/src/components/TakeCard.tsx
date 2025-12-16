@@ -284,7 +284,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                         return (
                             <div
                                 key={reply.id}
-                                className="grid grid-cols-[48px_48px_1fr] gap-x-0 relative group transition-all rounded-md mb-3"
+                                className="grid grid-cols-[48px_48px_1fr] gap-x-0 relative group transition-all rounded-lg mb-3"
                                 ref={(el) => {
                                     if (el) replyRefs.current.set(reply.id, el);
                                     else replyRefs.current.delete(reply.id);
@@ -434,7 +434,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                         value={replyContent}
                                         onChange={(e) => setReplyContent(e.target.value)}
                                         placeholder={replyingTo ? "Write your reply..." : `Reply to @${authorHandle}...`}
-                                        className="w-full p-3 text-sm bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700 rounded-md text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 resize-none transition-all"
+                                        className="w-full p-3 text-sm bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700 rounded-lg text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 hover:border-slate-300 dark:hover:border-neutral-600 hover:shadow-sm resize-none transition-all"
                                         rows={2}
                                         disabled={isPending}
                                         onKeyDown={(e) => {
