@@ -99,21 +99,21 @@ export function ReactionBar({ postId, initialCounts, userReaction: initialUserRe
             {/* Inline Reveal System */}
             <div className="relative flex items-center group">
 
-                {/* Toggle Button (Always Visible) */}
+                {/* React Toggle Button - pill-shaped like emoji buttons */}
                 <button
                     onClick={() => setIsPickerOpen(!isPickerOpen)}
                     className={`
-                        w-8 h-8 flex items-center justify-center rounded-full transition-all cursor-pointer z-20 relative
+                        h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer
                         ${isPickerOpen
-                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'
-                            : 'text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
+                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60'
+                            : 'bg-transparent text-slate-400 dark:text-neutral-500 hover:bg-slate-100/80 dark:hover:bg-neutral-800/60 hover:text-slate-700 dark:hover:text-neutral-300'
                         }
                     `}
                     title="Add reaction"
                 >
                     <Smile className="w-4 h-4" />
+                    <span className="text-xs font-semibold">React</span>
                 </button>
-
                 {/* Sliding Drawer (No Container/Border) */}
                 {/* faster duration-200 */}
                 {/* group-hover: width opens slightly to show arrow */}

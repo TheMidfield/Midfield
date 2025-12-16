@@ -149,7 +149,7 @@ export async function createTake(topicId: string, content: string) {
 /**
  * Create a reply to a Take
  */
-export async function createReply(rootPostId: string, parentPostId: string, topicId: string, content: string) {
+export async function createReply(rootPostId: string, parentPostId: string, topicId: string, content: string, replyToId: string | null = null) {
     const supabase = await createClient();
 
     // Get authenticated user
@@ -159,28 +159,62 @@ export async function createReply(rootPostId: string, parentPostId: string, topi
         return { success: false, error: 'You must be signed in to reply' };
     }
 
-    const { data, error } = await supabase
-        .from('posts')
-        .insert({
-            topic_id: topicId,
-            author_id: user.id,
-            content: content.trim(),
-            parent_post_id: parentPostId,
-            root_post_id: rootPostId
-        })
-        .select()
-        .single();
+    // Prepare base payload without the optional column
+    const basePayload = {
+        topic_id: topicId,
+        author_id: user.id,
+        content: content.trim(),
+        parent_post_id: parentPostId,
+        root_post_id: rootPostId
+    };
+
+    let data, error;
+
+    // OPTION A: If checking reply context, try to insert with the new column
+    if (replyToId) {
+        const threadedPayload = { ...basePayload, reply_to_post_id: replyToId };
+
+        // Cast to any to avoid TS errors if types are missing the new column
+        const res = await supabase
+            .from('posts')
+            .insert(threadedPayload as any)
+            .select()
+            .single();
+
+        data = res.data;
+        error = res.error;
+
+        // If that failed, assume it might be the missing column and fall back
+        if (error) {
+            console.warn('Threaded insert failed, retrying plain insert.', error.message);
+            // Fallback to base payload
+            const retry = await supabase
+                .from('posts')
+                .insert(basePayload as any)
+                .select()
+                .single();
+
+            data = retry.data;
+            error = retry.error;
+        }
+    } else {
+        // OPTION B: Simple reply, just insert base payload
+        const res = await supabase
+            .from('posts')
+            .insert(basePayload as any)
+            .select()
+            .single();
+
+        data = res.data;
+        error = res.error;
+    }
 
     if (error) {
         console.error('Error creating reply:', error);
-        return { success: false, error: error.message };
+        return { success: false, error: `Failed to post reply: ${(error as any).message || 'Unknown error'}` };
     }
 
-    // Increment reply_count on root post manually since we don't have triggers yet
-    // This ensures page refresh shows the correct count immediately
-    // Note: RPC method caused build issues due to strict typing. Relying on fetch-update pattern.
-
-    // Simple fetch-and-increment (MVP solution)
+    // Increment reply_count on root post manually
     const { data: rootPost } = await supabase.from('posts').select('reply_count').eq('id', rootPostId).single();
     if (rootPost) {
         await supabase
@@ -223,19 +257,40 @@ export async function getTakes(topicId: string) {
 export async function getReplies(rootPostId: string) {
     const supabase = await createClient();
 
+    // Try fetching with threaded context first
     const { data, error } = await supabase
         .from('posts')
         .select(`
             *,
-            author:users(*)
+            author:users(*),
+            reply_to:reply_to_post_id(
+                id,
+                content,
+                author:users!author_id(username)
+            )
         `)
         .eq('root_post_id', rootPostId)
         .eq('is_deleted', false)
         .order('created_at', { ascending: true });
 
     if (error) {
-        console.error('Error fetching replies:', error);
-        return [];
+        // FAILSAFE: If fetching with relation fails (missing column), fetch flat
+        console.warn('Failed to fetch threaded replies, falling back to flat fetch:', error.message);
+        const { data: flatData, error: flatError } = await supabase
+            .from('posts')
+            .select(`
+                *,
+                author:users(*)
+            `)
+            .eq('root_post_id', rootPostId)
+            .eq('is_deleted', false)
+            .order('created_at', { ascending: true });
+
+        if (flatError) {
+            console.error('Error fetching replies (fallback):', flatError);
+            return [];
+        }
+        return flatData || [];
     }
 
     return data || [];
