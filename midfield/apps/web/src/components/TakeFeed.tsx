@@ -34,37 +34,21 @@ export function TakeFeed({ posts, emptyTitle, emptyMessage, currentUser }: TakeF
     if (!posts || posts.length === 0) {
         return (
             <div
-                style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '48px 24px',
-                    borderRadius: '8px',
-                    border: '1px dashed',
-                }}
-                className="border-slate-200 dark:border-neutral-700 bg-slate-50/50 dark:bg-neutral-800/20"
+                className="flex items-center gap-4 p-4 rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800/50"
             >
                 <div
-                    style={{
-                        width: '56px',
-                        height: '56px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: '16px'
-                    }}
-                    className="bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/30 dark:to-emerald-900/10"
+                    className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 bg-emerald-50 dark:bg-emerald-900/30"
                 >
-                    <Sparkles className="w-6 h-6 text-emerald-500 dark:text-emerald-400" />
+                    <Sparkles className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100 mb-1">
-                    {emptyTitle || "No takes yet"}
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-neutral-400 text-center" style={{ maxWidth: '280px' }}>
-                    {emptyMessage || "Be the first to share your perspective on this topic."}
-                </p>
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-semibold text-slate-900 dark:text-neutral-100">
+                        {emptyTitle || "Be the first to drop a take"}
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">
+                        {emptyMessage || "Start the conversation"}
+                    </p>
+                </div>
             </div>
         );
     }

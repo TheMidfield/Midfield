@@ -13,6 +13,7 @@ interface SearchContextType {
     results: Topic[];
     isSearching: boolean;
     isLoading: boolean;
+    hasSearched: boolean;
     filter: SearchFilter;
     setFilter: (f: SearchFilter) => void;
     closeSearch: () => void;
@@ -24,6 +25,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<Topic[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [hasSearched, setHasSearched] = useState(false);
     const [filter, setFilter] = useState<SearchFilter>('all');
     const pathname = usePathname();
 
@@ -37,9 +39,11 @@ export function SearchProvider({ children }: { children: ReactNode }) {
             const typeParam = f === 'all' ? undefined : f;
             const data = await searchTopics(q, typeParam);
             setResults(data);
+            setHasSearched(true);
         } catch (error) {
             console.error("Search failed", error);
             setResults([]);
+            setHasSearched(true);
         } finally {
             setIsLoading(false);
         }
@@ -49,8 +53,12 @@ export function SearchProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (!isSearching) {
             setResults([]);
+            setIsLoading(false);
             return;
         }
+
+        // Show loading immediately when query changes
+        setIsLoading(true);
 
         const timer = setTimeout(() => {
             performSearch(query, filter);
@@ -63,6 +71,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
         setQuery("");
         setResults([]);
         setFilter('all');
+        setHasSearched(false);
     };
 
     // Close on route change
@@ -90,6 +99,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
                 results,
                 isSearching,
                 isLoading,
+                hasSearched,
                 filter,
                 setFilter,
                 closeSearch

@@ -28,6 +28,9 @@ export function NavbarSearch() {
         if (e.key === "Escape") {
             inputRef.current?.blur();
             closeSearch();
+        } else if (e.key === "Enter") {
+            // Submit search but collapse the bar
+            inputRef.current?.blur();
         }
     };
 

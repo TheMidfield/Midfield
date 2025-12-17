@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { createTake } from "@/app/actions";
 import { Send, User } from "lucide-react";
@@ -17,7 +17,12 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
     const [content, setContent] = useState("");
     const [isPending, startTransition] = useTransition();
     const [isFocused, setIsFocused] = useState(false);
+    const [isMac, setIsMac] = useState(true);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    useEffect(() => {
+        setIsMac(navigator.platform.toUpperCase().includes('MAC'));
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -111,7 +116,10 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
                                     {charCount}/{maxChars}
                                 </span>
                                 <span className="text-xs text-slate-300 dark:text-neutral-600">•</span>
-                                <span className="text-xs text-slate-400 dark:text-neutral-500">⌘↵ to post</span>
+                                <div className="text-[10px] font-bold px-2 py-1 flex items-center gap-0.5 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
+                                    <span>{isMac ? '⌘' : 'Ctrl'}</span>
+                                    <span>⏎</span>
+                                </div>
                             </div>
                         )}
                         <div className={!isFocused && !content ? 'ml-auto' : ''}>
