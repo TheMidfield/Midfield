@@ -194,7 +194,7 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
     const hasRepliesOrReplying = (isExpanded && replies.length > 0) || isReplying;
 
     return (
-        <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-5">
+        <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-5">
             <div className="grid grid-cols-[48px_1fr] gap-x-0">
                 {/* --- Left Column: Avatar & Spine --- */}
                 <div className="relative flex flex-col items-center">
