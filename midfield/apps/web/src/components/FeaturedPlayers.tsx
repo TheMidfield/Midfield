@@ -110,18 +110,20 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                 {/* View Toggle */}
                 <div className="flex items-center gap-2">
                     <Button
-                        variant={viewMode === "list" ? "default" : "outline"}
+                        variant="outline"
                         size="sm"
                         onClick={() => setViewMode("list")}
                         icon={LayoutList}
+                        className={viewMode === "list" ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}
                     >
                         List
                     </Button>
                     <Button
-                        variant={viewMode === "grid" ? "default" : "outline"}
+                        variant="outline"
                         size="sm"
                         onClick={() => setViewMode("grid")}
                         icon={LayoutGrid}
+                        className={viewMode === "grid" ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}
                     >
                         Grid
                     </Button>
@@ -149,7 +151,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
 
                                     {/* Player Photo */}
                                     <div className="relative shrink-0">
-                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden">
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors overflow-hidden">
                                             {imageUrl ? (
                                                 <img
                                                     src={imageUrl}
@@ -228,7 +230,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                     <div className="flex items-start gap-3 mb-3">
                                         {/* Player Photo - Left */}
                                         <div className="relative shrink-0">
-                                            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden">
+                                            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors overflow-hidden">
                                                 {imageUrl ? (
                                                     <img
                                                         src={imageUrl}

@@ -54,8 +54,8 @@ export function TopicCard({ topic }: { topic: any }) {
                         {/* Avatar Container */}
                         <div className="relative">
                             <div className={`
-                                relative border border-slate-200 dark:border-neutral-700 bg-slate-50 dark:bg-neutral-800 flex items-center justify-center overflow-hidden
-                                ${isClub ? 'w-14 h-14 rounded-md p-2' : 'w-14 h-14 rounded-full'}
+                                relative border bg-slate-50 dark:bg-neutral-800 flex items-center justify-center overflow-hidden transition-colors
+                                ${isClub ? 'w-14 h-14 rounded-md p-2 border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500' : 'w-14 h-14 rounded-full border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500'}
                             `}>
                                 {imageUrl ? (
                                     <img
@@ -77,16 +77,34 @@ export function TopicCard({ topic }: { topic: any }) {
                             )}
                         </div>
 
-                        {/* Position Badge - Players only */}
-                        {!isClub && position && (
-                            <Badge variant="secondary" className={`text-[9px] mt-2 ${positionInfo.color}`}>
-                                {positionInfo.abbr}
-                            </Badge>
-                        )}
+                        {/* Position Badge + Club Badge - Players only */}
+                        {!isClub && (() => {
+                            const clubName = topic.clubInfo?.name || topic.metadata?.club_name;
+                            const clubBadge = topic.clubInfo?.badge_url;
+                            return (
+                                <div className="flex flex-col gap-2 mt-1 ml-3">
+                                    {position && (
+                                        <Badge variant="secondary" className={`text-[9px] w-fit ${positionInfo.color}`}>
+                                            {positionInfo.abbr}
+                                        </Badge>
+                                    )}
+                                    {clubName && (
+                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-neutral-400">
+                                            {clubBadge ? (
+                                                <img src={clubBadge} alt={clubName} className="w-4.5 h-4.5 object-contain shrink-0" />
+                                            ) : (
+                                                <Shield className="w-4.5 h-4.5 shrink-0" />
+                                            )}
+                                            <span className="font-medium truncate max-w-[100px]">{clubName}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* Arrow */}
-                    <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-neutral-800 flex items-center justify-center text-slate-300 dark:text-neutral-600 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all shrink-0">
+                    <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center text-slate-400 dark:text-neutral-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/30 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all shrink-0">
                         <ArrowRight className="w-4 h-4" />
                     </div>
                 </div>
@@ -114,7 +132,7 @@ export function TopicCard({ topic }: { topic: any }) {
                 </div>
 
                 {/* Footer Metrics */}
-                <div className="mt-auto pt-3 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between relative z-10">
+                <div className="mt-auto pt-3 border-t border-slate-200 dark:border-neutral-800 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-1.5 text-slate-500 dark:text-neutral-400 text-[11px] font-semibold">
                         <Users className="w-3.5 h-3.5" />
                         <span>{topic.follower_count?.toLocaleString() || "2.4k"}</span>

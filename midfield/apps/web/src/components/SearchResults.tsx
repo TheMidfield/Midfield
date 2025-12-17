@@ -3,7 +3,7 @@
 import { useSearch } from "@/context/SearchContext";
 import { TopicCard } from "@/components/TopicCard";
 import { Button } from "@/components/ui/Button";
-import { X, Filter, Search } from "lucide-react";
+import { X, Filter, Search, Shield, User, Layers } from "lucide-react";
 
 export function SearchResults() {
     const { query, results, filter, setFilter, closeSearch, isLoading, hasSearched } = useSearch();
@@ -28,23 +28,29 @@ export function SearchResults() {
             {/* Filters */}
             <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
                 <Button
-                    variant={filter === 'all' ? 'default' : 'outline'}
+                    variant="outline"
                     size="sm"
                     onClick={() => setFilter('all')}
+                    icon={Layers}
+                    className={`min-w-[100px] ${filter === 'all' ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}`}
                 >
                     All Results
                 </Button>
                 <Button
-                    variant={filter === 'club' ? 'default' : 'outline'}
+                    variant="outline"
                     size="sm"
                     onClick={() => setFilter('club')}
+                    icon={Shield}
+                    className={`min-w-[100px] ${filter === 'club' ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}`}
                 >
                     Clubs
                 </Button>
                 <Button
-                    variant={filter === 'player' ? 'default' : 'outline'}
+                    variant="outline"
                     size="sm"
                     onClick={() => setFilter('player')}
+                    icon={User}
+                    className={`min-w-[100px] ${filter === 'player' ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}`}
                 >
                     Players
                 </Button>

@@ -75,24 +75,11 @@ export async function searchTopics(query: string, type?: string) {
             }
 
             // 3. Fuzzy / Typo Match (Only if query is long enough to justify fuzzy)
-            // Only check if we haven't matched yet
             if (query.length >= 3) {
-                // Check distance on the full title, OR check if the query is "close enough" to being a substring?
-                // Simple Levenshtein on the whole string might be too strict if title is "Manchester United" and query is "Manchster"
-                // Better: Check if any word in title is close to query words?
-                // For "performant & lightweight", let's stick to simple Levenshtein on the WHOLE title vs query 
-                // BUT specialized for substring logic is hard with simple Levenshtein.
-                // let's just do: if the Levenshtein distance is small relative to query length
                 const dist = getLevenshteinDistance(normalizedTitle, normalizedQuery);
-                const maxDist = Math.floor(query.length * 0.3); // Allow ~30% typos
-
-                // If the title is much longer than query, Levenshtein will be high due to length diff.
-                // We want "fuzzy substring". 
-                // Optimization: Simplest approximation -> Check distance only if lengths are comparable, 
-                // OR check if normalizedTitle *contains* a fuzzy version of query.
-                // Let's settle for: If the distance is small enough (meaning it's likely a mispelled full name), include it.
+                const maxDist = Math.floor(query.length * 0.3);
                 if (dist <= 2 || dist <= maxDist) {
-                    return { topic, score: 70 - dist }; // Higher distance = lower score
+                    return { topic, score: 70 - dist };
                 }
             }
 
@@ -102,6 +89,46 @@ export async function searchTopics(query: string, type?: string) {
         .sort((a, b) => b.score - a.score)
         .map(item => item.topic)
         .slice(0, 5);
+
+    // Enrich player results with club info
+    if (results.length > 0) {
+        const { supabase } = await import("@midfield/logic/src/supabase");
+        const playerIds = results.filter((t: any) => t.type === 'player').map((t: any) => t.id);
+
+        if (playerIds.length > 0) {
+            const { data: relationships } = await supabase
+                .from('topic_relationships')
+                .select(`
+                    child_topic_id,
+                    parent_topic:topics!topic_relationships_parent_topic_id_fkey(
+                        id,
+                        title,
+                        metadata
+                    )
+                `)
+                .in('child_topic_id', playerIds)
+                .eq('relationship_type', 'plays_for');
+
+            // Create a map of player ID -> club info
+            const clubMap = new Map();
+            (relationships || []).forEach((rel: any) => {
+                if (rel.parent_topic) {
+                    clubMap.set(rel.child_topic_id, {
+                        name: rel.parent_topic.title,
+                        badge_url: rel.parent_topic.metadata?.badge_url
+                    });
+                }
+            });
+
+            // Enrich results
+            return results.map((topic: any) => {
+                if (topic.type === 'player' && clubMap.has(topic.id)) {
+                    return { ...topic, clubInfo: clubMap.get(topic.id) };
+                }
+                return topic;
+            });
+        }
+    }
 
     return results;
 }
