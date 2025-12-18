@@ -292,14 +292,14 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                             >
                                 {/* Col 1: Spine Line */}
                                 <div className="relative">
-                                    {/* Main vertical line */}
+                                    {/* Main vertical line - extends from above to curve start */}
                                     <div
                                         className="absolute left-[23px] -top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                        style={isLast ? { height: '36px' } : { bottom: 0 }}
+                                        style={isLast ? { height: index === 0 ? 'calc(24px + 20px)' : 'calc(24px + 12px)' } : { bottom: 0 }}
                                     />
 
-                                    {/* Curve */}
-                                    <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
+                                    {/* Curve - first reply: 12+20=32px (accounts for mt-2), others: 12+12=24px */}
+                                    <div className={`absolute left-[23px] top-[12px] w-[27px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg ${index === 0 ? 'h-[20px]' : 'h-[12px]'}`} />
                                 </div>
 
                                 {/* Col 2-3: Reply Content Wrapper */}
@@ -376,15 +376,14 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                         <div ref={replyComposerRef} className="grid grid-cols-[48px_48px_1fr] gap-x-0 relative pt-2">
                             {/* Col 1: Spine */}
                             <div className="relative">
-                                {/* Last item logic: This IS the last item now. */}
-                                {/* Line stops at curve start (12px) */}
+                                {/* Line extends from above to curve start */}
                                 <div
                                     className="absolute left-[23px] -top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                    style={{ height: '36px' }}
+                                    style={{ height: 'calc(24px + 12px)' }}
                                 />
 
-                                {/* Curve */}
-                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
+                                {/* Curve - top-12px + h-12px = 24px = avatar center */}
+                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[12px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
                             </div>
 
                             {/* Col 2: User Avatar */}
