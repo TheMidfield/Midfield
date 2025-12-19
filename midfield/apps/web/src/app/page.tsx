@@ -6,6 +6,7 @@ import { Flame, Shield, Trophy, ChevronRight, User } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { supabase } from "@midfield/logic/src/supabase";
 
 // League display info
@@ -70,9 +71,11 @@ export default async function Home() {
                         <Trophy className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                         Top Leagues
                     </h2>
-                    <Link href="/leagues" className="text-sm font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
-                        View All
-                        <ChevronRight className="w-4 h-4" />
+                    <Link href="/leagues">
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">
+                            View All
+                            <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
                     </Link>
                 </div>
 
@@ -104,9 +107,11 @@ export default async function Home() {
                         <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         Featured Clubs
                     </h2>
-                    <Link href="/leagues" className="text-sm font-semibold text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
-                        Browse by League
-                        <ChevronRight className="w-4 h-4" />
+                    <Link href="/leagues">
+                        <Button variant="ghost" size="sm" className="h-7 px-2 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400">
+                            Browse by League
+                            <ChevronRight className="w-4 h-4 ml-1" />
+                        </Button>
                     </Link>
                 </div>
 

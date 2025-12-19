@@ -84,7 +84,7 @@ export function ReactionBar({ postId, initialCounts, userReaction: initialUserRe
                             h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium
                             transition-all cursor-pointer border
                             ${isActive
-                                ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 hover:border-emerald-300 dark:hover:border-emerald-700'
                                 : 'bg-transparent text-slate-600 dark:text-neutral-400 border-transparent hover:bg-slate-50 dark:hover:bg-neutral-800'
                             }
                         `}
@@ -103,10 +103,10 @@ export function ReactionBar({ postId, initialCounts, userReaction: initialUserRe
                 <button
                     onClick={() => setIsPickerOpen(!isPickerOpen)}
                     className={`
-                        h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer
+                        h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border
                         ${isPickerOpen
-                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60'
-                            : 'bg-transparent text-slate-400 dark:text-neutral-500 hover:bg-slate-100/80 dark:hover:bg-neutral-800/60 hover:text-slate-700 dark:hover:text-neutral-300'
+                            ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 hover:border-emerald-300 dark:hover:border-emerald-700'
+                            : 'bg-transparent text-slate-400 dark:text-neutral-500 border-transparent hover:bg-slate-100/80 dark:hover:bg-neutral-800/60 hover:text-slate-700 dark:hover:text-neutral-300'
                         }
                     `}
                     title="Add reaction"

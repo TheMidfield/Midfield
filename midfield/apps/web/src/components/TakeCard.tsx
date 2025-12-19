@@ -382,8 +382,8 @@ export function TakeCard({ post, reactionCounts, userReaction, currentUser }: Ta
                                     style={{ height: 'calc(24px + 12px)' }}
                                 />
 
-                                {/* Curve - top-12px + h-12px = 24px = avatar center */}
-                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[12px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
+                                {/* Curve - composer avatar has pt-4, so center at ~28px from curve start */}
+                                <div className="absolute left-[23px] top-[12px] w-[27px] h-[24px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
                             </div>
 
                             {/* Col 2: User Avatar */}
