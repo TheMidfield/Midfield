@@ -13,10 +13,19 @@ Midfield is a **data-driven social network for football (soccer)**. It specifica
 - **Data-First**: Every UI element should feel anchored to real-world data (Player Stats, Match Scores).
 - **Speed**: Optimistic UI updates, instant feedback, Skeleton loading states.
 
+### 📱 Mobile-Native Strategy (Universal Code)
+**CRITICAL**: This project is a Monorepo designed to deploy to **Web (Next.js)** and **Mobile (Expo/React Native)**.
+- **Future-Proofing**: Every architectural decision MUST imply a future mobile implementation.
+- **Responsiveness**: "Mobile-First" is not just a buzzword; it is a hard constraint. Complex desktop UIs must have elegant mobile simplifications.
+- **Portability**:
+    - **Logic**: All business logic (fetching, mutations, state) MUST live in `packages/logic` or shared hooks, platform-agnostic (no `window` dependencies).
+    - **UI**: While Web uses HTML/Tailwind, designs must be "React Native compatible" in spirit (avoid complex CSS layout tricks that don't translate to Flexbox).
+
 ---
 
 ## 2. Tech Stack Setup (Dec 2025)
 - **Framework**: Next.js 16.0.8 (App Router)
+- **Mobile**: Expo (React Native) [Planned/In-Repo]
 - **Language**: TypeScript 5.x (Strict Mode)
 - **Styling**: Tailwind CSS 4 (CSS-first config)
 - **Icons**: Lucide React
@@ -24,6 +33,7 @@ Midfield is a **data-driven social network for football (soccer)**. It specifica
 - **Monorepo**: Turborepo + pnpm
 - **Package Structure**:
     - `apps/web`: Next.js Client
+    - `apps/expo`: React Native Client (Future/Current)
     - `packages/logic`: Shared business logic & DB queries
     - `packages/types`: Shared TypeScript definitions
     - `packages/ui`: Shared UI config
@@ -69,7 +79,7 @@ The database does not have separate tables for Clubs/Players. Everything is a **
 
 ### 🔄 Data Fetching Pattern
 1.  **Server Components**: Fetch data directly using `supabase/server`.
-2.  **Client Components**: If interactive, pass data as initial props or use Server Actions.
+2.  **Server Actions**: All mutations (create/update) MUST be Server Actions to be easily callable from Mobile via API or shared SDK in future.
 3.  **Search**: Located in `apps/web/src/app/api/search` or `actions.ts`.
     - **Threshold**: Search results MUST have a relevance score `>= 50` (server-side filter) to avoid noise.
 
@@ -95,12 +105,31 @@ The database does not have separate tables for Clubs/Players. Everything is a **
 
 ---
 
-## 7. Current Project State (Live)
+## 7. Operational Context & Resources
+
+### 🧠 AI Knowledge Context (Dec 2025)
+- **Operating Timeframe**: December 21st, 2025.
+- **Technology Standard**: Bleeding-edge. Next.js 16 (React 19 RC), Tailwind v4 (Oxide engine), Server Actions as default.
+- **Behavioral Rule**: Assume modern capabilities first (e.g., use `useActionState` over manual form handling where applicable).
+
+### 📚 Strategic Foundation
+> **Source Material**: `Midfield – Market Analysis and Strategic Plan.txt` (Project Root)
+
+This analysis is the **initial market research and ideation report**. It provides vital context on strategy and potential features but is **NOT the technical Single Source of Truth** (this file is). Read it to understand the "Why" and the psychological drivers of our users.
+- **Target Persona**: The "Online Super-Fan" — knowledgeable, data-literate, but tired of the noise on X/Twitter and the clumsy UX of legacy forums.
+- **Core Pillars**:
+    1.  **Structure over Chaos**: Topic-based pages (Player/Club/Match) create permanent homes for discussion, unlike ephemeral social feeds.
+    2.  **Data as Context**: "Data Noir" isn't just aesthetic; it empowers fans to debate with facts (stats/ratings) visible instantly.
+    3.  **Civility via UX**: A premium, organized environment subconsciously encourages better behavior than generic "shouting into the void."
+- **Differentiation**: Midfield is NOT a news site (OneFootball) or a game database (SoFIFA) — it is a **Discussion Engine** powered by data.
+
+### 🚦 Current Integration Status
 - **Active Feature**: Player/Club Profiles & Search.
 - **Latest Changes**:
-    - Implemented secure `SECURITY DEFINER` triggers for post counts.
-    - Standardized Player Silhouette fallback with CSS masking.
-    - Refined Search logic to filter low-quality matches.
+    - **KPI Shift**: Switched from "Followers" to **"Takes"** (Post Count) to emphasize active discussion over passive following.
+    - **Security**: Implemented secure `SECURITY DEFINER` triggers for post counts with `search_path` hardening.
+    - **Visuals**: Standardized Player Silhouette fallback with CSS masking (Zoomed Headshot).
+    - **Algorithm**: Refined Search logic to filter low-quality matches (Threshold >= 50).
 - **Next Up**:
     - Advanced match statistics.
     - User authentication flows (Sign up/Login).
