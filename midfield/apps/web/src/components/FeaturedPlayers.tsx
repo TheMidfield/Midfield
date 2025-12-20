@@ -159,9 +159,15 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                     {...PLAYER_IMAGE_STYLE}
                                                 />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-neutral-600">
-                                                    <User className="w-6 h-6" />
-                                                </div>
+                                                <div
+                                                    className="w-full h-full bg-slate-300 dark:bg-neutral-600"
+                                                    style={{
+                                                        mask: "url('/player-silhouette.png') no-repeat center 8px",
+                                                        WebkitMask: "url('/player-silhouette.png') no-repeat center 8px",
+                                                        maskSize: "130%",
+                                                        WebkitMaskSize: "130%"
+                                                    }}
+                                                />
                                             )}
                                         </div>
                                     </div>
@@ -238,9 +244,15 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                         {...PLAYER_IMAGE_STYLE}
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-neutral-600">
-                                                        <User className="w-7 h-7" />
-                                                    </div>
+                                                    <div
+                                                        className="w-full h-full bg-slate-300 dark:bg-neutral-600"
+                                                        style={{
+                                                            mask: "url('/player-silhouette.png') no-repeat center 8px",
+                                                            WebkitMask: "url('/player-silhouette.png') no-repeat center 8px",
+                                                            maskSize: "130%",
+                                                            WebkitMaskSize: "130%"
+                                                        }}
+                                                    />
                                                 )}
                                             </div>
                                         </div>

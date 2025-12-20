@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Users, Share2, MapPin, Calendar, Flag, Ruler, Hash, Activity } from "lucide-react";
+import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Hash, Activity, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -12,7 +12,7 @@ interface EntityHeaderProps {
     type: "club" | "player" | "league";
     imageUrl?: string;
     badgeUrl?: string;
-    followerCount?: number;
+    postCount?: number;
     metadata?: {
         position?: string;
         rating?: string;
@@ -38,7 +38,7 @@ export function EntityHeader({
     type,
     imageUrl,
     badgeUrl,
-    followerCount = 0,
+    postCount = 0,
     metadata,
     backHref = "/",
 }: EntityHeaderProps) {
@@ -117,18 +117,28 @@ export function EntityHeader({
                         <div className="shrink-0">
                             {isPlayer ? (
                                 /* Player: Full headshot, no crop */
-                                <div className="relative pl-6 pt-4" style={{ width: '140px' }}>
+                                /* Player: Full headshot, no crop */
+                                <div
+                                    className={`relative pl-6 ${imageUrl ? 'pt-3' : 'pt-1'}`}
+                                    style={{ width: imageUrl ? '160px' : '180px' }}
+                                >
                                     {imageUrl ? (
                                         <img
                                             src={imageUrl}
                                             alt={title}
                                             className="w-full h-auto object-contain"
-                                            style={{ maxHeight: '160px' }}
+                                            style={{ maxHeight: '180px' }}
                                         />
                                     ) : (
-                                        <div className="w-24 h-32 rounded-lg bg-slate-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
-                                            <span className="text-3xl opacity-20">👤</span>
-                                        </div>
+                                        <div
+                                            className="w-full h-48 bg-slate-300 dark:bg-neutral-700 mx-auto"
+                                            style={{
+                                                mask: "url('/player-silhouette.png') no-repeat bottom center",
+                                                WebkitMask: "url('/player-silhouette.png') no-repeat bottom center",
+                                                maskSize: "contain",
+                                                WebkitMaskSize: "contain"
+                                            }}
+                                        />
                                     )}
                                     {metadata?.rating && (
                                         <div className="absolute top-4 right-0 px-2.5 py-1 bg-slate-900 dark:bg-slate-100 rounded-md text-sm font-bold text-white dark:text-neutral-900">
@@ -246,9 +256,9 @@ export function EntityHeader({
 
                 {/* Footer */}
                 <div className="relative z-10 px-6 py-4 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-neutral-400 text-sm font-semibold">
-                        <Users className="w-4 h-4" />
-                        <span>{followerCount.toLocaleString()} followers</span>
+                    <div className="flex items-center gap-1.5 text-slate-600 dark:text-neutral-400">
+                        <MessageSquare className="w-4 h-4" />
+                        <span>{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-sm font-bold">
                         <Activity className="w-4 h-4" />

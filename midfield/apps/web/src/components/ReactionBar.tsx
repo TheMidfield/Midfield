@@ -79,7 +79,6 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
                     <button
                         key={type}
                         onClick={() => handleReaction(type)}
-                        disabled={isPending}
                         className={`
                             h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium
                             transition-all cursor-pointer border

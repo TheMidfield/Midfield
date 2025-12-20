@@ -116,9 +116,15 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                                 style={PLAYER_IMAGE_STYLE.style}
                             />
                         ) : (
-                            <span className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-                                {player.title?.charAt(0)}
-                            </span>
+                            <div
+                                className="w-full h-full bg-slate-300 dark:bg-neutral-600"
+                                style={{
+                                    mask: "url('/player-silhouette.png') no-repeat center 8px",
+                                    WebkitMask: "url('/player-silhouette.png') no-repeat center 8px",
+                                    maskSize: "130%",
+                                    WebkitMaskSize: "130%"
+                                }}
+                            />
                         )}
                     </div>
 
@@ -182,7 +188,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                 type={isClub ? "club" : "player"}
                 imageUrl={metadata?.photo_url}
                 badgeUrl={metadata?.badge_url}
-                followerCount={topic.follower_count || 12500}
+                postCount={topic.post_count || 0}
                 metadata={{
                     position: metadata?.position,
                     rating: metadata?.rating,

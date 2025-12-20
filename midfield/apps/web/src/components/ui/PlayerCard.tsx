@@ -86,7 +86,15 @@ export const PlayerCard = React.forwardRef<HTMLDivElement, PlayerCardProps>(
                                         className="w-full h-full object-cover object-top origin-top scale-[1.2]"
                                     />
                                 ) : (
-                                    <span className="text-xl opacity-20">👤</span>
+                                    <div
+                                        className="w-full h-full bg-slate-300 dark:bg-neutral-600"
+                                        style={{
+                                            mask: "url('/player-silhouette.png') no-repeat center 8px",
+                                            WebkitMask: "url('/player-silhouette.png') no-repeat center 8px",
+                                            maskSize: "130%",
+                                            WebkitMaskSize: "130%"
+                                        }}
+                                    />
                                 )}
                             </div>
 

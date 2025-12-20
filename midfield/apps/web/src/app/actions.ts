@@ -134,7 +134,7 @@ export async function searchTopics(query: string, type?: string) {
             }
         }
 
-        if (score > 0) {
+        if (score >= 50) {
             scored.push({ topic, score });
         }
     }

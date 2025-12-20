@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Activity, Users, Shield } from "lucide-react";
+import { ArrowRight, Activity, Shield, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
@@ -65,7 +65,19 @@ export function TopicCard({ topic }: { topic: any }) {
                                         style={isClub ? undefined : PLAYER_IMAGE_STYLE.style}
                                     />
                                 ) : (
-                                    <span className="text-2xl opacity-20">👤</span>
+                                    isClub ? (
+                                        <Shield className="w-1/2 h-1/2 text-slate-300 dark:text-neutral-600" />
+                                    ) : (
+                                        <div
+                                            className="w-full h-full bg-slate-300 dark:bg-neutral-600"
+                                            style={{
+                                                mask: "url('/player-silhouette.png') no-repeat center 8px",
+                                                WebkitMask: "url('/player-silhouette.png') no-repeat center 8px",
+                                                maskSize: "130%",
+                                                WebkitMaskSize: "130%"
+                                            }}
+                                        />
+                                    )
                                 )}
                             </div>
 
@@ -134,8 +146,8 @@ export function TopicCard({ topic }: { topic: any }) {
                 {/* Footer Metrics */}
                 <div className="mt-auto pt-3 border-t border-slate-200 dark:border-neutral-800 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors flex items-center justify-between relative z-10">
                     <div className="flex items-center gap-1.5 text-slate-500 dark:text-neutral-400 text-[11px] font-semibold">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>{topic.follower_count?.toLocaleString() || "2.4k"}</span>
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>{topic.post_count?.toLocaleString() || "0"} Takes</span>
                     </div>
 
                     <div className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
