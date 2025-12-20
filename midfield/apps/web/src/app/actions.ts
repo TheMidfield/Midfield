@@ -1,6 +1,6 @@
 "use server";
 
-import { getAllTopics } from "@midfield/logic/src/topics";
+import { createClient } from "@/lib/supabase/server";
 
 // Helper: Remove accents/diacritics for normalization
 function removeDiacritics(str: string): string {
@@ -44,58 +44,113 @@ function getLevenshteinDistance(a: string, b: string): number {
     return matrix[b.length][a.length];
 }
 
+// In-memory cache for topics (avoids re-fetching on every keystroke)
+let topicsCache: any[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 60000; // 1 minute
+
+// Fetch all topics for search with caching
+async function getAllTopicsForSearch() {
+    const now = Date.now();
+    if (topicsCache && (now - cacheTimestamp) < CACHE_TTL) {
+        return topicsCache;
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('topics')
+        .select('id, title, slug, type, metadata')
+        .eq('is_active', true)
+        .order('title', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching topics:', error);
+        return topicsCache || [];
+    }
+
+    topicsCache = data || [];
+    cacheTimestamp = now;
+    return topicsCache;
+}
+
 export async function searchTopics(query: string, type?: string) {
     if (!query || query.length < 2) return [];
 
-    const all = await getAllTopics();
-
-    // Normalize query once
-    const rawQuery = query.toLowerCase();
+    const all = await getAllTopicsForSearch();
+    const rawQuery = query.toLowerCase().trim();
     const normalizedQuery = removeDiacritics(rawQuery);
+    const queryLen = rawQuery.length;
 
-    // Performance: Filter & Map in one pass to avoid heavy calcs on everything
-    // We'll return an object with { topic, score } then sort
-    const results = all
-        .map(topic => {
-            // 0. Filter by type immediately if specified
-            if (type && topic.type !== type) return { topic, score: 0 };
+    // Score each topic
+    const scored: { topic: any; score: number }[] = [];
 
-            const rawTitle = topic.title.toLowerCase();
-            const normalizedTitle = removeDiacritics(rawTitle);
+    for (const topic of all) {
+        // Early type filter
+        if (type && topic.type !== type) continue;
 
-            // 1. Exact Substring Match (Highest Priority)
-            if (rawTitle.includes(rawQuery)) {
-                // Boost exact full matches
-                return { topic, score: rawTitle === rawQuery ? 100 : 90 };
-            }
+        const rawTitle = topic.title.toLowerCase();
+        const normalizedTitle = removeDiacritics(rawTitle);
+        let score = 0;
 
-            // 2. Normalized (Accent-insensitive) Match
-            if (normalizedTitle.includes(normalizedQuery)) {
-                return { topic, score: 80 };
-            }
+        // 1. Exact full match (highest)
+        if (rawTitle === rawQuery || normalizedTitle === normalizedQuery) {
+            score = 100;
+        }
+        // 2. Starts with query (very high - prefix match)
+        else if (rawTitle.startsWith(rawQuery) || normalizedTitle.startsWith(normalizedQuery)) {
+            score = 95;
+        }
+        // 3. Word starts with query (high - e.g. "Manchester United" matches "uni")
+        else if (rawTitle.split(/\s+/).some(w => w.startsWith(rawQuery)) ||
+            normalizedTitle.split(/\s+/).some(w => w.startsWith(normalizedQuery))) {
+            score = 85;
+        }
+        // 4. Contains substring
+        else if (rawTitle.includes(rawQuery) || normalizedTitle.includes(normalizedQuery)) {
+            score = 75;
+        }
+        // 5. Fuzzy match (for typos) - more tolerant
+        else if (queryLen >= 3) {
+            // For short titles, compare directly; for long titles, check each word
+            const words = normalizedTitle.split(/\s+/);
+            let bestDist = Infinity;
 
-            // 3. Fuzzy / Typo Match (Only if query is long enough to justify fuzzy)
-            if (query.length >= 3) {
-                const dist = getLevenshteinDistance(normalizedTitle, normalizedQuery);
-                const maxDist = Math.floor(query.length * 0.3);
-                if (dist <= 2 || dist <= maxDist) {
-                    return { topic, score: 70 - dist };
+            // Check against each word
+            for (const word of words) {
+                if (Math.abs(word.length - queryLen) <= 3) {
+                    const dist = getLevenshteinDistance(word, normalizedQuery);
+                    bestDist = Math.min(bestDist, dist);
                 }
             }
 
-            return { topic, score: 0 };
-        })
-        .filter(item => item.score > 0)
+            // Also check against full title for multi-word queries
+            const fullDist = getLevenshteinDistance(normalizedTitle, normalizedQuery);
+            bestDist = Math.min(bestDist, fullDist);
+
+            // Allow up to 40% of query length as errors, minimum 2
+            const maxDist = Math.max(2, Math.floor(queryLen * 0.4));
+            if (bestDist <= maxDist) {
+                score = 60 - bestDist * 5; // Lower score for more errors
+            }
+        }
+
+        if (score > 0) {
+            scored.push({ topic, score });
+        }
+    }
+
+    // Sort by score (best first) and take top 8
+    const results = scored
         .sort((a, b) => b.score - a.score)
-        .map(item => item.topic)
-        .slice(0, 5);
+        .slice(0, 8)
+        .map(item => item.topic);
 
     // Enrich player results with club info
     if (results.length > 0) {
-        const { supabase } = await import("@midfield/logic/src/supabase");
         const playerIds = results.filter((t: any) => t.type === 'player').map((t: any) => t.id);
 
         if (playerIds.length > 0) {
+            const supabase = await createClient();
             const { data: relationships } = await supabase
                 .from('topic_relationships')
                 .select(`
@@ -138,7 +193,6 @@ export async function searchTopics(query: string, type?: string) {
 // ============================================
 
 import { createPost as createPostDB, getPostsByTopic as getPostsDB } from "@midfield/logic/src/posts";
-import { createClient } from "@/lib/supabase/server";
 
 /**
  * Create a new Take (root-level post) on a topic
@@ -279,6 +333,58 @@ export async function getTakes(topicId: string) {
 }
 
 /**
+ * Get Takes (root posts) for a topic with cursor-based pagination
+ * @param topicId - The topic ID to fetch posts for
+ * @param options.cursor - The created_at of the last post (for cursor-based pagination)
+ * @param options.limit - Number of posts to fetch (default 10)
+ * @returns { posts, hasMore, nextCursor }
+ */
+export async function getTakesPaginated(
+    topicId: string,
+    options?: { cursor?: string; limit?: number }
+) {
+    const supabase = await createClient();
+    const limit = options?.limit || 10;
+
+    let query = supabase
+        .from('posts')
+        .select(`
+            *,
+            author:users(*)
+        `)
+        .eq('topic_id', topicId)
+        .eq('is_deleted', false)
+        .is('parent_post_id', null)
+        .order('created_at', { ascending: false })
+        .limit(limit + 1); // Fetch one extra to check if there's more
+
+    // If cursor provided, get posts older than cursor
+    if (options?.cursor) {
+        query = query.lt('created_at', options.cursor);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching takes:', error);
+        return { posts: [], hasMore: false, nextCursor: null };
+    }
+
+    const posts = data || [];
+    const hasMore = posts.length > limit;
+
+    // Remove the extra item we fetched for hasMore check
+    if (hasMore) {
+        posts.pop();
+    }
+
+    // Next cursor is the created_at of the last post
+    const nextCursor = posts.length > 0 ? posts[posts.length - 1].created_at : null;
+
+    return { posts, hasMore, nextCursor };
+}
+
+/**
  * Get replies for a Take
  */
 export async function getReplies(rootPostId: string) {
@@ -321,6 +427,101 @@ export async function getReplies(rootPostId: string) {
     }
 
     return data || [];
+}
+
+/**
+ * Update a post's content (owner only)
+ */
+export async function updatePost(postId: string, content: string) {
+    const supabase = await createClient();
+
+    // Get authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, error: 'You must be signed in to edit' };
+    }
+
+    // Verify ownership
+    const { data: existingPost } = await supabase
+        .from('posts')
+        .select('author_id')
+        .eq('id', postId)
+        .single();
+
+    if (!existingPost || existingPost.author_id !== user.id) {
+        return { success: false, error: 'You can only edit your own posts' };
+    }
+
+    const { data, error } = await supabase
+        .from('posts')
+        .update({
+            content: content.trim(),
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select()
+        .single();
+
+    if (error) {
+        console.error('Error updating post:', error);
+        return { success: false, error: error.message };
+    }
+
+    return { success: true, post: data };
+}
+
+/**
+ * Soft delete a post (owner only) - marks as deleted, doesn't remove from DB
+ */
+export async function deletePost(postId: string) {
+    const supabase = await createClient();
+
+    // Get authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, error: 'You must be signed in to delete' };
+    }
+
+    // Verify ownership
+    const { data: existingPost } = await supabase
+        .from('posts')
+        .select('author_id, root_post_id')
+        .eq('id', postId)
+        .single();
+
+    if (!existingPost || existingPost.author_id !== user.id) {
+        return { success: false, error: 'You can only delete your own posts' };
+    }
+
+    const { error } = await supabase
+        .from('posts')
+        .update({ is_deleted: true })
+        .eq('id', postId);
+
+    if (error) {
+        console.error('Error deleting post:', error);
+        return { success: false, error: error.message };
+    }
+
+    // If this was a reply, decrement reply_count on root post
+    if (existingPost.root_post_id) {
+        const { data: rootPost } = await supabase
+            .from('posts')
+            .select('reply_count')
+            .eq('id', existingPost.root_post_id)
+            .single();
+
+        if (rootPost && (rootPost.reply_count || 0) > 0) {
+            await supabase
+                .from('posts')
+                .update({ reply_count: (rootPost.reply_count || 0) - 1 })
+                .eq('id', existingPost.root_post_id);
+        }
+    }
+
+    return { success: true };
 }
 
 // ============================================
@@ -404,4 +605,99 @@ export async function getReactionCounts(postId: string) {
     });
 
     return counts;
+}
+
+// ============================================
+// BOOKMARKS
+// ============================================
+
+/**
+ * Toggle bookmark on a post
+ */
+export async function toggleBookmark(postId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        return { success: false, error: 'Not authenticated', isBookmarked: false };
+    }
+
+    // Check if bookmark exists
+    const { data: existing } = await supabase
+        .from('bookmarks' as any)
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('post_id', postId)
+        .single();
+
+    if (existing) {
+        // Remove bookmark
+        await supabase
+            .from('bookmarks' as any)
+            .delete()
+            .eq('user_id', user.id)
+            .eq('post_id', postId);
+        return { success: true, isBookmarked: false };
+    } else {
+        // Add bookmark
+        await supabase
+            .from('bookmarks' as any)
+            .insert({ user_id: user.id, post_id: postId });
+        return { success: true, isBookmarked: true };
+    }
+}
+
+/**
+ * Check if a post is bookmarked by current user
+ */
+export async function isPostBookmarked(postId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return false;
+
+    const { data } = await supabase
+        .from('bookmarks' as any)
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('post_id', postId)
+        .single();
+
+    return !!data;
+}
+
+/**
+ * Get all bookmarked posts for current user
+ */
+export async function getBookmarkedPosts() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from('bookmarks' as any)
+        .select(`
+            post_id,
+            created_at,
+            posts:post_id (
+                id,
+                content,
+                created_at,
+                author_id,
+                topic_id,
+                reply_count,
+                author:author_id (
+                    username,
+                    avatar_url
+                )
+            )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    if (error || !data) return [];
+
+    // Extract post data
+    return data.map((b: any) => b.posts).filter(Boolean);
 }

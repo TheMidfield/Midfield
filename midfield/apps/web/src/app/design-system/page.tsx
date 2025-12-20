@@ -15,6 +15,7 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PlayerCard } from "@/components/ui/PlayerCard";
 import { ClubCard } from "@/components/ui/ClubCard";
+import { ModalShowcase } from "@/components/design-system/ModalShowcase";
 import {
     AlertCircle, Check, Terminal, User, ArrowRight, Zap, Search, Shield, Layout, MousePointer2,
     Download, Upload, Plus, Settings, Trash2, Edit, Heart, Share2, Star, TrendingUp, Users,
@@ -209,7 +210,7 @@ export default function DesignSystemPage() {
             {/* Domain Components - Player & Club Cards */}
             <section className="space-y-8">
                 <SectionHeader title="Domain Components" description="Player and club cards that embody the Midfield aesthetic." />
-                
+
                 <div className="space-y-6">
                     <Typography variant="h4">Player Cards</Typography>
                     <div className="grid md:grid-cols-3 gap-6">
@@ -321,6 +322,9 @@ export default function DesignSystemPage() {
                             </DialogContent>
                         </Dialog>
                     </div>
+
+                    {/* System Modals Showcase */}
+                    <ModalShowcase />
 
                     {/* Search Input */}
                     <div className="space-y-6">

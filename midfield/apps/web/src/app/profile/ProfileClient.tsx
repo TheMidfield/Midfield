@@ -4,7 +4,7 @@ import { useState, useRef, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle } from "lucide-react";
+import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight } from "lucide-react";
 import { uploadAvatar, updateProfile } from "./actions";
 import { signOut } from "@/app/auth/actions";
 
@@ -286,6 +286,25 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                         </div>
                     </div>
                 </div>
+            </Card>
+
+            {/* Bookmarks Section */}
+            <Card style={{ padding: '0', marginBottom: '24px', overflow: 'hidden' }}>
+                <a
+                    href="/profile/bookmarks"
+                    className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                            <Bookmark className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-neutral-100">Bookmarks</p>
+                            <p className="text-xs text-slate-500 dark:text-neutral-400">Posts you've saved</p>
+                        </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-400 dark:text-neutral-500" />
+                </a>
             </Card>
 
             {/* Sign Out */}

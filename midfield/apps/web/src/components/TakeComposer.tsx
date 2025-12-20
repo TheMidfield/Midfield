@@ -3,7 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { createTake } from "@/app/actions";
-import { Send, User } from "lucide-react";
+import { ArrowRight, User } from "lucide-react";
 
 interface TakeComposerProps {
     topicId: string;
@@ -127,7 +127,7 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
                                 type="submit"
                                 disabled={!content.trim() || isPending || isOverLimit}
                                 size="sm"
-                                icon={Send}
+                                icon={ArrowRight}
                                 className={!isFocused && !content ? 'opacity-40' : ''}
                             >
                                 {isPending ? "Posting..." : "Post"}

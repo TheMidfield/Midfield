@@ -9,7 +9,8 @@ export const getTopics = async (): Promise<Topic[]> => {
         .from('topics')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(2000); // Override Supabase default of 1000
 
     if (error) {
         console.error('Error fetching topics:', error);

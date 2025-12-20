@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { TakeComposer } from "@/components/TakeComposer";
 import { TakeFeed } from "@/components/TakeFeed";
 import { EntityHeader } from "@/components/EntityHeader";
@@ -17,6 +17,7 @@ interface TopicPageClientProps {
     playerClub?: any;
     posts?: any[];
     currentUser?: {
+        id?: string;
         avatar_url: string | null;
         username: string | null;
     };
@@ -49,8 +50,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
     // Players section always open for clubs
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isClub ? ["players"] : ["stats"]));
 
-    // Local posts state for optimistic updates
-    const [localPosts, setLocalPosts] = useState(posts);
+    // Ref to add posts to TakeFeed
+    const addPostRef = useRef<((post: any) => void) | null>(null);
 
     const toggleSection = (section: string) => {
         setExpandedSections(prev => {
@@ -61,9 +62,9 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
         });
     };
 
-    // Handle new post - add to top of feed
+    // Handle new post - add to top of feed via ref
     const handlePostSuccess = (newPost: any) => {
-        setLocalPosts(prev => [newPost, ...prev]);
+        addPostRef.current?.(newPost);
     };
 
     // Define sections based on entity type
@@ -374,7 +375,12 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                         onSuccess={handlePostSuccess}
                     />
 
-                    <TakeFeed posts={localPosts} currentUser={currentUser} />
+                    <TakeFeed
+                        initialPosts={posts}
+                        topicId={topic.id}
+                        currentUser={currentUser}
+                        onAddPostRef={addPostRef}
+                    />
                 </main>
             </div>
         </div>

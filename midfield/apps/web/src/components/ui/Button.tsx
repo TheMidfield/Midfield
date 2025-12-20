@@ -9,8 +9,8 @@ const buttonVariants = cva(
     {
         variants: {
             variant: {
-                default: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 transition-colors cursor-pointer",
-                destructive: "bg-red-500 text-white hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-500 transition-colors cursor-pointer",
+                default: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-650 dark:hover:bg-emerald-550 transition-colors cursor-pointer",
+                destructive: "bg-red-600 text-white hover:bg-red-500 dark:bg-red-650 dark:hover:bg-red-550 transition-colors cursor-pointer",
                 outline: "border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 hover:border-slate-400 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all cursor-pointer",
                 secondary: "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer",
                 ghost: "text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 transition-all cursor-pointer",
@@ -19,7 +19,7 @@ const buttonVariants = cva(
                 subtle: "bg-slate-50 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-700 hover:text-slate-900 dark:hover:text-neutral-100 transition-all cursor-pointer",
                 feature: "bg-slate-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-slate-700 dark:hover:bg-neutral-200 transition-colors cursor-pointer",
                 stroke: "border-2 border-slate-300 dark:border-neutral-700 bg-transparent text-slate-900 dark:text-neutral-100 hover:border-slate-900 dark:hover:border-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all cursor-pointer",
-                pill: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-500 dark:hover:bg-emerald-400 transition-colors cursor-pointer",
+                pill: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-650 dark:hover:bg-emerald-550 transition-colors cursor-pointer",
                 "pill-outline": "border-2 border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all cursor-pointer",
                 "pill-secondary": "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer",
             },

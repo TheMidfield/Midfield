@@ -25,6 +25,12 @@
     --color-midfield-green: #10b981;
     --color-midfield-dark: #1A1A1A;
     --color-midfield-surface: #262626;
+
+    /* Custom Button Shades */
+    --color-emerald-550: #0aa875;
+    --color-emerald-650: #048760;
+    --color-red-550: #e53535;
+    --color-red-650: #cb2121;
 }
 
 /* Configure dark mode */

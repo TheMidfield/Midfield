@@ -54,6 +54,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             playerClub={playerClub}
             posts={posts}
             currentUser={{
+                id: userData?.user?.id,
                 avatar_url: userData?.profile?.avatar_url || null,
                 username: userData?.profile?.username || null,
             }
