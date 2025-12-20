@@ -124,12 +124,20 @@ This analysis is the **initial market research and ideation report**. It provide
 - **Differentiation**: Midfield is NOT a news site (OneFootball) or a game database (SoFIFA) — it is a **Discussion Engine** powered by data.
 
 ### 🚦 Current Integration Status
-- **Active Feature**: Player/Club Profiles & Search.
+
+#### 🌍 Universal Code (Mobile/Web)
+- **Logic Pillars**: ✅ `Search` and ✅ `Posts/Reactions` logic have been extracted to `packages/logic`. The Web App now consumes them as a client.
+- **Shared Types**: ✅ `packages/types` exports standard Supabase definitions (`User`, `Topic`, `Post`).
+- **Pending Debt**:
+    - Shared Logic currently uses looser typing (`any` for supabase client) to speed up migration. Needs strict typing later.
+    - UI Components are still Web-bound (`apps/web/components`). `packages/ui` is waiting for a unified design system extraction.
+
+#### 🏗️ Active Features
+- **Feature**: Player/Club Profiles & Search.
 - **Latest Changes**:
+    - **Logic Refactor**: Migrated core business logic to shared packages to enable Mobile scalability.
     - **KPI Shift**: Switched from "Followers" to **"Takes"** (Post Count) to emphasize active discussion over passive following.
     - **Security**: Implemented secure `SECURITY DEFINER` triggers for post counts with `search_path` hardening.
-    - **Visuals**: Standardized Player Silhouette fallback with CSS masking (Zoomed Headshot).
-    - **Algorithm**: Refined Search logic to filter low-quality matches (Threshold >= 50).
 - **Next Up**:
     - Advanced match statistics.
     - User authentication flows (Sign up/Login).
