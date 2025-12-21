@@ -7,7 +7,6 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
 import { NavbarSearch } from "./NavbarSearch";
-import { Logo } from "./Logo";
 import { useEffect, useState } from "react";
 
 export function Navbar() {
@@ -56,11 +55,15 @@ export function Navbar() {
 
                 {/* Left: Brand + Nav */}
                 <div className="flex items-center gap-8">
-                    <Link href="/" className="flex items-center gap-2.5 group">
-                        <div className="w-10 h-10 transition-transform group-hover:scale-105">
-                            <Logo className="w-full h-full" />
-                        </div>
-                        <span className="font-extrabold text-xl tracking-tight text-slate-900 dark:text-neutral-100">Midfield</span>
+                    <Link href="/" className="flex items-center gap-2.5">
+                        <img
+                            src="/midfield-logo.png"
+                            alt=""
+                            className="h-9 w-auto"
+                        />
+                        <span className="font-black text-xl tracking-tighter text-slate-900 dark:text-neutral-100 uppercase">
+                            Midfield
+                        </span>
                     </Link>
 
                     <div className="hidden md:flex items-center gap-1">
