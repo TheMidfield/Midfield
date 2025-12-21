@@ -24,6 +24,9 @@ interface Post {
 interface TakeFeedProps {
     initialPosts: Post[];
     topicId: string;
+    topicTitle?: string;
+    topicImageUrl?: string;
+    topicType?: string;
     emptyTitle?: string;
     emptyMessage?: string;
     currentUser?: {
@@ -37,6 +40,9 @@ interface TakeFeedProps {
 export function TakeFeed({
     initialPosts,
     topicId,
+    topicTitle,
+    topicImageUrl,
+    topicType,
     emptyTitle,
     emptyMessage,
     currentUser,
@@ -137,6 +143,9 @@ export function TakeFeed({
                     userReaction={post.userReaction}
                     currentUser={currentUser}
                     onDelete={handleDelete}
+                    topicTitle={topicTitle}
+                    topicImageUrl={topicImageUrl}
+                    topicType={topicType}
                 />
             ))}
 

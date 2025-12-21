@@ -380,12 +380,16 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                         topicTitle={topic.title}
                         userAvatar={currentUser?.avatar_url}
                         username={currentUser?.username}
+                        userId={currentUser?.id}
                         onSuccess={handlePostSuccess}
                     />
 
                     <TakeFeed
                         initialPosts={posts}
                         topicId={topic.id}
+                        topicTitle={topic.title}
+                        topicImageUrl={isClub ? metadata?.badge_url : metadata?.photo_url}
+                        topicType={topic.type}
                         currentUser={currentUser}
                         onAddPostRef={addPostRef}
                     />

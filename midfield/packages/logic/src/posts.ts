@@ -247,20 +247,11 @@ export async function deletePostLogic(supabase: any, postId: string, userId: str
         return { success: false, error: error.message };
     }
 
-    // If this was a reply, decrement reply_count on root post
+    // If this was a reply, decrement reply_count on root post using SECURITY DEFINER function
     if (existingPost.root_post_id) {
-        const { data: rootPost } = await supabase
-            .from('posts')
-            .select('reply_count')
-            .eq('id', existingPost.root_post_id)
-            .single();
-
-        if (rootPost && (rootPost.reply_count || 0) > 0) {
-            await supabase
-                .from('posts')
-                .update({ reply_count: (rootPost.reply_count || 0) - 1 })
-                .eq('id', existingPost.root_post_id);
-        }
+        await supabase.rpc('decrement_reply_count', {
+            root_post_id_param: existingPost.root_post_id
+        });
     }
 
     return { success: true };

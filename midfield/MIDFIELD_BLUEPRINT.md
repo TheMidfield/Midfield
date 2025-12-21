@@ -109,6 +109,12 @@ D) PERFORMANCE HARD LAWS
 - Memoize expensive derivations (sorting, scoring, grouping) where it matters
 - Zero bloat discipline: no heavy libs without explicit justification
 
+I) TAILWIND V4 LAYOUT LAW (CRITICAL)
+- width/max-width/margin:auto MUST use inline styles (not Tailwind classes)
+- Tailwind v4 width classes (w-full, max-w-*) collapse in flex containers
+- See: .agent/workflows/prevent-layout-bugs.md for full details
+- This is a KNOWN BUG pattern - always use style={{ width: '100%' }}
+
 E) IMAGE LAW (100/100 PERFORMANCE KILLER)
 - next/image ONLY for entity/user content (no raw <img> tags)
 - Configure next.config for remotePatterns:
@@ -137,6 +143,22 @@ H) SECURITY CITADEL (NON-NEGOTIABLE)
   - SECURITY DEFINER
   - MUST include: SET search_path = public (prevents search path hijacking)
 - Avoid dynamic SQL from user input inside privileged functions
+
+J) SUPABASE MCP SERVER (USE WITH EXTREME CARE)
+- We have access to Supabase MCP server for database operations
+- Usage philosophy: SPARINGLY and with extreme caution
+- Prefer migrations in supabase/migrations/ for all schema changes
+- Only use MCP for:
+  - Emergency fixes (like RLS policy hotfixes)
+  - One-off data corrections
+  - Quick diagnostic queries
+- NEVER use for:
+  - Regular development workflow
+  - Bulk data operations without review
+  - Production schema changes without migration files
+- Every MCP operation should be followed by a proper migration file
+- Rationale: Migration files are version controlled, reviewable, and portable
+
 
 ──────────────────────────────────────────────────────────────────────────────
 4) DESIGN SYSTEM — “MIDFIELD PREMIUM / DATA NOIR”
@@ -183,6 +205,10 @@ C) UI PHYSICS / MICRO-RULES (DETAILS MATTER)
 - Keep visual hierarchy strong:
   - primary info must remain primary at all breakpoints
 - No random shadows; borders are the language.
+- Corner radius standard: rounded-md (8px) for ALL components
+  - Cards, buttons, inputs, modals, badges, avatars, etc.
+  - Consistent radius creates visual harmony
+  - Exceptions only when explicitly justified
 
 D) COMPONENT ARCHETYPES (CANONICAL)
 1) Player / Entity avatars (fallback silhouette):

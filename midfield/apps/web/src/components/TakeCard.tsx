@@ -7,7 +7,10 @@ import { ReactionBar } from "./ReactionBar";
 import { ReactionType, createReply, getReplies, updatePost, deletePost, toggleBookmark } from "@/app/actions";
 import { Button } from "./ui/Button";
 import { ConfirmModal } from "./ui/ConfirmModal";
+import { ShareModal } from "./ui/ShareModal";
 import { Toast } from "./ui/Toast";
+import { AuthModal } from "./ui/AuthModal";
+import { useAuthModal } from "./ui/useAuthModal";
 import { cn } from "@/lib/utils";
 
 interface Reply {
@@ -53,9 +56,12 @@ interface TakeCardProps {
     };
     onDelete?: (postId: string) => void;
     isBookmarked?: boolean;
+    topicTitle?: string;
+    topicImageUrl?: string;
+    topicType?: string;
 }
 
-export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReaction, currentUser, onDelete, isBookmarked: initialIsBookmarked }: TakeCardProps) {
+export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReaction, currentUser, onDelete, isBookmarked: initialIsBookmarked, topicTitle, topicImageUrl, topicType }: TakeCardProps) {
     // Default expanded if there are replies (Always show full replies)
     const [isExpanded, setIsExpanded] = useState((post.reply_count || 0) > 0);
     const [isReplying, setIsReplying] = useState(false);
@@ -76,6 +82,10 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
     const replyComposerRef = useRef<HTMLDivElement>(null);
     const replyRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
+    // Auth modal management
+    const { isAuthModalOpen, authModalContext, requireAuth, closeAuthModal } = useAuthModal();
+    const isAuthenticated = !!currentUser?.id;
+
     // Edit/Delete state
     const [isEditing, setIsEditing] = useState(false);
     const [editContent, setEditContent] = useState(post.content);
@@ -85,6 +95,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
     const [bookmarked, setBookmarked] = useState(initialIsBookmarked ?? false);
     const [wasEdited, setWasEdited] = useState(post.updated_at && post.updated_at !== post.created_at);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
     const editInputRef = useRef<HTMLTextAreaElement>(null);
 
     // Check if current user owns this post
@@ -118,6 +129,9 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
     }, [isReplying]);
 
     const handleReplyClick = () => {
+        // Check auth first
+        if (!requireAuth(isAuthenticated, "reply")) return;
+
         if (isReplying && !replyingTo) {
             setIsReplying(false);
         } else {
@@ -171,6 +185,9 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
     };
 
     const handleReplyToComment = (commentId: string, username: string, content: string) => {
+        // Check auth first
+        if (!requireAuth(isAuthenticated, "reply")) return;
+
         setIsReplying(true);
         setReplyingTo({ id: commentId, username, content });
         setIsExpanded(true);
@@ -261,6 +278,9 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
     // Bookmark handler
     const handleBookmark = () => {
+        // Check auth first
+        if (!requireAuth(isAuthenticated, "bookmark")) return;
+
         // Optimistic update
         setBookmarked(!bookmarked);
         startTransition(async () => {
@@ -279,6 +299,11 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
     return (
         <>
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={closeAuthModal}
+                context={authModalContext}
+            />
             <Toast message={toastState.message} type={toastState.type} />
             <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-5">
                 <div className="grid grid-cols-[48px_1fr] gap-x-0">
@@ -443,7 +468,10 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                     <Bookmark className={`w-4 h-4 ${bookmarked ? 'fill-current' : ''}`} />
                                 </button>
 
-                                <button className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer">
+                                <button
+                                    onClick={() => setShowShareModal(true)}
+                                    className="w-8 h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                >
                                     <Share className="w-4 h-4" />
                                 </button>
                             </div>
@@ -666,6 +694,19 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     message="This action cannot be undone."
                     confirmText="Delete"
                     variant="danger"
+                />
+
+                {/* Share Modal */}
+                <ShareModal
+                    isOpen={showShareModal}
+                    onClose={() => setShowShareModal(false)}
+                    content={localContent}
+                    authorUsername={authorHandle}
+                    authorAvatar={post.author?.avatar_url}
+                    createdAt={post.created_at}
+                    topicTitle={topicTitle}
+                    topicImageUrl={topicImageUrl}
+                    topicType={topicType}
                 />
             </article>
         </>

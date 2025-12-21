@@ -117,7 +117,7 @@ export function EntityHeader({
                 )}
 
                 {/* Content */}
-                <div className="relative z-10">
+                <div className="relative z-10 ml-6">
                     <div className={`flex gap-6 ${isPlayer ? 'items-end' : 'items-center'}`}>
                         {/* Avatar */}
                         <div className="shrink-0">
@@ -154,7 +154,7 @@ export function EntityHeader({
                                 </div>
                             ) : (
                                 /* Club: Badge with minimal padding */
-                                <div className="pl-6 py-4 relative w-24 h-24">
+                                <div className="pl-6 py-20 relative w-32 h-32">
                                     <NextImage // Adjusted wrapper div to be relative size context
                                         src={badgeUrl || ''}
                                         alt={title}
