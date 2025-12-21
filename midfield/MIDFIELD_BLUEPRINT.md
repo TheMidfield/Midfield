@@ -1,0 +1,274 @@
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.0)
+STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
+OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
+FORGE DATE: DEC 21, 2025
+OWNER: Developer is the master of this repo. Standards are non-negotiable.
+
+This file is designed to enable “fresh context window” resets at any time.
+If the developer starts a new chat and says: “Read @MIDFIELD_BLUEPRINT.md”
+…the assistant is expected to become fully operational immediately.
+
+──────────────────────────────────────────────────────────────────────────────
+0) THE SUCCESSOR PROTOCOL (BATON PASS)
+──────────────────────────────────────────────────────────────────────────────
+
+You are a successor agent. Treat this file as law.
+
+Expected first response AFTER reading this file (do NOT be generic):
+- Confirm you fully internalized the doctrine.
+- State you are ready to execute immediately.
+- Ask at most ONE high-leverage question only if absolutely necessary.
+- Otherwise propose the next actionable step(s) with confidence.
+
+Example readiness response style (template):
+“Doctrine read and internalized. I’m aligned on Data Noir, performance/SEO 100/100, mobile-native portability, and zero-regression desktop UI. Ready to execute. Give me the next objective.”
+
+Non-negotiables:
+1) DESKTOP IS SACRED: If it’s amazing on full-width laptop/PC, do not ‘improve’ it.
+2) PERFORMANCE IS RELIGION: No waterfalls. No bloat. No accidental heavy client JS.
+3) SEO IS A GROWTH WEAPON: Sharing previews + crawlability + speed signals must be excellent.
+4) MOBILE-NATIVE IS LAW: Web decisions must translate to Expo/RN patterns.
+5) NO OVERENGINEERING: Prefer boring, proven solutions. Complexity must justify itself.
+
+LIVING DOCTRINE REQUIREMENT:
+- You MUST update this file as work progresses whenever you discover:
+  - a new non-obvious design law
+  - a performance/SEO rule or recurring pitfall
+  - a solved regression pattern
+  - a finalized component archetype
+  - a security mandate
+  - any “we always do it this way” decision
+Goal: baton must be passable at any moment.
+
+──────────────────────────────────────────────────────────────────────────────
+1) MIDFIELD — STRATEGIC NUCLEUS (THE WHY)
+──────────────────────────────────────────────────────────────────────────────
+
+Midfield is a data-driven football discussion engine: structured topic pages + takes.
+It bridges hard stats (TheSportsDB) and community opinion (Takes).
+
+Product pillars:
+- STRUCTURE OVER CHAOS: Topic pages are permanent homes for discussion (vs ephemeral feeds).
+- DATA AS CONTEXT (“DATA NOIR”): UI feels like premium sports analytics; debate anchored in facts.
+- CIVILITY VIA UX: Premium organized UI nudges better behavior than generic social streams.
+
+Target persona:
+- Online Super-Fan: data-literate, high engagement, tired of noise, wants organized debate.
+
+Strategic truth:
+- Every shared link is a growth surface → previews must look perfect (OG/Twitter).
+- Speed is a feature (perceived quality + SEO + retention).
+
+──────────────────────────────────────────────────────────────────────────────
+2) TECH STACK & REPO TOPOLOGY (DEC 2025)
+──────────────────────────────────────────────────────────────────────────────
+
+Stack:
+- Next.js 16.x (App Router), React 19, TypeScript strict
+- Tailwind CSS v4 (CSS-first config)
+- Supabase (Postgres + Auth + Edge Functions + Realtime)
+- Turborepo + pnpm
+- Icons: lucide-react (tree-shakeable)
+
+Monorepo structure:
+- apps/web        → Next.js app (UI + routing)
+- apps/expo       → Expo/RN app (planned/in-repo)
+- packages/logic   → shared business logic (platform-agnostic)
+- packages/types   → shared TypeScript types
+- packages/ui      → shared design tokens (Tailwind v4 tokens, utilities)
+
+Operating rule:
+- Anything that must exist on mobile later must NOT be trapped inside apps/web UI code.
+
+──────────────────────────────────────────────────────────────────────────────
+3) ARCHITECTURAL CODEX (THE HOW)
+──────────────────────────────────────────────────────────────────────────────
+
+A) UNIFIED ENTITY MODEL: “topics”
+- Every entity is a Topic: club, player, league, match, etc.
+- topics.type discriminates entity type
+- topics.metadata (JSONB) stores flexible fields (position, kit, etc.)
+- topic_relationships stores graph links (club→player, league→club, etc.)
+
+B) UNIVERSAL CODE RELIGION (MOBILE-NATIVE LAW)
+- Business logic belongs in packages/logic:
+  - fetching queries, transformations, ranking, search, server action helpers
+- UI belongs in apps/web; avoid mixing UI layer with query/business rules.
+- Logic must be platform-agnostic:
+  - no window/document assumptions
+  - accept typed SupabaseClient where appropriate
+
+C) DATA FLOW RULES (NEXT.JS APP ROUTER)
+- Prefer Server Components for data fetching
+- Mutations should be Server Actions (portable and consistent)
+- Avoid client-side fetch waterfalls and client-only data dependency chains
+
+D) PERFORMANCE HARD LAWS
+- NO sequential awaits for independent fetches: use Promise.all
+- Avoid unnecessary client components; keep client JS minimal
+- Memoize expensive derivations (sorting, scoring, grouping) where it matters
+- Zero bloat discipline: no heavy libs without explicit justification
+
+E) IMAGE LAW (100/100 PERFORMANCE KILLER)
+- next/image ONLY for entity/user content (no raw <img> tags)
+- Configure next.config for remotePatterns:
+  - supabase storage domain
+  - r2.thesportsdb.com / www.thesportsdb.com
+  - api.dicebear.com (if used)
+- Ensure images use appropriate sizing (sizes prop / width/height)
+- This is a core Core Web Vitals lever (LCP).
+
+F) SEO LAW (100/100 DISCOVERABILITY)
+- Every page must have correct metadata:
+  - metadataBase
+  - openGraph (title/description/url/images/siteName)
+  - twitter (cards; still used by X)
+- Sharing previews must never be broken.
+- Crawlability requires fast SSR and stable structure.
+- SEO is not keyword spam; it’s structure + speed + clean metadata.
+
+G) SEARCH QUALITY BASELINE
+- Server-side filter: relevance score must be >= 50
+- Low-score results are noise; do not show them.
+
+H) SECURITY CITADEL (NON-NEGOTIABLE)
+- RLS: principle of least privilege
+- Triggers / privileged DB functions:
+  - SECURITY DEFINER
+  - MUST include: SET search_path = public (prevents search path hijacking)
+- Avoid dynamic SQL from user input inside privileged functions
+
+──────────────────────────────────────────────────────────────────────────────
+4) DESIGN SYSTEM — “MIDFIELD PREMIUM / DATA NOIR”
+──────────────────────────────────────────────────────────────────────────────
+
+Design objective:
+- Premium sports analytics vibe: high contrast, sharp borders, minimal shadows.
+- “Sleek, data-first, intentional.” If it looks generic, it fails.
+
+A) THE 5 IMMUTABLE DESIGN LAWS
+1) Mandatory Hover:
+   - Every interactive element must have a visible hover state (no invisible click areas).
+   - Prefer color/border shifts over scaling.
+2) No Native Alerts:
+   - NEVER use window.alert/confirm. Use Toast system.
+3) Strict Border Hierarchy:
+   - Borders define structure; avoid soft shadows.
+4) Optical Alignment:
+   - Icons beside multi-line text must be items-start + mt-0.5/mt-1 for x-height alignment.
+5) Theme Consistency:
+   - Light: slate-50 → slate-900
+   - Dark: neutral-900 background, neutral-100 text
+   - Primary accent: Emerald with precise steps (below)
+
+B) COLOR CODEX (NON-NEGOTIABLE STEPS)
+- Primary button:
+  - Light: emerald-600 (base), emerald-500 (hover)
+  - Dark: emerald-650 (base), emerald-550 (hover)
+- Destructive button:
+  - Light: red-600 (base), red-500 (hover)
+  - Dark: red-650 (base), red-550 (hover)
+- Borders:
+  - Light: slate-200 / slate-300
+  - Dark: neutral-800 / neutral-700
+- Backgrounds:
+  - Light: slate-50 / slate-100
+  - Dark: neutral-900 / neutral-800
+
+C) UI PHYSICS / MICRO-RULES (DETAILS MATTER)
+- Every clickable non-button must explicitly have cursor-pointer.
+- Avoid “accidental layout”: spacing rhythm must feel designed.
+- Long names must not break layout:
+  - use line-clamp / truncation intentionally
+- Keep visual hierarchy strong:
+  - primary info must remain primary at all breakpoints
+- No random shadows; borders are the language.
+
+D) COMPONENT ARCHETYPES (CANONICAL)
+1) Player / Entity avatars (fallback silhouette):
+   - /player-silhouette.png
+   - Mask science:
+     - mask-position: center 8px (reduces top gap)
+     - mask-size: 130% (headshot zoom)
+   - Note: next/image fill requires a relative parent container.
+
+2) Topic cards:
+   - Premium, sharp, clean.
+   - Watermark badges allowed at extremely low opacity (0.04–0.08).
+   - For badge fill containers use padding (e.g., p-1) to avoid clipping.
+
+3) Modals: “Holy Trinity”
+   - Header: icon + title aligned perfectly
+   - Body: full-width text, NEVER indented under the header icon
+   - Footer: symmetrical ghost buttons with minimum width for visual balance
+
+E) “MOBILE-FIRST” RESPONSIVENESS LAW (DESIGN, NOT JUST CSS)
+- Desktop full-width is already amazing: DO NOT change it.
+- Smaller sizes must be equally intentional:
+  - no cramped density
+  - no broken hierarchy
+  - no accidental stacking
+- Prefer breakpoint-scoped changes that do not affect large screens.
+
+──────────────────────────────────────────────────────────────────────────────
+5) RESPONSIVENESS DOCTRINE (QUALITY BAR)
+──────────────────────────────────────────────────────────────────────────────
+
+Goal:
+Every single element must look intentionally placed at every window size.
+Nothing should feel “collapsed” or “just wrapped.”
+
+Non-negotiable constraint:
+- If it looks amazing on desktop, do not modify that desktop layout.
+- Fix responsiveness by adapting at smaller breakpoints only.
+
+Responsive audit checklist (mental model):
+- No horizontal scroll
+- Consistent gutters/padding across breakpoints
+- Typography remains readable (line length, truncation, hierarchy)
+- Tap targets are usable on mobile (spacing, hit areas)
+- Cards/lists don’t become dense unreadable blocks
+- Modals/drawers behave correctly and are reachable
+- Long text edge cases behave gracefully
+
+──────────────────────────────────────────────────────────────────────────────
+6) PERFORMANCE + SEO “FREE WINS” CHECKLIST (ALWAYS APPLY)
+──────────────────────────────────────────────────────────────────────────────
+
+- next/image used everywhere for entity/user images
+- Promise.all for independent server fetches (no waterfalls)
+- Keep client components minimal; avoid unnecessary useState in deep trees
+- Cache/memoize expensive derived operations when repeated (sort/score/group)
+- Proper Open Graph + Twitter metadata everywhere it matters
+- metadataBase set so relative OG assets resolve correctly
+- Avoid heavy libs by default; justify each dependency
+
+──────────────────────────────────────────────────────────────────────────────
+7) CURRENT SITREP (WHAT’S DONE / WHAT’S NEXT)
+──────────────────────────────────────────────────────────────────────────────
+
+Completed (as of Dec 21, 2025):
+- Shared logic pillars extracted (packages/logic)
+- Strict design language codified (Data Noir)
+- Security-definer hardening rule codified (search_path = public)
+- Search relevance baseline (>= 50) enforced conceptually
+- Performance/SEO priorities identified (images, parallel fetching, metadata)
+
+Next objectives (likely):
+- Responsiveness hardening for smaller viewports WITHOUT desktop regression
+- Expo/Mobile implementation using shared logic
+- Advanced match statistics integration
+- Engagement features (takes/replies/reactions) with strict performance discipline
+
+──────────────────────────────────────────────────────────────────────────────
+8) OPERATOR COMMANDS (DEV CHEATSHEET)
+──────────────────────────────────────────────────────────────────────────────
+
+- Dev: pnpm dev:web
+- Lint: pnpm lint
+- Assets: apps/web/public
+- Icons: lucide-react
+- Always keep blueprint updated after finalizing a rule or pattern.
+
+END OF DOCTRINE.
+Stay sharp. Avoid regressions. Win with speed, taste, and discipline.

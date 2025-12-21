@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NextImage from "next/image";
 import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Hash, Activity, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -106,7 +107,12 @@ export function EntityHeader({
                 {/* Background Watermark - Full image, moved slightly left */}
                 {displayImage && (
                     <div className="absolute right-8 -bottom-4 w-52 h-52 opacity-[0.04] grayscale pointer-events-none select-none">
-                        <img src={displayImage} alt="" className="w-full h-full object-contain" />
+                        <NextImage
+                            src={displayImage}
+                            alt=""
+                            fill
+                            className="object-contain"
+                        />
                     </div>
                 )}
 
@@ -117,17 +123,17 @@ export function EntityHeader({
                         <div className="shrink-0">
                             {isPlayer ? (
                                 /* Player: Full headshot, no crop */
-                                /* Player: Full headshot, no crop */
                                 <div
                                     className={`relative pl-6 ${imageUrl ? 'pt-3' : 'pt-1'}`}
-                                    style={{ width: imageUrl ? '160px' : '180px' }}
+                                    style={{ width: imageUrl ? '160px' : '180px', height: '180px' }}
                                 >
                                     {imageUrl ? (
-                                        <img
+                                        <NextImage
                                             src={imageUrl}
                                             alt={title}
-                                            className="w-full h-auto object-contain"
-                                            style={{ maxHeight: '180px' }}
+                                            fill
+                                            className="object-contain object-bottom"
+                                            sizes="(max-width: 768px) 100vw, 160px"
                                         />
                                     ) : (
                                         <div
@@ -141,18 +147,20 @@ export function EntityHeader({
                                         />
                                     )}
                                     {metadata?.rating && (
-                                        <div className="absolute top-4 right-0 px-2.5 py-1 bg-slate-900 dark:bg-slate-100 rounded-md text-sm font-bold text-white dark:text-neutral-900">
+                                        <div className="absolute top-4 right-0 px-2.5 py-1 bg-slate-900 dark:bg-slate-100 rounded-md text-sm font-bold text-white dark:text-neutral-900 z-10">
                                             {metadata.rating}
                                         </div>
                                     )}
                                 </div>
                             ) : (
                                 /* Club: Badge with minimal padding */
-                                <div className="pl-6 py-4">
-                                    <img
-                                        src={badgeUrl}
+                                <div className="pl-6 py-4 relative w-24 h-24">
+                                    <NextImage // Adjusted wrapper div to be relative size context
+                                        src={badgeUrl || ''}
                                         alt={title}
-                                        className="w-20 h-20 object-contain"
+                                        fill
+                                        className="object-contain p-2"
+                                        sizes="100px"
                                     />
                                 </div>
                             )}
@@ -225,7 +233,14 @@ export function EntityHeader({
                                             <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`}>
                                                 <Button variant="ghost" size="sm" className="h-7 px-2 gap-1.5">
                                                     {metadata.clubBadgeUrl && (
-                                                        <img src={metadata.clubBadgeUrl} alt="" className="w-4 h-4 object-contain" />
+                                                        <div className="relative w-4 h-4">
+                                                            <NextImage
+                                                                src={metadata.clubBadgeUrl}
+                                                                alt=""
+                                                                fill
+                                                                className="object-contain"
+                                                            />
+                                                        </div>
                                                     )}
                                                     <span>{metadata.clubName}</span>
                                                 </Button>

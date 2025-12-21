@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NextImage from "next/image";
 import { ArrowRight, Activity, Shield, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -44,7 +45,12 @@ export function TopicCard({ topic }: { topic: any }) {
                 {/* Club Artistic Watermark */}
                 {isClub && imageUrl && (
                     <div className="absolute -right-8 -bottom-8 w-48 h-48 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-500 grayscale pointer-events-none select-none rotate-12">
-                        <img src={imageUrl} alt="" className="w-full h-full object-contain" />
+                        <NextImage
+                            src={imageUrl}
+                            alt=""
+                            fill
+                            className="object-contain"
+                        />
                     </div>
                 )}
 
@@ -58,11 +64,13 @@ export function TopicCard({ topic }: { topic: any }) {
                                 ${isClub ? 'w-14 h-14 rounded-md p-2 border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500' : 'w-14 h-14 rounded-full border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500'}
                             `}>
                                 {imageUrl ? (
-                                    <img
+                                    <NextImage
                                         src={imageUrl}
                                         alt={topic.title}
-                                        className={isClub ? 'w-full h-full object-contain' : PLAYER_IMAGE_STYLE.className}
-                                        style={isClub ? undefined : PLAYER_IMAGE_STYLE.style}
+                                        fill
+                                        className={isClub ? 'object-contain p-1' : PLAYER_IMAGE_STYLE.className} // Added p-1 for club badges to prevent edge clipping
+                                        {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
+                                        sizes="56px"
                                     />
                                 ) : (
                                     isClub ? (
@@ -103,7 +111,15 @@ export function TopicCard({ topic }: { topic: any }) {
                                     {clubName && (
                                         <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-neutral-400">
                                             {clubBadge ? (
-                                                <img src={clubBadge} alt={clubName} className="w-4.5 h-4.5 object-contain shrink-0" />
+                                                <div className="relative w-4.5 h-4.5 shrink-0">
+                                                    <NextImage
+                                                        src={clubBadge}
+                                                        alt={clubName}
+                                                        fill
+                                                        sizes="18px"
+                                                        className="object-contain"
+                                                    />
+                                                </div>
                                             ) : (
                                                 <Shield className="w-4.5 h-4.5 shrink-0" />
                                             )}
@@ -156,6 +172,6 @@ export function TopicCard({ topic }: { topic: any }) {
                     </div>
                 </div>
             </Card>
-        </Link>
+        </Link >
     );
 }

@@ -21,6 +21,21 @@ const onest = Onest({
 export const metadata: Metadata = {
     title: "Midfield",
     description: "Football intelligence platform",
+    metadataBase: new URL("https://midfield.ai"), // Replace with actual production URL
+    openGraph: {
+        title: "Midfield",
+        description: "The intelligent football platform bridging stats and community.",
+        url: "https://midfield.ai",
+        siteName: "Midfield",
+        locale: "en_US",
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Midfield",
+        description: "The intelligent football platform bridging stats and community.",
+        creator: "@midfield_ai",
+    },
 };
 
 export default function RootLayout({

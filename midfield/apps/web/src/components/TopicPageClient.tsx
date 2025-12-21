@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Users, Trophy, Calendar, BarChart3, Minus, Plus, Activity, Star, Info, FileQuestion } from "lucide-react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
 
 interface TopicPageClientProps {
@@ -107,13 +108,14 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
             <Link href={`/topic/${player.slug}`} className="block">
                 <Card variant="interactive" className="p-2 flex items-center gap-2.5 group">
                     {/* Player Photo - Compact (w-9 h-9) */}
-                    <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
+                    <div className="relative w-9 h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
                         {player.metadata?.photo_url ? (
-                            <img
+                            <NextImage
                                 src={player.metadata.photo_url}
                                 alt={player.title}
-                                className={PLAYER_IMAGE_STYLE.className}
-                                style={PLAYER_IMAGE_STYLE.style}
+                                fill
+                                sizes="36px"
+                                {...PLAYER_IMAGE_STYLE}
                             />
                         ) : (
                             <div

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import NextImage from "next/image";
 import { User, LayoutGrid, LayoutList, Shield } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -85,8 +86,9 @@ const getPositionInfo = (pos: string) => {
 };
 
 // Centralized player image styling - USE THIS EVERYWHERE for consistency!
+// Adapted for next/image
 export const PLAYER_IMAGE_STYLE = {
-    className: "w-full h-full object-cover scale-[1.3]",
+    className: "object-cover scale-[1.3] grayscale-[0.1] group-hover:grayscale-0 transition-all duration-500",
     style: { objectPosition: 'top' as const, transform: 'translateY(15%)' }
 } as const;
 
@@ -145,17 +147,19 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                             <Link key={player.id} href={`/topic/${player.slug}`}>
                                 <Card variant="interactive" className="p-3 flex items-center gap-3 group relative">
                                     {/* Trending Rank - Top Right */}
-                                    <div className="absolute top-2 right-2 text-[10px] font-bold text-slate-400 dark:text-neutral-500">
+                                    <div className="absolute top-2 right-2 text-[10px] font-bold text-slate-400 dark:text-neutral-500 z-10">
                                         #{players.indexOf(player) + 1}
                                     </div>
 
                                     {/* Player Photo */}
                                     <div className="relative shrink-0">
-                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors overflow-hidden">
+                                        <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors overflow-hidden relative">
                                             {imageUrl ? (
-                                                <img
+                                                <NextImage
                                                     src={imageUrl}
                                                     alt={player.title}
+                                                    fill
+                                                    sizes="48px"
                                                     {...PLAYER_IMAGE_STYLE}
                                                 />
                                             ) : (
@@ -196,7 +200,15 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                 {clubName && (
                                                     <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-neutral-400">
                                                         {clubBadge ? (
-                                                            <img src={clubBadge} alt={clubName} className="w-4 h-4 object-contain" />
+                                                            <div className="relative w-4 h-4">
+                                                                <NextImage
+                                                                    src={clubBadge}
+                                                                    alt={clubName}
+                                                                    fill
+                                                                    sizes="16px"
+                                                                    className="object-contain"
+                                                                />
+                                                            </div>
                                                         ) : (
                                                             <Shield className="w-4 h-4" />
                                                         )}
@@ -226,9 +238,9 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
 
                         return (
                             <Link key={player.id} href={`/topic/${player.slug}`}>
-                                <Card variant="interactive" className="group p-3 flex flex-col relative">
+                                <Card variant="interactive" className="group p-3 flex flex-col relative h-full">
                                     {/* Trending Rank - Top Right */}
-                                    <div className="absolute top-2 right-2 text-[10px] font-bold text-slate-400 dark:text-neutral-500">
+                                    <div className="absolute top-2 right-2 text-[10px] font-bold text-slate-400 dark:text-neutral-500 z-10">
                                         #{players.indexOf(player) + 1}
                                     </div>
 
@@ -236,11 +248,13 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                     <div className="flex items-start gap-3 mb-3">
                                         {/* Player Photo - Left */}
                                         <div className="relative shrink-0">
-                                            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors overflow-hidden">
+                                            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500 transition-colors overflow-hidden relative">
                                                 {imageUrl ? (
-                                                    <img
+                                                    <NextImage
                                                         src={imageUrl}
                                                         alt={player.title}
+                                                        fill
+                                                        sizes="56px"
                                                         {...PLAYER_IMAGE_STYLE}
                                                     />
                                                 ) : (
@@ -284,7 +298,15 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                     {clubName && (
                                         <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-neutral-400 mt-auto">
                                             {clubBadge ? (
-                                                <img src={clubBadge} alt={clubName} className="w-4 h-4 object-contain shrink-0" />
+                                                <div className="relative w-4 h-4 shrink-0">
+                                                    <NextImage
+                                                        src={clubBadge}
+                                                        alt={clubName}
+                                                        fill
+                                                        sizes="16px"
+                                                        className="object-contain"
+                                                    />
+                                                </div>
                                             ) : (
                                                 <Shield className="w-4 h-4 shrink-0" />
                                             )}
