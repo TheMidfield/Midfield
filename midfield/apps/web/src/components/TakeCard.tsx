@@ -309,7 +309,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
             />
             <Toast message={toastState.message} type={toastState.type} />
             <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-3 sm:p-5 min-w-0">
-                <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-0">
+                <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3">
                     {/* --- Left Column: Avatar & Spine --- */}
                     <div className="relative flex flex-col items-center">
                         {/* Main Avatar */}
@@ -317,26 +317,26 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             <img
                                 src={post.author.avatar_url}
                                 alt={authorHandle}
-                                className="w-9 h-9 xs:w-10 xs:h-10 sm:w-10 sm:h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
+                                className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
                             />
                         ) : (
-                            <div className="w-9 h-9 xs:w-10 xs:h-10 sm:w-10 sm:h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
-                                <User className="w-4 xs:w-5 sm:w-5 h-4 xs:h-5 sm:h-5 text-slate-400 dark:text-neutral-500" />
+                            <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
+                                <User className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 text-slate-400 dark:text-neutral-500" />
                             </div>
                         )}
 
                         {/* The continuous Spine - stops at last reply curve */}
                         {hasRepliesOrReplying && (
-                            <div className="absolute top-9 xs:top-10 sm:top-10 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
+                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-8 xs:top-9 sm:top-10 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
                         )}
                     </div>
 
                     {/* --- Right Column: Main Content --- */}
-                    <div className="min-w-0 pl-1.5 sm:pl-2">
+                    <div className="min-w-0">
                         {/* Header */}
-                        <div className="flex items-center justify-between mb-1.5 sm:mb-3 sm:h-5 min-w-0 gap-1.5">
-                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-slate-400 dark:text-neutral-500">
-                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">@{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-xs sm:text-xs mx-1.5 sm:mx-2">•</span><span className="text-[10px] xs:text-xs sm:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs sm:text-xs mx-1.5 sm:mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
+                        <div className="flex items-center justify-between mb-1 sm:mb-2 h-5 sm:h-6 min-w-0 gap-1.5">
+                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-slate-400 dark:text-neutral-500 leading-5 sm:leading-6">
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">@{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2">•</span><span className="text-[10px] xs:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
                             </div>
                             {isOwner && !isEditing && (
                                 <div className="flex items-center flex-shrink-0">
@@ -424,7 +424,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-sm sm:text-[15px] whitespace-pre-wrap mb-2 sm:mb-3 break-words overflow-hidden max-w-full">
+                            <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-[13px] xs:text-sm sm:text-[15px] whitespace-pre-wrap mb-2 sm:mb-3 break-words overflow-hidden max-w-full">
                                 {localContent}
                             </p>
                         )}
@@ -482,7 +482,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             return (
                                 <div
                                     key={reply.id}
-                                    className="grid grid-cols-[36px_36px_1fr] xs:grid-cols-[40px_40px_1fr] sm:grid-cols-[48px_48px_1fr] gap-x-0 relative group transition-all rounded-lg mb-2 sm:mb-3"
+                                    className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3 relative group transition-all rounded-lg mb-1.5 sm:mb-3"
                                     ref={(el) => {
                                         if (el) replyRefs.current.set(reply.id, el);
                                         else replyRefs.current.delete(reply.id);
@@ -492,38 +492,38 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                     <div className="relative">
                                         {/* Main vertical line - extends from above to curve start */}
                                         <div
-                                            className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 sm:-top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                            style={isLast ? { height: index === 0 ? 'calc(24px + 20px)' : 'calc(24px + 12px)' } : { bottom: 0 }}
+                                            className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 sm:-top-5 w-[2px] bg-slate-100 dark:bg-neutral-800"
+                                            style={isLast ? { height: index === 0 ? 'calc(16px + 12px)' : 'calc(16px + 6px)' } : { bottom: 0 }}
                                         />
 
                                         {/* Curve */}
-                                        <div className={`absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[10px] sm:top-[12px] w-[21px] xs:w-[23px] sm:w-[27px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg ${index === 0 ? 'h-[16px] sm:h-[20px]' : 'h-[10px] sm:h-[12px]'}`} />
+                                        <div className={`absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[6px] sm:top-[10px] w-[17px] xs:w-[19px] sm:w-[23px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg ${index === 0 ? 'h-[12px] sm:h-[18px]' : 'h-[8px] sm:h-[12px]'}`} />
                                     </div>
 
-                                    {/* Col 2-3: Reply Content Wrapper */}
+                                    {/* Col 2: Reply Content with Avatar */}
                                     <div
                                         data-reply-content
-                                        className={`col-span-2 grid grid-cols-[32px_1fr] xs:grid-cols-[36px_1fr] sm:grid-cols-[48px_1fr] gap-x-0 ${index === 0 ? 'mt-1.5 sm:mt-2' : ''}`}
+                                        className={`flex gap-1.5 xs:gap-2 sm:gap-2.5 ${index === 0 ? 'mt-0.5 sm:mt-1' : ''}`}
                                     >
-                                        {/* Col 2: Reply Avatar */}
-                                        <div className="relative z-10 pt-1.5 sm:pt-2 flex justify-center">
+                                        {/* Reply Avatar */}
+                                        <div className="relative z-10 pt-0.5 sm:pt-1 flex-shrink-0">
                                             {reply.author?.avatar_url ? (
-                                                <img src={reply.author.avatar_url} alt="" className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md object-cover" />
+                                                <img src={reply.author.avatar_url} alt="" className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md object-cover" />
                                             ) : (
-                                                <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
-                                                    <User className="w-3.5 xs:w-4 sm:w-4 h-3.5 xs:h-4 sm:h-4 text-slate-400 dark:text-neutral-500" />
+                                                <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                                    <User className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4 text-slate-400 dark:text-neutral-500" />
                                                 </div>
                                             )}
                                         </div>
 
-                                        {/* Col 3: Reply Content */}
-                                        <div className="pt-1.5 sm:pt-2 pl-1 min-w-0">
-                                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 min-w-0">
-                                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-xs truncate">
+                                        {/* Reply Content */}
+                                        <div className="pt-0.5 sm:pt-1 min-w-0 flex-1">
+                                            <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 mb-0.5 sm:mb-1 min-w-0 h-4 sm:h-5">
+                                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[10px] xs:text-[11px] sm:text-xs truncate">
                                                     @{reply.author?.username || 'anon'}
                                                 </span>
-                                                <span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs sm:text-xs flex-shrink-0">•</span>
-                                                <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-xs sm:text-xs whitespace-nowrap flex-shrink-0">
+                                                <span className="text-slate-300 dark:text-neutral-600 text-[9px] xs:text-[10px] sm:text-xs flex-shrink-0">•</span>
+                                                <span className="text-slate-400 dark:text-neutral-500 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0">
                                                     {formatDate(new Date(reply.created_at))}
                                                 </span>
 
@@ -560,7 +560,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                 </div>
                                             )}
 
-                                            <p className="text-slate-700 dark:text-neutral-300 text-xs sm:text-sm leading-relaxed pb-2">
+                                            <p className="text-slate-700 dark:text-neutral-300 text-[11px] xs:text-xs sm:text-sm leading-relaxed pb-1.5 sm:pb-2">
                                                 {reply.content}
                                             </p>
                                         </div>
@@ -571,32 +571,34 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                         {/* Reply Composer */}
                         {isReplying && (
-                            <div ref={replyComposerRef} className="grid grid-cols-[36px_36px_1fr] xs:grid-cols-[40px_40px_1fr] sm:grid-cols-[48px_48px_1fr] gap-x-0 relative pt-1.5 sm:pt-2">
+                            <div ref={replyComposerRef} className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3 relative pt-0.5 sm:pt-1">
                                 {/* Col 1: Spine */}
                                 <div className="relative">
                                     {/* Line extends from above to curve start */}
                                     <div
-                                        className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 sm:-top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                        style={{ height: 'calc(24px + 12px)' }}
+                                        className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 sm:-top-5 w-[2px] bg-slate-100 dark:bg-neutral-800"
+                                        style={{ height: 'calc(16px + 6px)' }}
                                     />
 
-                                    {/* Curve - composer avatar has pt-4, so center at ~32px from curve start */}
-                                    <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[10px] sm:top-[12px] w-[21px] xs:w-[23px] sm:w-[27px] h-[16px] sm:h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
+                                    {/* Curve */}
+                                    <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[6px] sm:top-[10px] w-[17px] xs:w-[19px] sm:w-[23px] h-[12px] sm:h-[18px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
                                 </div>
 
-                                {/* Col 2: User Avatar */}
-                                <div className="relative z-10 pt-3 sm:pt-4 flex justify-center">
-                                    {currentUser?.avatar_url ? (
-                                        <img src={currentUser.avatar_url} alt="You" className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md object-cover" />
-                                    ) : (
-                                        <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
-                                            <User className="w-3.5 xs:w-4 sm:w-4 h-3.5 xs:h-4 sm:h-4 text-slate-400 dark:text-neutral-500" />
-                                        </div>
-                                    )}
-                                </div>
+                                {/* Col 2: Avatar + Input in flex row */}
+                                <div className="flex gap-1.5 xs:gap-2 sm:gap-2.5">
+                                    {/* User Avatar */}
+                                    <div className="relative z-10 pt-1 sm:pt-2 flex-shrink-0">
+                                        {currentUser?.avatar_url ? (
+                                            <img src={currentUser.avatar_url} alt="You" className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md object-cover" />
+                                        ) : (
+                                            <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
+                                                <User className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4 text-slate-400 dark:text-neutral-500" />
+                                            </div>
+                                        )}
+                                    </div>
 
-                                {/* Col 3: Input */}
-                                <div className="pt-3 sm:pt-4 pl-1 pr-1 w-full min-w-0">
+                                {/* Input */}
+                                    <div className="pt-1 sm:pt-2 min-w-0 flex-1">
                                     <div className="relative w-full">
                                         {replyingTo && (
                                             <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-2.5 py-1 sm:py-1.5 border-l-2 border-slate-200 dark:border-neutral-800 w-full min-w-0">
@@ -653,6 +655,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                             </Button>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -661,15 +664,15 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                 {/* Expander text if hidden */}
                 {localReplyCount > 0 && !isExpanded && !isReplying && (
-                    <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-0 mt-2 sm:mt-3">
+                    <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3 mt-1 sm:mt-2">
                         <div className="relative">
                             {/* Short spine stub */}
-                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 sm:-top-6 h-5 sm:h-6 w-[2px] bg-slate-100 dark:bg-neutral-800" />
-                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-0 w-[14px] xs:w-[16px] sm:w-[16px] h-[14px] xs:h-[16px] sm:h-[16px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
+                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 sm:-top-5 h-3 sm:h-5 w-[2px] bg-slate-100 dark:bg-neutral-800" />
+                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-0 w-[13px] xs:w-[14px] sm:w-[16px] h-[10px] xs:h-[12px] sm:h-[14px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
                         </div>
                         <button
                             onClick={() => setIsExpanded(true)}
-                            className="flex items-center gap-1 sm:gap-1.5 text-[10px] xs:text-xs sm:text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pl-2 sm:pl-3 pt-1.5 sm:pt-2"
+                            className="flex items-center gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pt-0.5 sm:pt-1"
                         >
                             <ChevronDown className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                             Show {localReplyCount} {localReplyCount === 1 ? 'reply' : 'replies'}
