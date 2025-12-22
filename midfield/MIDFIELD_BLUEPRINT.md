@@ -274,8 +274,9 @@ Responsive audit checklist (mental model):
 - Bypasses all CORS issues by fetching/rendering images server-side
 - Design mirrors in-app UI patterns (EntityHeader + TakeCard aesthetics)
 - System fonts only (-apple-system, Inter-like stack) — custom font loading in Satori is fragile
-- Card specs: 1080×1350 (4:5 portrait, optimal for Instagram/social)
+- Card specs: 1080×1080 (Square 1:1, optimal for Instagram feed/social)
 - Dynamic font sizing based on content length for visual harmony
+- Architecture: API-First / "Black Box" generation via server — strictly mobile-native compatible (client just GETs the image)
 - Props passed: content, authorUsername, authorAvatar, topicTitle, topicImageUrl, topicType, clubName, clubBadgeUrl, theme
 - Renders: entity header (player cutout/club badge + rating + badges), take zone (avatar + @username + content), footer (logo + slogan + domain)
 

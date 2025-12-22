@@ -7,7 +7,7 @@ export const runtime = 'nodejs';
 
 // 1080×1350 (4:5 portrait ratio)
 const WIDTH = 1080;
-const HEIGHT = 1350;
+const HEIGHT = 1080;
 
 /**
  * Format date to match app format
@@ -67,15 +67,18 @@ export async function GET(request: NextRequest) {
     const isDark = theme === 'dark';
     const isClub = topicType === 'club';
 
-    // App color palette - exact match
-    const bg = isDark ? '#0a0a0a' : '#fafafa';
-    const cardBg = isDark ? '#171717' : '#ffffff';
-    const textPrimary = isDark ? '#fafafa' : '#0a0a0a';
-    const textSecondary = isDark ? '#a3a3a3' : '#525252';
-    const textMuted = isDark ? '#737373' : '#737373';
-    const border = isDark ? '#262626' : '#e5e5e5';
-    const accent = '#10b981';
-    const accentBg = isDark ? '#022c22' : '#d1fae5';
+    // App color palette - exact match (Referencing globals.css)
+    // Dark: Neutral #1A1A1A / #1D1D1D | Light: Slate/White #f8fafc / #ffffff
+    const bg = isDark ? '#0a0a0a' : '#f8fafc'; // --body-background
+    const cardBg = isDark ? '#171717' : '#ffffff'; // --card
+    const footerBg = isDark ? '#0f0f0f' : '#f1f5f9'; // Slate 100 for light mode footer
+    const textPrimary = isDark ? '#fafafa' : '#0f172a'; // --foreground
+    const textSecondary = isDark ? '#a3a3a3' : '#64748b'; // --muted-foreground
+    const textMuted = isDark ? '#737373' : '#94a3b8'; // Lighter slate for date/metadata
+    const border = isDark ? '#262626' : '#a3aebaff'; // Slate 300 for clearer visibility
+    const accent = '#10b981'; // --primary / --color-midfield-green
+    const accentBg = isDark ? '#022c22' : '#ecfdf5'; // Emerald 50
+    const watermarkOpacity = isDark ? 0.04 : 0.08; // Stronger watermark in light mode
 
     const contentFontSize = getContentFontSize(content.length);
     const origin = request.nextUrl.origin;
@@ -203,7 +206,7 @@ export async function GET(request: NextRequest) {
                                     position: 'absolute',
                                     right: -150,
                                     top: -150,
-                                    opacity: 0.04,
+                                    opacity: watermarkOpacity,
                                     transform: 'rotate(15deg)',
                                     pointerEvents: 'none',
                                 }}
@@ -410,7 +413,7 @@ export async function GET(request: NextRequest) {
                             </div>
 
                             {/* Username & Date */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}> {/* Changed from baseline to center */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <span
                                     style={{
                                         fontSize: 36,
@@ -421,13 +424,13 @@ export async function GET(request: NextRequest) {
                                 >
                                     @{authorUsername}
                                 </span>
-                                <span style={{ color: isDark ? '#404040' : '#d4d4d8', fontSize: 24, marginTop: 4 }}>•</span> {/* Added marginTop to optically center the dot */}
+                                <span style={{ color: isDark ? '#404040' : '#d4d4d8', fontSize: 24, marginTop: 4, marginLeft: 12 }}>•</span>
                                 <span
                                     style={{
                                         fontSize: 28,
                                         color: textMuted,
                                         fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                        marginTop: 2, // Minute adjustment for optical alignment
+                                        marginTop: 2,
                                     }}
                                 >
                                     {formatDate(createdAt)}
@@ -459,7 +462,7 @@ export async function GET(request: NextRequest) {
                             justifyContent: 'space-between',
                             padding: '40px 56px',
                             borderTop: `1px solid ${border}`,
-                            backgroundColor: isDark ? '#0f0f0f' : '#fafafa',
+                            backgroundColor: footerBg,
                         }}
                     >
                         {/* Logo + Wordmark */}

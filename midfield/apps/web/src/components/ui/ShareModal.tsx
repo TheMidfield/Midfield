@@ -245,7 +245,7 @@ export function ShareModal({
                         <div className="p-6">
                             <div
                                 className="relative rounded-md overflow-hidden bg-neutral-800 shadow-lg ring-1 ring-neutral-700"
-                                style={{ width: '100%', aspectRatio: '4 / 5' }}
+                                style={{ width: '100%', aspectRatio: '1 / 1' }}
                             >
                                 {isGenerating || !imageUrl ? (
                                     <div className="absolute inset-0 flex items-center justify-center">
