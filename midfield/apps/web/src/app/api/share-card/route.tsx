@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
                     <div
                         style={{
                             display: 'flex',
-                            padding: isClub ? '48px 56px 48px 56px' : '48px 56px 0 56px',
+                            padding: isClub ? '48px 56px 48px 56px' : '0px 56px 0 56px',
                             borderBottom: `1px solid ${border}`,
                             gap: 40,
                             alignItems: isClub ? 'center' : 'flex-end', // Center align for clubs

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { X, Download, Copy, Share2, Check, Loader2, Sun, Moon } from "lucide-react";
+import { X, Download, Copy, Check, Loader2, Sun, Moon, Instagram } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ShareModalProps {
@@ -21,6 +21,15 @@ interface ShareModalProps {
 
 type ActionState = "idle" | "loading" | "success";
 
+// Custom X Logo (Twitter rebrand)
+function XIcon({ className }: { className?: string }) {
+    return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+    );
+}
+
 export function ShareModal({
     isOpen,
     onClose,
@@ -39,14 +48,7 @@ export function ShareModal({
     const [isGenerating, setIsGenerating] = useState(false);
     const [downloadState, setDownloadState] = useState<ActionState>("idle");
     const [copyState, setCopyState] = useState<ActionState>("idle");
-    const [shareState, setShareState] = useState<ActionState>("idle");
-    const [canNativeShare, setCanNativeShare] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(true);
-
-    // Check for native share support
-    useEffect(() => {
-        setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare);
-    }, []);
 
     // Generate image via server-side API (no CORS issues!)
     const generateImage = useCallback(async () => {
@@ -107,7 +109,6 @@ export function ShareModal({
             setImageUrl(null);
             setDownloadState("idle");
             setCopyState("idle");
-            setShareState("idle");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
@@ -168,30 +169,11 @@ export function ShareModal({
         }
     };
 
-    // Native share handler
-    const handleShare = async () => {
-        if (!imageUrl || shareState !== "idle" || !canNativeShare) return;
-
-        setShareState("loading");
-        try {
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-            const file = new File([blob], "midfield-take.png", { type: "image/png" });
-
-            if (navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: "My Take on Midfield",
-                });
-                setShareState("success");
-                setTimeout(() => setShareState("idle"), 2000);
-            }
-        } catch (error) {
-            if ((error as Error).name !== "AbortError") {
-                console.error("Share failed:", error);
-            }
-            setShareState("idle");
-        }
+    // X (Twitter) share handler
+    const handleShareToX = () => {
+        const text = encodeURIComponent(`My take on ${topicTitle || 'Midfield'}: ${content.substring(0, 100)}...`);
+        const url = encodeURIComponent(window.location.href);
+        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
     };
 
     if (!isOpen) return null;
@@ -267,30 +249,42 @@ export function ShareModal({
 
                         {/* Actions */}
                         <div className="px-6 pb-6">
-                            <div className="flex gap-3">
-                                <ActionButton
-                                    icon={Download}
-                                    label="Download"
-                                    state={downloadState}
-                                    onClick={handleDownload}
-                                    disabled={!imageUrl || isGenerating}
-                                />
-                                <ActionButton
-                                    icon={Copy}
-                                    label="Copy"
-                                    state={copyState}
-                                    onClick={handleCopy}
-                                    disabled={!imageUrl || isGenerating}
-                                />
-                                {canNativeShare && (
+                            <div className="flex flex-col gap-3">
+                                {/* Social Actions - First Row */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={handleShareToX}
+                                        className="flex items-center justify-center gap-2 py-3 rounded-md font-medium bg-black text-white hover:bg-neutral-900 transition-colors border border-neutral-700 cursor-pointer"
+                                    >
+                                        <XIcon className="w-4 h-4" />
+                                        <span className="text-sm">Post on X</span>
+                                    </button>
+                                    <button
+                                        onClick={handleDownload}
+                                        className="flex items-center justify-center gap-2 py-3 rounded-md font-medium bg-gradient-to-r from-[#5B51D8] via-[#C13584] to-[#E1306C] text-white hover:brightness-110 transition-all border border-neutral-700 cursor-pointer"
+                                    >
+                                        <Instagram className="w-4 h-4" />
+                                        <span className="text-sm">Post on Instagram</span>
+                                    </button>
+                                </div>
+
+                                {/* Primary Actions - Second Row */}
+                                <div className="flex gap-3">
                                     <ActionButton
-                                        icon={Share2}
-                                        label="Share"
-                                        state={shareState}
-                                        onClick={handleShare}
+                                        icon={Download}
+                                        label="Download"
+                                        state={downloadState}
+                                        onClick={handleDownload}
                                         disabled={!imageUrl || isGenerating}
                                     />
-                                )}
+                                    <ActionButton
+                                        icon={Copy}
+                                        label="Copy"
+                                        state={copyState}
+                                        onClick={handleCopy}
+                                        disabled={!imageUrl || isGenerating}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
