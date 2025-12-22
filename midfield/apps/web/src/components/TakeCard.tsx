@@ -201,7 +201,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
         startTransition(async () => {
             const result = await createReply(post.id, post.id, post.topic_id || '', replyContent, replyingTo?.id);
-            if (result.success && result.post) {
+            if (result.success && 'post' in result && result.post) {
                 // Add reply optimistically
                 const newReply: Reply = {
                     ...result.post,

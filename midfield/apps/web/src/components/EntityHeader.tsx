@@ -79,7 +79,7 @@ export function EntityHeader({
             ];
 
     // On mobile, collapse middle breadcrumbs if more than 3 items
-    const getMobileBreadcrumbs = () => {
+    const getMobileBreadcrumbs = (): Array<{ label: string; href: string | null; isEllipsis?: boolean }> => {
         if (breadcrumbs.length <= 3) return breadcrumbs;
         // Show: first, "...", last two
         return [
