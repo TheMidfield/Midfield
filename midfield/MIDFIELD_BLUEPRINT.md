@@ -29,6 +29,7 @@ Non-negotiables:
 3) SEO IS A GROWTH WEAPON: Sharing previews + crawlability + speed signals must be excellent.
 4) MOBILE-NATIVE IS LAW: Web decisions must translate to Expo/RN patterns.
 5) NO OVERENGINEERING: Prefer boring, proven solutions. Complexity must justify itself.
+6) RESPONSIVE FROM DAY 1: Test 320px/640px/768px/1024px/1920px BEFORE shipping. See RESPONSIVE_CHECKLIST.md.
 
 LIVING DOCTRINE REQUIREMENT:
 - You MUST update this file as work progresses whenever you discover:

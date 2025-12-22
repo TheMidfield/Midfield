@@ -308,7 +308,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                 context={authModalContext}
             />
             <Toast message={toastState.message} type={toastState.type} />
-            <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-3 sm:p-4 md:p-5 min-w-0">
+            <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-3 sm:p-5 min-w-0">
                 <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-0">
                     {/* --- Left Column: Avatar & Spine --- */}
                     <div className="relative flex flex-col items-center">
@@ -317,77 +317,92 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             <img
                                 src={post.author.avatar_url}
                                 alt={authorHandle}
-                                className="w-9 h-9 xs:w-10 xs:h-10 sm:w-12 sm:h-12 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
+                                className="w-9 h-9 xs:w-10 xs:h-10 sm:w-10 sm:h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
                             />
                         ) : (
-                            <div className="w-9 h-9 xs:w-10 xs:h-10 sm:w-12 sm:h-12 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
-                                <User className="w-4 xs:w-5 h-4 xs:h-5 text-slate-400 dark:text-neutral-500" />
+                            <div className="w-9 h-9 xs:w-10 xs:h-10 sm:w-10 sm:h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
+                                <User className="w-4 xs:w-5 sm:w-5 h-4 xs:h-5 sm:h-5 text-slate-400 dark:text-neutral-500" />
                             </div>
                         )}
 
                         {/* The continuous Spine - stops at last reply curve */}
                         {hasRepliesOrReplying && (
-                            <div className="absolute top-9 xs:top-10 sm:top-12 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
+                            <div className="absolute top-9 xs:top-10 sm:top-10 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
                         )}
                     </div>
 
                     {/* --- Right Column: Main Content --- */}
                     <div className="min-w-0 pl-1.5 sm:pl-2">
                         {/* Header */}
-                        <div className="flex items-start justify-between mb-1 gap-2">
-                            {/* Username + Date - Fixed, no wrapping */}
-                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-shrink">
+                        <div className="flex items-center justify-between mb-1 sm:h-5 min-w-0 gap-1.5">
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-hidden">
                                 <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer truncate">
                                     @{authorHandle}
                                 </span>
-                                <span className="text-slate-300 dark:text-neutral-600 text-xs flex-shrink-0">•</span>
-                                <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-xs whitespace-nowrap flex-shrink-0">
-                                    {formatDate(new Date(post.created_at))}
-                                </span>
-                                {wasEdited && (
-                                    <>
-                                        <span className="text-slate-300 dark:text-neutral-600 text-xs hidden sm:inline flex-shrink-0">•</span>
-                                        <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-[11px] italic hidden sm:inline flex-shrink-0">edited</span>
-                                    </>
-                                )}
-                            </div>
-                            
-                            {/* Menu - Fixed width, no expansion */}
-                            {isOwner && !isEditing && (
-                                <div className="flex items-center flex-shrink-0 -mt-1">
-                                    {/* Dropdown positioned absolutely to avoid layout shift */}
-                                    {showMenu && (
-                                        <div className="absolute right-0 top-6 flex items-center gap-1 bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 rounded-md shadow-lg p-1 z-10">
-                                            <button
-                                                onClick={() => { handleDeleteClick(); setShowMenu(false); }}
-                                                className="h-8 px-3 flex items-center gap-1.5 rounded-md text-sm font-medium transition-all cursor-pointer text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                                <span className="text-xs font-semibold whitespace-nowrap">Delete</span>
-                                            </button>
-                                            <button
-                                                onClick={() => { handleEdit(); setShowMenu(false); }}
-                                                className="h-8 px-3 flex items-center gap-1.5 rounded-md text-sm font-medium transition-all cursor-pointer text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800"
-                                            >
-                                                <Pencil className="w-3.5 h-3.5" />
-                                                <span className="text-xs font-semibold whitespace-nowrap">Edit</span>
-                                            </button>
-                                        </div>
+                                <div className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ${showMenu ? 'hidden sm:flex' : 'flex'}`}>
+                                    <span className="text-slate-300 dark:text-neutral-600 text-xs sm:text-xs flex-shrink-0">•</span>
+                                    <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-xs sm:text-xs whitespace-nowrap">
+                                        {formatDate(new Date(post.created_at))}
+                                    </span>
+                                    {wasEdited && (
+                                        <>
+                                            <span className="text-slate-300 dark:text-neutral-600 hidden md:inline">•</span>
+                                            <span className="text-slate-400 dark:text-neutral-500 text-[11px] italic hidden md:inline">edited</span>
+                                        </>
                                     )}
-                                    
-                                    {/* Toggle button - always same size */}
-                                    <button
-                                        onClick={() => setShowMenu(!showMenu)}
+                                </div>
+                            </div>
+                            {isOwner && !isEditing && (
+                                <div className="flex items-center flex-shrink-0">
+                                    <div
                                         className={`
-                                            w-7 h-7 flex items-center justify-center rounded-md transition-all cursor-pointer
-                                            ${showMenu
-                                                ? 'bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-300'
-                                                : 'text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800'
-                                            }
-                                        `}
+                                        flex items-center gap-1 overflow-hidden transition-all duration-200 ease-out
+                                        ${showMenu ? 'w-auto opacity-100 mr-1' : 'w-0 opacity-0'}
+                                    `}
                                     >
-                                        <MoreHorizontal className="w-4 h-4" />
-                                    </button>
+                                        <button
+                                            onClick={() => { handleDeleteClick(); setShowMenu(false); }}
+                                            className="h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border-transparent bg-transparent text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <span className="text-xs font-semibold whitespace-nowrap">Delete</span>
+                                        </button>
+                                        <button
+                                            onClick={() => { handleEdit(); setShowMenu(false); }}
+                                            className="h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border-transparent bg-transparent text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-700 dark:hover:text-neutral-200"
+                                        >
+                                            <Pencil className="w-3.5 h-3.5" />
+                                            <span className="text-xs font-semibold whitespace-nowrap">Edit</span>
+                                        </button>
+                                    </div>
+                                    {/* Toggle button with hover chevron */}
+                                    <div className="relative flex items-center group">
+                                        <button
+                                            onClick={() => setShowMenu(!showMenu)}
+                                            className={`
+                                            h-7 px-2 flex items-center gap-1 rounded-full text-sm font-medium transition-all cursor-pointer border
+                                            ${showMenu
+                                                    ? 'bg-slate-100 dark:bg-neutral-800 text-emerald-600 dark:text-emerald-400 border-slate-300 dark:border-neutral-600 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500'
+                                                    : 'bg-transparent text-slate-400 dark:text-neutral-500 border-transparent hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
+                                                }
+                                        `}
+                                        >
+                                            <MoreHorizontal className="w-4 h-4" />
+                                        </button>
+                                        {/* Hover chevron peek - points left toward menu */}
+                                        <div
+                                            className={`
+                                            flex items-center overflow-hidden transition-all duration-200 ease-out origin-right mr-0.5
+                                            ${showMenu
+                                                    ? 'w-4 opacity-100'
+                                                    : 'w-0 group-hover:w-4 opacity-0 group-hover:opacity-100'
+                                                }
+                                        `}
+                                            style={{ order: -1 }}
+                                        >
+                                            <ChevronLeft className="w-3 h-3 text-slate-300 dark:text-neutral-600 flex-shrink-0" />
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -429,7 +444,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                         )}
 
                         {/* Action Bar */}
-                        <div className="flex items-center justify-between gap-1.5 sm:gap-2 flex-wrap">
+                        <div className="flex items-center justify-between">
                             <ReactionBar
                                 postId={post.id}
                                 initialCounts={reactionCounts}
@@ -437,14 +452,14 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             />
 
 
-                            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                            <div className="flex items-center gap-1 sm:gap-2">
                                 <button
                                     onClick={handleReplyClick}
                                     className="h-7 sm:h-8 px-1.5 sm:px-2 flex items-center justify-center gap-1 sm:gap-1.5 rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                                 >
                                     <CornerDownLeft className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                                    <span className="text-[10px] xs:text-xs font-medium">
-                                        <span className="hidden xs:inline">Reply</span>{localReplyCount > 0 && ` (${localReplyCount})`}
+                                    <span className="text-[10px] xs:text-xs sm:text-xs font-medium">
+                                        Reply{localReplyCount > 0 && ` (${localReplyCount})`}
                                     </span>
                                 </button>
 
@@ -492,7 +507,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                         {/* Main vertical line - extends from above to curve start */}
                                         <div
                                             className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 sm:-top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                            style={isLast ? { height: index === 0 ? 'calc(20px + 16px)' : 'calc(20px + 10px)' } : { bottom: 0 }}
+                                            style={isLast ? { height: index === 0 ? 'calc(24px + 20px)' : 'calc(24px + 12px)' } : { bottom: 0 }}
                                         />
 
                                         {/* Curve */}
@@ -502,37 +517,37 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                     {/* Col 2-3: Reply Content Wrapper */}
                                     <div
                                         data-reply-content
-                                        className={`col-span-2 grid grid-cols-[32px_1fr] xs:grid-cols-[36px_1fr] sm:grid-cols-[40px_1fr] gap-x-0 ${index === 0 ? 'mt-1.5 sm:mt-2' : ''}`}
+                                        className={`col-span-2 grid grid-cols-[32px_1fr] xs:grid-cols-[36px_1fr] sm:grid-cols-[48px_1fr] gap-x-0 ${index === 0 ? 'mt-1.5 sm:mt-2' : ''}`}
                                     >
                                         {/* Col 2: Reply Avatar */}
                                         <div className="relative z-10 pt-1.5 sm:pt-2 flex justify-center">
                                             {reply.author?.avatar_url ? (
-                                                <img src={reply.author.avatar_url} alt="" className="w-7 h-7 xs:w-8 xs:h-8 rounded-md object-cover" />
+                                                <img src={reply.author.avatar_url} alt="" className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md object-cover" />
                                             ) : (
-                                                <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
-                                                    <User className="w-3.5 xs:w-4 h-3.5 xs:h-4 text-slate-400 dark:text-neutral-500" />
+                                                <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                                                    <User className="w-3.5 xs:w-4 sm:w-4 h-3.5 xs:h-4 sm:h-4 text-slate-400 dark:text-neutral-500" />
                                                 </div>
                                             )}
                                         </div>
 
                                         {/* Col 3: Reply Content */}
-                                        <div className="pt-1.5 sm:pt-2 pl-1">
-                                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
-                                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs truncate max-w-[100px] xs:max-w-none">
+                                        <div className="pt-1.5 sm:pt-2 pl-1 min-w-0">
+                                            <div className="flex items-center gap-1.5 sm:gap-2 mb-1 min-w-0">
+                                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-xs truncate">
                                                     @{reply.author?.username || 'anon'}
                                                 </span>
-                                                <span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs">•</span>
-                                                <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-xs whitespace-nowrap">
+                                                <span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs sm:text-xs flex-shrink-0">•</span>
+                                                <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-xs sm:text-xs whitespace-nowrap flex-shrink-0">
                                                     {formatDate(new Date(reply.created_at))}
                                                 </span>
 
                                                 {/* Reply button - appears on hover inline */}
                                                 <button
                                                     onClick={() => handleReplyToComment(reply.id, reply.author?.username || 'anon', reply.content)}
-                                                    className="ml-auto opacity-0 group-hover:opacity-100 h-5 sm:h-6 px-1 sm:px-1.5 flex items-center gap-0.5 sm:gap-1 rounded-md text-[10px] xs:text-[11px] font-medium transition-all cursor-pointer text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800"
+                                                    className="ml-auto opacity-0 group-hover:opacity-100 h-5 sm:h-6 px-1 sm:px-1.5 flex items-center gap-0.5 sm:gap-1 rounded-md text-[10px] xs:text-[11px] sm:text-[11px] font-medium transition-all cursor-pointer text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 flex-shrink-0"
                                                 >
                                                     <MessageCircle className="w-3 h-3" />
-                                                    <span className="hidden xs:inline">Reply</span>
+                                                    <span>Reply</span>
                                                 </button>
                                             </div>
 
@@ -544,7 +559,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                         data-reply-preview
                                                         className="w-full pl-2 sm:pl-2.5 py-0.5 sm:py-1 border-l-2 border-slate-300/80 dark:border-neutral-700/80 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-200 cursor-pointer group text-left"
                                                     >
-                                                        <p className="text-[10px] xs:text-[11px] line-clamp-2 text-slate-400 dark:text-neutral-500">
+                                                        <p className="text-[10px] xs:text-[11px] sm:text-[11px] line-clamp-2 text-slate-400 dark:text-neutral-500">
                                                             <span className="font-medium text-slate-500 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                                                                 @{reply.reply_to.author.username}
                                                             </span>
@@ -559,7 +574,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                 </div>
                                             )}
 
-                                            <p className="text-slate-700 dark:text-neutral-300 text-xs sm:text-sm leading-relaxed pb-1.5 sm:pb-2">
+                                            <p className="text-slate-700 dark:text-neutral-300 text-xs sm:text-sm leading-relaxed pb-2">
                                                 {reply.content}
                                             </p>
                                         </div>
@@ -576,20 +591,20 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                     {/* Line extends from above to curve start */}
                                     <div
                                         className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 sm:-top-6 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                        style={{ height: 'calc(20px + 10px)' }}
+                                        style={{ height: 'calc(24px + 12px)' }}
                                     />
 
-                                    {/* Curve */}
+                                    {/* Curve - composer avatar has pt-4, so center at ~32px from curve start */}
                                     <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[10px] sm:top-[12px] w-[21px] xs:w-[23px] sm:w-[27px] h-[16px] sm:h-[20px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
                                 </div>
 
                                 {/* Col 2: User Avatar */}
                                 <div className="relative z-10 pt-3 sm:pt-4 flex justify-center">
                                     {currentUser?.avatar_url ? (
-                                        <img src={currentUser.avatar_url} alt="You" className="w-7 h-7 xs:w-8 xs:h-8 rounded-md object-cover" />
+                                        <img src={currentUser.avatar_url} alt="You" className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md object-cover" />
                                     ) : (
-                                        <div className="w-7 h-7 xs:w-8 xs:h-8 rounded-md bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
-                                            <User className="w-3.5 xs:w-4 h-3.5 xs:h-4 text-slate-400 dark:text-neutral-500" />
+                                        <div className="w-7 h-7 xs:w-8 xs:h-8 sm:w-8 sm:h-8 rounded-md bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
+                                            <User className="w-3.5 xs:w-4 sm:w-4 h-3.5 xs:h-4 sm:h-4 text-slate-400 dark:text-neutral-500" />
                                         </div>
                                     )}
                                 </div>
@@ -599,16 +614,16 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                     <div className="relative w-full">
                                         {replyingTo && (
                                             <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-2.5 py-1 sm:py-1.5 border-l-2 border-slate-200 dark:border-neutral-800 w-full min-w-0">
-                                                <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5 flex-wrap">
-                                                    <span className="text-[10px] xs:text-[11px] font-medium text-slate-500 dark:text-neutral-400 whitespace-nowrap">
+                                                <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5">
+                                                    <span className="text-[10px] xs:text-[11px] sm:text-[11px] font-medium text-slate-500 dark:text-neutral-400 flex-shrink-0">
                                                         Replying to @{replyingTo.username}
                                                     </span>
                                                     {replyingTo.content && (
                                                         <>
-                                                            <span className="text-[10px] xs:text-[11px] text-slate-300 dark:text-neutral-600 flex-shrink-0">·</span>
+                                                            <span className="text-[10px] xs:text-[11px] sm:text-[11px] text-slate-300 dark:text-neutral-600 flex-shrink-0">·</span>
                                                             <span
                                                                 onClick={() => scrollAndHighlightReply(replyingTo.id)}
-                                                                className="text-[10px] xs:text-[11px] text-slate-400 dark:text-neutral-500 truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                                                className="text-[10px] xs:text-[11px] sm:text-[11px] text-slate-400 dark:text-neutral-500 truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                                                             >
                                                                 {replyingTo.content}
                                                             </span>
@@ -644,10 +659,10 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                             }}
                                         />
                                         <div className="flex justify-end gap-1.5 sm:gap-2 mt-1.5 sm:mt-2">
-                                            <Button onClick={handleCancelReply} variant="ghost" size="sm" disabled={isPending} className="text-xs sm:text-sm">
+                                            <Button onClick={handleCancelReply} variant="ghost" size="sm" disabled={isPending}>
                                                 Cancel
                                             </Button>
-                                            <Button onClick={handleSubmitReply} size="sm" icon={ArrowRight} disabled={!replyContent.trim() || isPending} className="text-xs sm:text-sm">
+                                            <Button onClick={handleSubmitReply} size="sm" icon={ArrowRight} disabled={!replyContent.trim() || isPending}>
                                                 {isPending ? "Posting..." : "Reply"}
                                             </Button>
                                         </div>
@@ -664,14 +679,14 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                         <div className="relative">
                             {/* Short spine stub */}
                             <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 sm:-top-6 h-5 sm:h-6 w-[2px] bg-slate-100 dark:bg-neutral-800" />
-                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-0 w-[14px] xs:w-[16px] h-[14px] xs:h-[16px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
+                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-0 w-[14px] xs:w-[16px] sm:w-[16px] h-[14px] xs:h-[16px] sm:h-[16px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-2xl" />
                         </div>
                         <button
                             onClick={() => setIsExpanded(true)}
-                            className="flex items-center gap-1 sm:gap-1.5 text-[10px] xs:text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pl-2 sm:pl-3 pt-1.5 sm:pt-2"
+                            className="flex items-center gap-1 sm:gap-1.5 text-[10px] xs:text-xs sm:text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pl-2 sm:pl-3 pt-1.5 sm:pt-2"
                         >
                             <ChevronDown className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                            <span className="whitespace-nowrap">Show {localReplyCount} {localReplyCount === 1 ? 'reply' : 'replies'}</span>
+                            Show {localReplyCount} {localReplyCount === 1 ? 'reply' : 'replies'}
                         </button>
                     </div>
                 )}

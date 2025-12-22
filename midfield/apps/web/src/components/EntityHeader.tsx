@@ -229,7 +229,7 @@ export function EntityHeader({
                                             </div>
                                         )}
                                         {metadata?.clubName && (
-                                            <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="sm:ml-auto shrink-0">
+                                            <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
                                                 <Button variant="ghost" size="sm" className="h-6 sm:h-7 px-1.5 sm:px-2 gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-medium hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
                                                     {metadata.clubBadgeUrl && (
                                                         <div className="relative w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 shrink-0">
