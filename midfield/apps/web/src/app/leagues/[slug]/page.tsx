@@ -135,3 +135,4 @@ export default async function LeaguePage({ params }: { params: { slug: string } 
     </div>
   );
 }
+

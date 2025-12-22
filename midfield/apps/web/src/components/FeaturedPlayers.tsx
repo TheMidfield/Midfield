@@ -104,7 +104,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
     return (
         <section className="mb-12">
             <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
+                <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
                     <User className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                     Featured Players
                 </h2>
@@ -134,7 +134,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
 
             {/* List View - Default - Compact & Elegant */}
             {viewMode === "list" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                     {players.map((player: any) => {
                         const rating = player.metadata?.rating || player.rating || "88";
                         const position = player.metadata?.position || "";
@@ -227,7 +227,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
 
             {/* Grid View - Rectangular Portrait Cards */}
             {viewMode === "grid" && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                     {players.map((player: any) => {
                         const rating = player.metadata?.rating || player.rating || "88";
                         const position = player.metadata?.position || "";

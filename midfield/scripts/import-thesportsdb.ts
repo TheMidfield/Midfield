@@ -393,3 +393,4 @@ function parseArgs(): ImportConfig {
 // Run the import
 const config = parseArgs();
 importTheSportsDB(config);
+

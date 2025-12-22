@@ -124,8 +124,7 @@ export function EntityHeader({
                             {isPlayer ? (
                                 /* Player: Full headshot, no crop */
                                 <div
-                                    className={`relative pl-6 ${imageUrl ? 'pt-3' : 'pt-1'}`}
-                                    style={{ width: imageUrl ? '160px' : '180px', height: '180px' }}
+                                    className={`relative ${imageUrl ? 'w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 lg:w-40 lg:h-40 pl-3 sm:pl-4 md:pl-6 pt-2 sm:pt-2 md:pt-3' : 'w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-44 lg:h-44 pl-3 sm:pl-4 md:pl-6 pt-1'}`}
                                 >
                                     {imageUrl ? (
                                         <NextImage
@@ -154,7 +153,7 @@ export function EntityHeader({
                                 </div>
                             ) : (
                                 /* Club: Badge with minimal padding */
-                                <div className="pl-6 py-20 relative w-32 h-32">
+                                <div className="pl-3 sm:pl-4 md:pl-6 py-10 sm:py-12 md:py-16 lg:py-20 relative w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32">
                                     <NextImage // Adjusted wrapper div to be relative size context
                                         src={badgeUrl || ''}
                                         alt={title}
@@ -167,10 +166,10 @@ export function EntityHeader({
                         </div>
 
                         {/* Info */}
-                        <div className={`flex-1 min-w-0 ${isPlayer ? 'pr-6 pt-6 pb-5' : 'pr-6 py-4'}`}>
-                            {/* Title Row */}
-                            <div className="flex items-start justify-between gap-4 mb-3">
-                                <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">
+                        <div className={`flex-1 min-w-0 ${isPlayer ? 'pr-4 sm:pr-6 pt-4 sm:pt-6 pb-4 sm:pb-5' : 'pr-4 sm:pr-6 py-3 sm:py-4'}`}>
+                            {/* Title + Actions Container - Stack on md */}
+                            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 md:gap-3 mb-3">
+                                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-neutral-100">
                                     {title}
                                 </h1>
                                 <div className="flex items-center gap-2 shrink-0">
@@ -201,7 +200,7 @@ export function EntityHeader({
                             </div>
 
                             {/* Stats Row - Height, Age, Nationality, then Club for players */}
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-neutral-400">
+                            <div className="flex flex-col md:flex-row flex-wrap items-start md:items-center gap-2 md:gap-3 lg:gap-4 text-sm text-slate-500 dark:text-neutral-400">
                                 {isPlayer && (
                                     <>
                                         {metadata?.height && (

@@ -162,7 +162,7 @@ export function AuthModal({
                 ) : (
                     <>
                         {/* Header with gradient accent */}
-                        <div className="relative px-8 pt-10 pb-6 bg-gradient-to-br from-emerald-50 to-white dark:from-neutral-800 dark:to-neutral-900 border-b border-slate-100 dark:border-neutral-800/50">
+                        <div className="relative px-6 pt-8 pb-5 sm:px-8 sm:pt-10 sm:pb-6 bg-gradient-to-br from-emerald-50 to-white dark:from-neutral-800 dark:to-neutral-900 border-b border-slate-100 dark:border-neutral-800/50">
                             <div className="relative flex items-center gap-4">
                                 {/* Icon Accent */}
                                 <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-md bg-emerald-600 dark:bg-emerald-500 text-white">
@@ -181,7 +181,7 @@ export function AuthModal({
                         </div>
 
                         {/* Form Content */}
-                        <div className="p-8 space-y-6">
+                        <div className="p-6 sm:p-8 space-y-6">
                             {error && (
                                 <div className="p-4 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-md">
                                     <p className="text-sm font-medium text-red-600 dark:text-red-400">{error}</p>

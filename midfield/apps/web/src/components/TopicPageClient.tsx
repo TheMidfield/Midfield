@@ -208,10 +208,10 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
             />
 
             {/* Main Content */}
-            <div className="flex gap-6">
+            <div className="flex gap-4 sm:gap-6">
                 {/* Sidebar */}
-                <aside className="hidden lg:block shrink-0" style={{ width: '340px' }}>
-                    <div className="sticky top-4">
+                <aside className="hidden lg:block shrink-0 lg:w-full lg:max-w-[340px]">
+                    <div className="sticky top-24">
                         {/* Section Title */}
                         <h3 className="text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-3 px-1">
                             {isClub ? "Club Info" : "Player Info"}
@@ -370,7 +370,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                 <main className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-5">
                         <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-neutral-100">
                             Takes
                         </h2>
                     </div>

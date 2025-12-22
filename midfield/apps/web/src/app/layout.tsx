@@ -66,7 +66,7 @@ export default function RootLayout({
                     <SearchProvider>
                         <Navbar />
 
-                        <div className="flex-1 w-full max-w-[1600px] mx-auto px-10 sm:px-16 lg:px-24 pt-28 pb-16">
+                        <div className="flex-1 w-full max-w-[1600px] mx-auto px-6 sm:px-10 md:px-16 lg:px-24 pt-28 pb-16">
                             <GlobalSearchLayout>
                                 <LayoutContent>
                                     {children}

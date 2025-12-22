@@ -308,8 +308,8 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                 context={authModalContext}
             />
             <Toast message={toastState.message} type={toastState.type} />
-            <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-5">
-                <div className="grid grid-cols-[48px_1fr] gap-x-0">
+            <article className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-md p-4 sm:p-5 min-w-0">
+                <div className="grid grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-0">
                     {/* --- Left Column: Avatar & Spine --- */}
                     <div className="relative flex flex-col items-center">
                         {/* Main Avatar */}
@@ -317,17 +317,17 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             <img
                                 src={post.author.avatar_url}
                                 alt={authorHandle}
-                                className="w-10 h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
+                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
                             />
                         ) : (
-                            <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
                                 <User className="w-5 h-5 text-slate-400 dark:text-neutral-500" />
                             </div>
                         )}
 
                         {/* The continuous Spine - stops at last reply curve */}
                         {hasRepliesOrReplying && (
-                            <div className="absolute top-10 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
+                            <div className="absolute top-10 sm:top-12 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
                         )}
                     </div>
 
@@ -335,8 +335,8 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     <div className="min-w-0 pl-2">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-1 h-5">
-                            <div className="flex items-center gap-2">
-                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer truncate">
                                     @{authorHandle}
                                 </span>
                                 <span className="text-slate-300 dark:text-neutral-600">•</span>
@@ -407,7 +407,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                         {/* Post Text */}
                         {isEditing ? (
-                            <div className="mt-1 mb-3">
+                            <div className="mt-1 mb-3 max-w-full">
                                 <div className="p-3 rounded-md border border-emerald-400 dark:border-emerald-600 ring-2 ring-emerald-500/10 bg-slate-50 dark:bg-neutral-800/50">
                                     <textarea
                                         ref={editInputRef}
@@ -425,7 +425,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                         className="w-full bg-transparent text-slate-800 dark:text-neutral-200 leading-relaxed text-[15px] resize-none focus:outline-none"
                                         rows={3}
                                     />
-                                    <div className="flex justify-end items-center gap-2 mt-3">
+                                    <div className="flex justify-end items-center gap-2 mt-3 flex-wrap">
                                         <Button variant="ghost" size="sm" onClick={handleCancelEdit} disabled={isPending}>
                                             Cancel
                                         </Button>
@@ -436,13 +436,13 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-[15px] whitespace-pre-wrap mb-3">
+                            <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-[15px] whitespace-pre-wrap mb-3 break-words overflow-hidden max-w-full">
                                 {localContent}
                             </p>
                         )}
 
                         {/* Action Bar */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                             <ReactionBar
                                 postId={post.id}
                                 initialCounts={reactionCounts}
@@ -450,7 +450,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             />
 
 
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <button
                                     onClick={handleReplyClick}
                                     className="h-8 px-2 flex items-center justify-center gap-1.5 rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
@@ -515,7 +515,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                     {/* Col 2-3: Reply Content Wrapper */}
                                     <div
                                         data-reply-content
-                                        className={`col-span-2 grid grid-cols-[48px_1fr] gap-x-0 ${index === 0 ? 'mt-2' : ''}`}
+                                        className={`col-span-2 grid grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-0 ${index === 0 ? 'mt-2' : ''}`}
                                     >
                                         {/* Col 2: Reply Avatar */}
                                         <div className="relative z-10 pt-2 flex justify-center">
@@ -583,7 +583,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                         {/* Reply Composer */}
                         {isReplying && (
-                            <div ref={replyComposerRef} className="grid grid-cols-[48px_48px_1fr] gap-x-0 relative pt-2">
+                            <div ref={replyComposerRef} className="grid grid-cols-[40px_40px_1fr] sm:grid-cols-[48px_48px_1fr] gap-x-0 relative pt-2">
                                 {/* Col 1: Spine */}
                                 <div className="relative">
                                     {/* Line extends from above to curve start */}

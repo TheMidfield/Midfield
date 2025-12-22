@@ -41,7 +41,7 @@ export function TopicCard({ topic }: { topic: any }) {
 
     return (
         <Link href={`/topic/${topic.slug}`}>
-            <Card variant="interactive" className="group relative p-5 h-[220px] flex flex-col overflow-hidden">
+            <Card variant="interactive" className="group relative p-4 sm:p-5 min-h-[200px] sm:min-h-[220px] flex flex-col overflow-hidden">
                 {/* Club Artistic Watermark */}
                 {isClub && imageUrl && (
                     <div className="absolute -right-8 -bottom-8 w-48 h-48 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-500 grayscale pointer-events-none select-none rotate-12">
@@ -61,7 +61,7 @@ export function TopicCard({ topic }: { topic: any }) {
                         <div className="relative">
                             <div className={`
                                 relative border bg-slate-50 dark:bg-neutral-800 flex items-center justify-center overflow-hidden transition-colors
-                                ${isClub ? 'w-14 h-14 rounded-md p-2 border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500' : 'w-14 h-14 rounded-full border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500'}
+                                ${isClub ? 'w-12 h-12 sm:w-14 sm:h-14 rounded-md p-2 border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500' : 'w-12 h-12 sm:w-14 sm:h-14 rounded-full border-slate-200 dark:border-neutral-700 group-hover:border-slate-400 dark:group-hover:border-neutral-500'}
                             `}>
                                 {imageUrl ? (
                                     <NextImage

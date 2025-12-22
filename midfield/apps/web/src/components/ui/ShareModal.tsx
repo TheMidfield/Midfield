@@ -224,7 +224,7 @@ export function ShareModal({
                         </div>
 
                         {/* Preview */}
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                             <div
                                 className="relative rounded-md overflow-hidden bg-neutral-800 shadow-lg ring-1 ring-neutral-700"
                                 style={{ width: '100%', aspectRatio: '1 / 1' }}
@@ -248,10 +248,10 @@ export function ShareModal({
                         </div>
 
                         {/* Actions */}
-                        <div className="px-6 pb-6">
+                        <div className="px-4 pb-4 sm:px-6 sm:pb-6">
                             <div className="flex flex-col gap-3">
                                 {/* Social Actions - First Row */}
-                                <div className="grid grid-cols-2 gap-3">
+                                <div className="flex flex-col sm:flex-row gap-3">
                                     <button
                                         onClick={handleShareToX}
                                         className="flex items-center justify-center gap-2 py-3 rounded-md font-medium bg-black text-white hover:bg-neutral-900 transition-colors border border-neutral-700 cursor-pointer"
