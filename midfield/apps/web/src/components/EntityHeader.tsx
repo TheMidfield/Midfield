@@ -108,7 +108,7 @@ export function EntityHeader({
             <Card className="relative overflow-hidden">
                 {/* Background Watermark */}
                 {displayImage && (
-                    <div className="hidden md:block absolute right-8 -bottom-4 w-52 h-52 opacity-[0.04] grayscale pointer-events-none select-none">
+                    <div className="absolute right-4 sm:right-6 md:right-8 -bottom-2 sm:-bottom-3 md:-bottom-4 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 opacity-[0.04] grayscale pointer-events-none select-none">
                         <NextImage
                             src={displayImage}
                             alt=""
@@ -168,40 +168,40 @@ export function EntityHeader({
                         {/* Info - Unified padding for both types */}
                         <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
                             
-                            {/* Row 1: Title + Actions */}
-                            <div className="flex items-start justify-between gap-2 sm:gap-3 mb-1 sm:mb-1.5 md:mb-2">
-                                <h1 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
+                            {/* Row 1: Title + Actions (actions hidden on mobile, shown in footer instead) */}
+                            <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
+                                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
                                     {title}
                                 </h1>
-                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                                    <Button variant="pill" size="pill-sm" className="h-7 sm:h-8 px-3 sm:px-4 text-[11px] sm:text-xs">
+                                <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 shrink-0">
+                                    <Button variant="pill" size="pill-sm" className="h-7 sm:h-8 px-3.5 sm:px-4 text-[11px] sm:text-xs">
                                         Follow
                                     </Button>
-                                    <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 rounded-md">
-                                        <Share2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                    <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300">
+                                        <Share2 className="w-4 sm:w-4 h-4 sm:h-4" />
                                     </Button>
                                 </div>
                             </div>
 
                             {/* Row 2: Badges */}
-                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-1 sm:mb-1.5 md:mb-2">
-                                <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-5 sm:h-auto px-2 sm:px-2.5 py-0.5 sm:py-1">
+                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
+                                <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
                                     {type}
                                 </Badge>
                                 {isPlayer && metadata?.position && (
-                                    <Badge variant="secondary" className="text-[10px] sm:text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 h-5 sm:h-auto px-2 sm:px-2.5 py-0.5 sm:py-1">
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
                                         {metadata.position}
                                     </Badge>
                                 )}
                                 {isClub && metadata?.league && (
-                                    <Badge variant="secondary" className="text-[10px] sm:text-xs h-5 sm:h-auto px-2 sm:px-2.5 py-0.5 sm:py-1">
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
                                         {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                     </Badge>
                                 )}
                             </div>
 
                             {/* Row 3: Stats */}
-                            <div className="flex flex-wrap items-center gap-x-2 sm:gap-x-3 md:gap-x-4 lg:gap-x-5 gap-y-1 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
+                            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
                                 {isPlayer && (
                                     <>
                                         {metadata?.height && (
@@ -269,13 +269,23 @@ export function EntityHeader({
                 </div>
 
                 {/* Footer - Balanced spacing */}
-                <div className="relative z-10 px-4 sm:px-5 md:px-6 py-3 sm:py-3.5 md:py-4 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-slate-600 dark:text-neutral-400 text-xs sm:text-sm">
-                        <MessageSquare className="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5 shrink-0" />
+                <div className="relative z-10 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-3.5 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-slate-500 dark:text-neutral-400 text-[11px] sm:text-xs md:text-sm">
+                        <MessageSquare className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
                         <span className="whitespace-nowrap font-medium">{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-bold">
-                        <Activity className="w-4 sm:w-4.5 md:w-5 h-4 sm:h-4.5 md:h-5 shrink-0" />
+                    
+                    {/* Mobile: Follow + Share buttons | Desktop: Trending badge */}
+                    <div className="flex sm:hidden items-center gap-2 shrink-0">
+                        <Button variant="pill" size="pill-sm" className="h-7 px-3.5 text-[11px]">
+                            Follow
+                        </Button>
+                        <Button variant="ghost" size="sm" className="w-7 h-7 p-0 rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300">
+                            <Share2 className="w-4 h-4" />
+                        </Button>
+                    </div>
+                    <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 text-emerald-600 dark:text-emerald-400 text-[11px] sm:text-xs md:text-sm font-semibold">
+                        <Activity className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
                         <span className="whitespace-nowrap">#3 Trending</span>
                     </div>
                 </div>

@@ -5,7 +5,11 @@ import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState, useEffect } from "react";
 
-export function NavbarSearch() {
+interface NavbarSearchProps {
+    onSearchStart?: () => void;
+}
+
+export function NavbarSearch({ onSearchStart }: NavbarSearchProps = {}) {
     const { query, setQuery, isSearching, closeSearch } = useSearch();
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -37,13 +41,13 @@ export function NavbarSearch() {
     return (
         <div
             className={cn(
-                "relative transition-all duration-300 ease-out",
-                isFocused || isSearching ? "w-[400px]" : "w-64"
+                "relative transition-all duration-300 ease-out w-full",
+                isFocused || isSearching ? "md:w-[400px]" : "md:w-64"
             )}
         >
             <div
                 className={cn(
-                    "flex h-10 w-full items-center rounded-full border-2 transition-colors",
+                    "flex h-11 sm:h-10 w-full items-center rounded-full border-2 transition-colors",
                     "bg-slate-100 dark:bg-neutral-800",
                     isFocused
                         ? "border-emerald-500 dark:border-emerald-400 bg-white dark:bg-neutral-900 ring-4 ring-emerald-500/10"
@@ -55,7 +59,14 @@ export function NavbarSearch() {
                     ref={inputRef}
                     type="text"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => {
+                        const newValue = e.target.value;
+                        setQuery(newValue);
+                        // Trigger callback when search becomes active (2+ chars)
+                        if (newValue.length >= 2 && query.length < 2 && onSearchStart) {
+                            onSearchStart();
+                        }
+                    }}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
                     onKeyDown={handleKeyDown}
@@ -63,8 +74,8 @@ export function NavbarSearch() {
                     className="flex-1 min-w-0 bg-transparent py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 />
 
-                {/* Badges */}
-                <div className="mr-1.5 flex items-center">
+                {/* Badges - hidden on mobile in hamburger menu context */}
+                <div className="mr-1.5 hidden sm:flex items-center">
                     {(isFocused || query) ? (
                         <div className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400 min-w-[34px] text-center">
                             ESC

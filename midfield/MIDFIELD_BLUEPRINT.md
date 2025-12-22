@@ -263,10 +263,29 @@ D) COMPONENT ARCHETYPES (CANONICAL)
    - Watermark badges allowed at extremely low opacity (0.04–0.08).
    - For badge fill containers use padding (e.g., p-1) to avoid clipping.
 
-3) Modals: “Holy Trinity”
+3) Modals: "Holy Trinity"
    - Header: icon + title aligned perfectly
    - Body: full-width text, NEVER indented under the header icon
    - Footer: symmetrical ghost buttons with minimum width for visual balance
+
+4) EntityHeader (Hero Card):
+   - Background watermark visible at ALL viewport sizes (responsive sizing)
+   - Watermark scales: w-28/h-28 (mobile) → w-40/h-40 (sm) → w-52/h-52 (md+)
+   - Never hide decorative elements on mobile - scale them appropriately
+
+5) TakeCard / Reply Spine System:
+   - Uses 3-column grid for replies: [spine_col | avatar_col | content_col]
+   - Spine termination: explicit height values (not bottom:0) on last element
+   - Height must be responsive: different values for mobile vs desktop breakpoints
+   - Pattern: `h-[Xpx] sm:h-[Ypx]` with matching `-top-N sm:-top-M` offsets
+   - Curve uses border-l-2 + border-b-2 + rounded-bl-lg
+   - Reply button icon: CornerDownLeft (consistent with main reply action)
+   - Reply button text: hidden on mobile (<xs), visible on xs+ breakpoints
+
+F) ICON CONSISTENCY LAW
+- Reply actions: ALWAYS use CornerDownLeft icon (main post + nested replies)
+- Do not mix MessageCircle for replies - that's for chat/DM contexts
+- Icon + text pattern: icon always visible, text hidden below xs breakpoint
 
 E) “MOBILE-FIRST” RESPONSIVENESS LAW (DESIGN, NOT JUST CSS)
 - Desktop full-width is already amazing: DO NOT change it.
@@ -333,6 +352,9 @@ Completed (as of Dec 22, 2025):
 - **Share card generation** via server-side `next/og` (CORS-free, in-app UI mirroring)
 - Club badge/name integration in player share cards
 - TakeCard/TakeFeed/TopicPageClient prop threading for club context
+- **TakeCard responsive spine system**: 3-col grid, explicit height termination, responsive values
+- **EntityHeader watermark**: visible at all viewport sizes with responsive scaling
+- **Icon consistency**: CornerDownLeft for all reply actions (main + nested)
 
 Next objectives (likely):
 - Responsiveness hardening for smaller viewports WITHOUT desktop regression

@@ -327,7 +327,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                         {/* The continuous Spine - stops at last reply curve */}
                         {hasRepliesOrReplying && (
-                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-8 xs:top-9 sm:top-10 bottom-0 w-[2px] bg-slate-100 dark:bg-neutral-800 -mb-5" />
+                            <div className="absolute top-8 xs:top-9 sm:top-10 bottom-0 left-[17px] xs:left-[19px] sm:left-[23px] w-0.5 bg-slate-100 dark:bg-neutral-800 -mb-3 sm:-mb-5" />
                         )}
                     </div>
 
@@ -482,7 +482,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             return (
                                 <div
                                     key={reply.id}
-                                    className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3 relative group transition-all rounded-lg mb-1.5 sm:mb-3"
+                                    className="grid grid-cols-[36px_32px_1fr] xs:grid-cols-[40px_36px_1fr] sm:grid-cols-[48px_40px_1fr] gap-x-0 relative group transition-all rounded-lg mb-1.5 sm:mb-3"
                                     ref={(el) => {
                                         if (el) replyRefs.current.set(reply.id, el);
                                         else replyRefs.current.delete(reply.id);
@@ -490,23 +490,22 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 >
                                     {/* Col 1: Spine Line */}
                                     <div className="relative">
-                                        {/* Main vertical line - extends from above to curve start */}
+                                        {/* Main vertical line - extends from above to curve start, explicit height on last */}
                                         <div
-                                            className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 sm:-top-5 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                            style={isLast ? { height: index === 0 ? 'calc(16px + 12px)' : 'calc(16px + 6px)' } : { bottom: 0 }}
+                                            className={`absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 xs:-top-6 sm:-top-7 w-0.5 bg-slate-100 dark:bg-neutral-800 ${isLast ? (index === 0 ? 'h-[34px] xs:h-[46px] sm:h-[50px]' : 'h-[26px] xs:h-[38px] sm:h-[42px]') : ''}`}
+                                            style={isLast ? undefined : { bottom: 0 }}
                                         />
-
                                         {/* Curve */}
-                                        <div className={`absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[6px] sm:top-[10px] w-[17px] xs:w-[19px] sm:w-[23px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg ${index === 0 ? 'h-[12px] sm:h-[18px]' : 'h-[8px] sm:h-[12px]'}`} />
+                                        <div className={`absolute left-[17px] xs:left-[19px] sm:left-[23px] top-2 sm:top-3 w-[17px] xs:w-[19px] sm:w-[23px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg ${index === 0 ? 'h-4 sm:h-5' : 'h-2.5 sm:h-3'}`} />
                                     </div>
 
-                                    {/* Col 2: Reply Content with Avatar */}
+                                    {/* Col 2-3: Reply Content Wrapper */}
                                     <div
                                         data-reply-content
-                                        className={`flex gap-1.5 xs:gap-2 sm:gap-2.5 ${index === 0 ? 'mt-0.5 sm:mt-1' : ''}`}
+                                        className={`col-span-2 grid grid-cols-[32px_1fr] xs:grid-cols-[36px_1fr] sm:grid-cols-[40px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-2.5 ${index === 0 ? 'mt-1.5 sm:mt-2' : ''}`}
                                     >
-                                        {/* Reply Avatar */}
-                                        <div className="relative z-10 pt-0.5 sm:pt-1 flex-shrink-0">
+                                        {/* Col 2: Reply Avatar */}
+                                        <div className="relative z-10 pt-1 sm:pt-2 flex justify-center">
                                             {reply.author?.avatar_url ? (
                                                 <img src={reply.author.avatar_url} alt="" className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md object-cover" />
                                             ) : (
@@ -516,8 +515,8 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                             )}
                                         </div>
 
-                                        {/* Reply Content */}
-                                        <div className="pt-0.5 sm:pt-1 min-w-0 flex-1">
+                                        {/* Col 3: Reply Content */}
+                                        <div className="pt-1 sm:pt-2 min-w-0">
                                             <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 mb-0.5 sm:mb-1 min-w-0 h-4 sm:h-5">
                                                 <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[10px] xs:text-[11px] sm:text-xs truncate">
                                                     @{reply.author?.username || 'anon'}
@@ -527,13 +526,13 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                     {formatDate(new Date(reply.created_at))}
                                                 </span>
 
-                                                {/* Reply button - appears on hover inline */}
+                                                {/* Reply button - always visible on mobile, hover on desktop */}
                                                 <button
                                                     onClick={() => handleReplyToComment(reply.id, reply.author?.username || 'anon', reply.content)}
-                                                    className="ml-auto opacity-0 group-hover:opacity-100 h-5 sm:h-6 px-1 sm:px-1.5 flex items-center gap-0.5 sm:gap-1 rounded-md text-[10px] xs:text-[11px] sm:text-[11px] font-medium transition-all cursor-pointer text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 flex-shrink-0"
+                                                    className="ml-auto opacity-60 sm:opacity-0 sm:group-hover:opacity-100 h-5 sm:h-6 px-1 sm:px-1.5 flex items-center gap-0.5 sm:gap-1 rounded-md text-[10px] xs:text-[11px] sm:text-[11px] font-medium transition-all cursor-pointer text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:text-emerald-600 dark:active:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 active:bg-slate-50 dark:active:bg-neutral-800 shrink-0"
                                                 >
-                                                    <MessageCircle className="w-3 h-3" />
-                                                    <span>Reply</span>
+                                                    <CornerDownLeft className="w-3 h-3" />
+                                                    <span className="hidden sm:inline">Reply</span>
                                                 </button>
                                             </div>
 
@@ -571,34 +570,30 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                         {/* Reply Composer */}
                         {isReplying && (
-                            <div ref={replyComposerRef} className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3 relative pt-0.5 sm:pt-1">
+                            <div ref={replyComposerRef} className="grid grid-cols-[36px_32px_1fr] xs:grid-cols-[40px_36px_1fr] sm:grid-cols-[48px_40px_1fr] gap-x-0 relative pt-1 sm:pt-2">
                                 {/* Col 1: Spine */}
                                 <div className="relative">
-                                    {/* Line extends from above to curve start */}
+                                    {/* Line extends from above to curve start - responsive height */}
                                     <div
-                                        className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 sm:-top-5 w-[2px] bg-slate-100 dark:bg-neutral-800"
-                                        style={{ height: 'calc(16px + 6px)' }}
+                                        className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-5 xs:-top-6 sm:-top-7 h-[34px] xs:h-[44px] sm:h-[48px] w-0.5 bg-slate-100 dark:bg-neutral-800"
                                     />
-
                                     {/* Curve */}
-                                    <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-[6px] sm:top-[10px] w-[17px] xs:w-[19px] sm:w-[23px] h-[12px] sm:h-[18px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
+                                    <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-2 sm:top-3 w-[17px] xs:w-[19px] sm:w-[23px] h-3 sm:h-4 border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
                                 </div>
 
-                                {/* Col 2: Avatar + Input in flex row */}
-                                <div className="flex gap-1.5 xs:gap-2 sm:gap-2.5">
-                                    {/* User Avatar */}
-                                    <div className="relative z-10 pt-1 sm:pt-2 flex-shrink-0">
-                                        {currentUser?.avatar_url ? (
-                                            <img src={currentUser.avatar_url} alt="You" className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md object-cover" />
-                                        ) : (
-                                            <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
-                                                <User className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4 text-slate-400 dark:text-neutral-500" />
-                                            </div>
-                                        )}
-                                    </div>
+                                {/* Col 2: User Avatar */}
+                                <div className="relative z-10 pt-2 sm:pt-4 flex justify-center">
+                                    {currentUser?.avatar_url ? (
+                                        <img src={currentUser.avatar_url} alt="You" className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md object-cover" />
+                                    ) : (
+                                        <div className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 rounded-md bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
+                                            <User className="w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4 text-slate-400 dark:text-neutral-500" />
+                                        </div>
+                                    )}
+                                </div>
 
-                                {/* Input */}
-                                    <div className="pt-1 sm:pt-2 min-w-0 flex-1">
+                                {/* Col 3: Input */}
+                                <div className="pt-2 sm:pt-4 pl-1.5 xs:pl-2 sm:pl-2.5 min-w-0">
                                     <div className="relative w-full">
                                         {replyingTo && (
                                             <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-2.5 py-1 sm:py-1.5 border-l-2 border-slate-200 dark:border-neutral-800 w-full min-w-0">
@@ -655,7 +650,6 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                             </Button>
                                         </div>
                                     </div>
-                                    </div>
                                 </div>
                             </div>
                         )}
@@ -664,15 +658,15 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
 
                 {/* Expander text if hidden */}
                 {localReplyCount > 0 && !isExpanded && !isReplying && (
-                    <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-1.5 xs:gap-x-2 sm:gap-x-3 mt-1 sm:mt-2">
+                    <div className="grid grid-cols-[36px_1fr] xs:grid-cols-[40px_1fr] sm:grid-cols-[48px_1fr] gap-x-0 mt-2 sm:mt-3">
                         <div className="relative">
-                            {/* Short spine stub */}
-                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 sm:-top-5 h-3 sm:h-5 w-[2px] bg-slate-100 dark:bg-neutral-800" />
-                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-0 w-[13px] xs:w-[14px] sm:w-[16px] h-[10px] xs:h-[12px] sm:h-[14px] border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-lg" />
+                            {/* Short spine stub - responsive height matching offset */}
+                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] -top-3 xs:-top-4 sm:-top-5 h-3 xs:h-4 sm:h-5 w-0.5 bg-slate-100 dark:bg-neutral-800" />
+                            <div className="absolute left-[17px] xs:left-[19px] sm:left-[23px] top-0 w-3 xs:w-3.5 sm:w-4 h-3 xs:h-3.5 sm:h-4 border-b-2 border-l-2 border-slate-100 dark:border-neutral-800 rounded-bl-xl" />
                         </div>
                         <button
                             onClick={() => setIsExpanded(true)}
-                            className="flex items-center gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pt-0.5 sm:pt-1"
+                            className="flex items-center gap-1 sm:gap-1.5 text-[10px] xs:text-[11px] sm:text-xs font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer justify-start pl-2 sm:pl-3 pt-1 sm:pt-2"
                         >
                             <ChevronDown className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                             Show {localReplyCount} {localReplyCount === 1 ? 'reply' : 'replies'}
