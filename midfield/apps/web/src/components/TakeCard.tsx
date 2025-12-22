@@ -334,23 +334,9 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     {/* --- Right Column: Main Content --- */}
                     <div className="min-w-0 pl-1.5 sm:pl-2">
                         {/* Header */}
-                        <div className="flex items-center justify-between mb-1 sm:h-5 min-w-0 gap-1.5">
-                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-hidden">
-                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer truncate">
-                                    @{authorHandle}
-                                </span>
-                                <div className={`flex items-center gap-1.5 sm:gap-2 transition-all duration-200 ${showMenu ? 'hidden sm:flex' : 'flex'}`}>
-                                    <span className="text-slate-300 dark:text-neutral-600 text-xs sm:text-xs flex-shrink-0">•</span>
-                                    <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-xs sm:text-xs whitespace-nowrap">
-                                        {formatDate(new Date(post.created_at))}
-                                    </span>
-                                    {wasEdited && (
-                                        <>
-                                            <span className="text-slate-300 dark:text-neutral-600 hidden md:inline">•</span>
-                                            <span className="text-slate-400 dark:text-neutral-500 text-[11px] italic hidden md:inline">edited</span>
-                                        </>
-                                    )}
-                                </div>
+                        <div className="flex items-center justify-between mb-1.5 sm:mb-3 sm:h-5 min-w-0 gap-1.5">
+                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-slate-400 dark:text-neutral-500">
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">@{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-xs sm:text-xs mx-1.5 sm:mx-2">•</span><span className="text-[10px] xs:text-xs sm:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs sm:text-xs mx-1.5 sm:mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
                             </div>
                             {isOwner && !isEditing && (
                                 <div className="flex items-center flex-shrink-0">

@@ -24,12 +24,51 @@ Example readiness response style (template):
 “Doctrine read and internalized. I’m aligned on Data Noir, performance/SEO 100/100, mobile-native portability, and zero-regression desktop UI. Ready to execute. Give me the next objective.”
 
 Non-negotiables:
-1) DESKTOP IS SACRED: If it’s amazing on full-width laptop/PC, do not ‘improve’ it.
+1) DESKTOP IS SACRED: If it's amazing on full-width laptop/PC, do not 'improve' it.
 2) PERFORMANCE IS RELIGION: No waterfalls. No bloat. No accidental heavy client JS.
 3) SEO IS A GROWTH WEAPON: Sharing previews + crawlability + speed signals must be excellent.
 4) MOBILE-NATIVE IS LAW: Web decisions must translate to Expo/RN patterns.
 5) NO OVERENGINEERING: Prefer boring, proven solutions. Complexity must justify itself.
 6) RESPONSIVE FROM DAY 1: Test 320px/640px/768px/1024px/1920px BEFORE shipping. See RESPONSIVE_CHECKLIST.md.
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  🚨 RESPONSIVE PERFECTION LAW — READ THIS BEFORE WRITING ANY FRONTEND CODE   ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║                                                                              ║
+║  THE WEB VERSION IS THE MOBILE VERSION. Users browse on phones, tablets,    ║
+║  laptops with browser windows at ANY size. There is no "desktop-only" path. ║
+║                                                                              ║
+║  EVERY SINGLE LINE of frontend code must be designed for:                   ║
+║  • ANY window width from 320px to 2560px+ (continuous, not just breakpoints)║
+║  • ANY interactive state (menus open, modals visible, loading, expanded)    ║
+║  • ANY content length (long usernames, long dates, long titles, edge cases) ║
+║  • ANY combination of the above simultaneously                              ║
+║                                                                              ║
+║  BEFORE committing frontend code, mentally (or actually) test:              ║
+║  1. Drag browser window from 320px → 1920px slowly. Any collision? Wrap?    ║
+║  2. Toggle every interactive state at EACH size. Does layout break?         ║
+║  3. Use extreme content (30-char username, longest date format). Overflow?  ║
+║  4. Test frontier sizes: 375px, 390px, 428px, 768px, 1024px, 1440px         ║
+║                                                                              ║
+║  COMMON BUGS TO PREVENT:                                                    ║
+║  • Text truncation without "..." ellipsis                                   ║
+║  • Elements overlapping when state changes (e.g., menu opens)               ║
+║  • Content pushing other content off-screen                                 ║
+║  • Flex items wrapping unexpectedly                                         ║
+║  • Touch targets too small (<44px) on mobile                                ║
+║  • Horizontal scroll appearing at certain widths                            ║
+║                                                                              ║
+║  SOLUTION PATTERNS:                                                         ║
+║  • Use unified text blocks with text-ellipsis for graceful truncation       ║
+║  • Prefer collision-based truncation over fixed pixel breakpoints           ║
+║  • Test interactive states (hover, open, selected) at ALL viewport sizes    ║
+║  • Use min-w-0 + overflow-hidden on flex children that must truncate        ║
+║  • Inline styles for width/max-width in flex containers (Tailwind v4 bug)   ║
+║                                                                              ║
+║  If it looks broken at ANY size or state combination, it ships broken.      ║
+║  There are no acceptable edge cases. Fix it before moving on.               ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
 LIVING DOCTRINE REQUIREMENT:
 - You MUST update this file as work progresses whenever you discover:
