@@ -106,9 +106,9 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
 
         return (
             <Link href={`/topic/${player.slug}`} className="block">
-                <Card variant="interactive" className="p-2 flex items-center gap-2.5 group">
-                    {/* Player Photo - Compact (w-9 h-9) */}
-                    <div className="relative w-9 h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
+                <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 group">
+                    {/* Player Photo - Compact */}
+                    <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
                         {player.metadata?.photo_url ? (
                             <NextImage
                                 src={player.metadata.photo_url}
@@ -132,19 +132,19 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
 
                     {/* Player Info */}
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
                             {player.title}
                         </h3>
-                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
                             {/* Rating Badge */}
                             {rating && (
-                                <div className="px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[10px] font-bold text-white dark:text-neutral-900">
+                                <div className="px-1 sm:px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[9px] sm:text-[10px] font-bold text-white dark:text-neutral-900">
                                     {rating}
                                 </div>
                             )}
                             {/* Position Badge WITH COLOR */}
                             {position && (
-                                <Badge variant="secondary" className={`text-[9px] ${posInfo.color}`}>
+                                <Badge variant="secondary" className={`text-[8px] sm:text-[9px] ${posInfo.color}`}>
                                     {posInfo.abbr}
                                 </Badge>
                             )}
@@ -208,16 +208,16 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
             />
 
             {/* Main Content */}
-            <div className="flex gap-4 sm:gap-6">
-                {/* Sidebar */}
-                <aside className="hidden lg:block shrink-0 lg:w-full lg:max-w-[340px]">
-                    <div className="sticky top-24">
+            <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6">
+                {/* Sidebar - appears FIRST on mobile, left side on desktop */}
+                <aside className="w-full xl:shrink-0 xl:w-full xl:max-w-[340px] order-1">
+                    <div className="xl:sticky xl:top-24">
                         {/* Section Title */}
-                        <h3 className="text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-3 px-1">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2 sm:mb-3 px-1">
                             {isClub ? "Club Info" : "Player Info"}
                         </h3>
 
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                             {sections.map((section) => {
                                 const Icon = section.icon;
                                 const isExpanded = expandedSections.has(section.id);
@@ -227,38 +227,38 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                                         {/* Section Header */}
                                         <button
                                             onClick={() => toggleSection(section.id)}
-                                            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
+                                            className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <Icon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                                <span className="font-bold text-slate-900 dark:text-neutral-100">
+                                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                                <Icon className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100 truncate">
                                                     {section.title}
                                                 </span>
                                                 {section.count !== undefined && (
-                                                    <Badge variant="secondary" className="text-[10px]">{section.count}</Badge>
+                                                    <Badge variant="secondary" className="text-[9px] sm:text-[10px] shrink-0">{section.count}</Badge>
                                                 )}
                                             </div>
                                             {/* + / - icon animation */}
-                                            <div className="relative w-5 h-5 flex items-center justify-center">
+                                            <div className="relative w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center shrink-0">
                                                 <Plus
-                                                    className={`absolute w-5 h-5 text-slate-400 transition-all duration-150 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 ${isExpanded ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}`}
+                                                    className={`absolute w-4 sm:w-5 h-4 sm:h-5 text-slate-400 transition-all duration-150 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 ${isExpanded ? 'opacity-0 rotate-90' : 'opacity-100 rotate-0'}`}
                                                 />
                                                 <Minus
-                                                    className={`absolute w-5 h-5 text-slate-400 transition-all duration-150 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 ${isExpanded ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}`}
+                                                    className={`absolute w-4 sm:w-5 h-4 sm:h-5 text-slate-400 transition-all duration-150 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 ${isExpanded ? 'opacity-100 rotate-0' : 'opacity-0 -rotate-90'}`}
                                                 />
                                             </div>
                                         </button>
 
                                         {/* Section Content */}
                                         {isExpanded && (
-                                            <div className="px-4 pb-4 border-t border-slate-100 dark:border-neutral-800">
+                                            <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t border-slate-100 dark:border-neutral-800">
                                                 {/* Players Section (Clubs) */}
                                                 {section.id === "players" && isClub && (
                                                     squad.length > 0 ? (
                                                         <div
-                                                            className="squad-scroll pt-4 -mr-3 pr-4 space-y-4 overflow-y-auto"
+                                                            className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 space-y-3 sm:space-y-4 overflow-y-auto"
                                                             style={{
-                                                                maxHeight: '480px',
+                                                                maxHeight: '400px',
                                                             }}
                                                         >
                                                             {positionOrder.map((pos) => {
@@ -267,11 +267,11 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
 
                                                                 return (
                                                                     <div key={pos}>
-                                                                        <div className="flex items-center justify-between mb-2">
-                                                                            <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+                                                                        <div className="flex items-center justify-between mb-1.5 sm:mb-2">
+                                                                            <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
                                                                                 {pos}
                                                                             </span>
-                                                                            <span className="text-[10px] text-slate-300 dark:text-neutral-600">
+                                                                            <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
                                                                                 {players.length}
                                                                             </span>
                                                                         </div>
@@ -291,22 +291,22 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
 
                                                 {/* Statistics Section (Players) */}
                                                 {section.id === "stats" && isPlayer && (
-                                                    <div className="pt-4 space-y-3">
+                                                    <div className="pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-slate-500 dark:text-neutral-400">Goals (Season)</span>
-                                                            <span className="font-bold text-slate-900 dark:text-neutral-100">12</span>
+                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Goals (Season)</span>
+                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">12</span>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-slate-500 dark:text-neutral-400">Assists</span>
-                                                            <span className="font-bold text-slate-900 dark:text-neutral-100">8</span>
+                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Assists</span>
+                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">8</span>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-slate-500 dark:text-neutral-400">Minutes Played</span>
-                                                            <span className="font-bold text-slate-900 dark:text-neutral-100">1,847</span>
+                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Minutes Played</span>
+                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">1,847</span>
                                                         </div>
                                                         <div className="flex items-center justify-between">
-                                                            <span className="text-sm text-slate-500 dark:text-neutral-400">Pass Accuracy</span>
-                                                            <span className="font-bold text-slate-900 dark:text-neutral-100">87%</span>
+                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Pass Accuracy</span>
+                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">87%</span>
                                                         </div>
                                                     </div>
                                                 )}
@@ -314,26 +314,26 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                                                 {/* FC26 Ratings Section (Players) */}
                                                 {section.id === "ratings" && isPlayer && (
                                                     metadata?.rating ? (
-                                                        <div className="pt-4 space-y-3">
+                                                        <div className="pt-3 sm:pt-4 space-y-2 sm:space-y-3">
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-slate-500 dark:text-neutral-400">Overall Rating</span>
-                                                                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{metadata.rating}</span>
+                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Overall Rating</span>
+                                                                <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">{metadata.rating}</span>
                                                             </div>
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-slate-500 dark:text-neutral-400">Pace</span>
-                                                                <span className="font-bold text-slate-900 dark:text-neutral-100">89</span>
+                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Pace</span>
+                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">89</span>
                                                             </div>
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-slate-500 dark:text-neutral-400">Shooting</span>
-                                                                <span className="font-bold text-slate-900 dark:text-neutral-100">85</span>
+                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Shooting</span>
+                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">85</span>
                                                             </div>
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-slate-500 dark:text-neutral-400">Passing</span>
-                                                                <span className="font-bold text-slate-900 dark:text-neutral-100">82</span>
+                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Passing</span>
+                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">82</span>
                                                             </div>
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-sm text-slate-500 dark:text-neutral-400">Dribbling</span>
-                                                                <span className="font-bold text-slate-900 dark:text-neutral-100">91</span>
+                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Dribbling</span>
+                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">91</span>
                                                             </div>
                                                         </div>
                                                     ) : (
@@ -348,8 +348,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
 
                                                 {/* About Section */}
                                                 {section.id === "about" && (
-                                                    <div className="pt-4">
-                                                        <p className="text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">
+                                                    <div className="pt-3 sm:pt-4">
+                                                        <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">
                                                             {isClub
                                                                 ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
                                                                 : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
@@ -367,10 +367,10 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                 </aside>
 
                 {/* Discussion */}
-                <main className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-5">
-                        <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-neutral-100">
+                <main className="flex-1 min-w-0 w-full order-2">
+                    <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                        <Activity className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-600 dark:text-emerald-400" />
+                        <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-neutral-100">
                             Takes
                         </h2>
                     </div>

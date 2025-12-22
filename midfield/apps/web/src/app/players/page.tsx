@@ -35,15 +35,15 @@ export default async function PlayersPage() {
 
     return (
         <div className="w-full">
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                    <User className="w-8 h-8" />
+            <div className="flex items-center gap-2.5 sm:gap-3 mb-6 sm:mb-8">
+                <div className="p-2.5 sm:p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+                    <User className="w-6 sm:w-7 md:w-8 h-6 sm:h-7 md:h-8" />
                 </div>
-                <div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-neutral-100">
+                <div className="min-w-0">
+                    <h1 className="text-2xl xs:text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-neutral-100 leading-tight">
                         Players
                     </h1>
-                    <p className="text-slate-500 dark:text-neutral-400 font-medium mt-1">
+                    <p className="text-xs sm:text-sm md:text-base text-slate-500 dark:text-neutral-400 font-medium mt-0.5 sm:mt-1">
                         Discover top talent from around the world
                     </p>
                 </div>

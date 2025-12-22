@@ -52,21 +52,22 @@ export function Navbar() {
 
     return (
         <nav className="fixed top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-slate-300 dark:border-neutral-800">
-            <div className="w-full max-w-[1600px] mx-auto flex h-16 items-center justify-between px-6 sm:px-10 md:px-16 lg:px-24">
+            <div className="w-full max-w-[1600px] mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
 
                 {/* Left: Brand + Nav */}
                 <div className="flex items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 min-w-0">
-                    <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                    <Link href="/" className="flex items-center gap-2 shrink-0">
                         <img
                             src="/midfield-logo.png"
                             alt=""
-                            className="h-8 sm:h-9 w-auto"
+                            className="h-7 sm:h-8 md:h-9 w-auto"
                         />
-                        <span className="font-black text-lg sm:text-xl tracking-tighter text-slate-900 dark:text-neutral-100 uppercase">
+                        <span className="font-black text-base sm:text-lg md:text-xl tracking-tighter text-slate-900 dark:text-neutral-100 uppercase">
                             Midfield
                         </span>
                     </Link>
 
+                    {/* Desktop Nav - visible at 900px+ */}
                     <div className="hidden lg:flex items-center gap-1">
                         <NavLink href="/" active={isActive("/")}>Home</NavLink>
                         <NavLink href="/players" active={isActive("/players")}>Players</NavLink>
@@ -77,18 +78,10 @@ export function Navbar() {
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                    {/* Hamburger Menu - Below lg breakpoint */}
-                    <button
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        className="lg:hidden w-10 h-10 flex items-center justify-center rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-                        aria-label="Menu"
-                    >
-                        {isMobileMenuOpen ? (
-                            <X className="w-5 h-5" />
-                        ) : (
-                            <Menu className="w-5 h-5" />
-                        )}
-                    </button>
+                    {/* Search - visible at 768px+ */}
+                    <div className="hidden md:block">
+                        <NavbarSearch />
+                    </div>
 
                     <Link href="/design-system" className="hidden xl:block">
                         <Button variant="ghost" size="sm" icon={Terminal}>
@@ -96,16 +89,11 @@ export function Navbar() {
                         </Button>
                     </Link>
 
-                    {/* Search - Hidden on mobile */}
-                    <div className="hidden lg:block">
-                        <NavbarSearch />
-                    </div>
-
                     <ThemeToggle />
 
                     <Link href="/profile">
                         {!isLoading && userAvatar ? (
-                            <div className="h-10 w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-600 transition-all cursor-pointer">
+                            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-600 transition-all cursor-pointer">
                                 <img
                                     src={userAvatar}
                                     alt="Profile"
@@ -116,20 +104,36 @@ export function Navbar() {
                             <IconButton icon={UserIcon} variant="ghost" />
                         )}
                     </Link>
+
+                    {/* Hamburger Menu - Below lg breakpoint, professional design */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="lg:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all cursor-pointer group"
+                        aria-label="Menu"
+                    >
+                        <span className={`w-5 h-0.5 bg-current rounded-full transition-all duration-300 ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                        <span className={`w-5 h-0.5 bg-current rounded-full transition-all duration-300 ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
+                        <span className={`w-5 h-0.5 bg-current rounded-full transition-all duration-300 ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+                    </button>
                 </div>
             </div>
 
-            {/* Mobile Menu Drawer */}
+            {/* Mobile Menu Drawer - Smooth slide-down animation */}
             {isMobileMenuOpen && (
                 <>
-                    {/* Backdrop */}
+                    {/* Backdrop with fade-in */}
                     <div
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-in fade-in duration-200"
                         onClick={() => setIsMobileMenuOpen(false)}
                     />
-                    {/* Drawer */}
-                    <div className="fixed top-16 left-0 right-0 bg-white dark:bg-neutral-900 border-b border-slate-300 dark:border-neutral-800 shadow-lg z-40 lg:hidden">
-                        <div className="px-6 py-4 space-y-1">
+                    {/* Drawer with slide-down */}
+                    <div className="fixed top-14 sm:top-16 left-0 right-0 bg-white dark:bg-neutral-900 border-b border-slate-300 dark:border-neutral-800 shadow-xl z-40 lg:hidden animate-in slide-in-from-top-2 duration-300">
+                        <div className="px-4 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+                            {/* Mobile Search - First Item (only show if not visible in header) */}
+                            <div className="mb-3 md:hidden">
+                                <NavbarSearch />
+                            </div>
+                            
                             <MobileNavLink href="/" active={isActive("/")} onClick={() => setIsMobileMenuOpen(false)}>
                                 Home
                             </MobileNavLink>

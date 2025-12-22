@@ -19,14 +19,14 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 items-start">
+        <div className="flex flex-col xl:flex-row gap-8 items-start">
             {/* Main Content */}
             <main className="flex-1 min-w-0 w-full">
                 {children}
             </main>
 
-            {/* Right Widgets - Desktop */}
-            <aside className="hidden lg:block w-[320px] shrink-0 sticky top-24">
+            {/* Right Widgets - Desktop ONLY (1280px+) */}
+            <aside className="hidden xl:block w-[320px] shrink-0 sticky top-24">
                 <RightPanel />
             </aside>
         </div>

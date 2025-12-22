@@ -195,36 +195,36 @@ export function ShareModal({
                     className="relative z-10"
                     onClick={(e) => e.stopPropagation()}
                     style={{
-                        width: '100%',
+                        width: 'calc(100% - 2rem)',
                         maxWidth: '512px',
                         animation: "modalSpring 300ms cubic-bezier(0.34, 1.56, 0.64, 1)",
                     }}
                 >
                     <div className="bg-neutral-900 border border-neutral-800 rounded-md overflow-hidden shadow-2xl">
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800">
-                            <h2 className="text-lg font-semibold text-neutral-100">
+                        <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-neutral-800">
+                            <h2 className="text-base sm:text-lg font-semibold text-neutral-100 truncate pr-2">
                                 Share Your Take
                             </h2>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                                 <button
                                     onClick={() => setIsDarkMode(!isDarkMode)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition-colors cursor-pointer"
                                     title={isDarkMode ? "Light mode" : "Dark mode"}
                                 >
-                                    {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                    {isDarkMode ? <Sun className="w-4 sm:w-5 h-4 sm:h-5" /> : <Moon className="w-4 sm:w-5 h-4 sm:h-5" />}
                                 </button>
                                 <button
                                     onClick={onClose}
-                                    className="w-8 h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 transition-colors cursor-pointer"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="w-4 sm:w-5 h-4 sm:h-5" />
                                 </button>
                             </div>
                         </div>
 
                         {/* Preview */}
-                        <div className="p-4 sm:p-6">
+                        <div className="p-3 sm:p-4 md:p-6">
                             <div
                                 className="relative rounded-md overflow-hidden bg-neutral-800 shadow-lg ring-1 ring-neutral-700"
                                 style={{ width: '100%', aspectRatio: '1 / 1' }}
@@ -248,28 +248,28 @@ export function ShareModal({
                         </div>
 
                         {/* Actions */}
-                        <div className="px-4 pb-4 sm:px-6 sm:pb-6">
-                            <div className="flex flex-col gap-3">
+                        <div className="px-3 pb-3 sm:px-4 sm:pb-4 md:px-6 md:pb-6">
+                            <div className="flex flex-col gap-2 sm:gap-3">
                                 {/* Social Actions - First Row */}
-                                <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
                                     <button
                                         onClick={handleShareToX}
-                                        className="flex items-center justify-center gap-2 py-3 rounded-md font-medium bg-black text-white hover:bg-neutral-900 transition-colors border border-neutral-700 cursor-pointer"
+                                        className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-md font-medium bg-black text-white hover:bg-neutral-900 transition-colors border border-neutral-700 cursor-pointer text-xs sm:text-sm"
                                     >
-                                        <XIcon className="w-4 h-4" />
-                                        <span className="text-sm">Post on X</span>
+                                        <XIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                        <span>Post on X</span>
                                     </button>
                                     <button
                                         onClick={handleDownload}
-                                        className="flex items-center justify-center gap-2 py-3 rounded-md font-medium bg-gradient-to-r from-[#5B51D8] via-[#C13584] to-[#E1306C] text-white hover:brightness-110 transition-all border border-neutral-700 cursor-pointer"
+                                        className="flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-md font-medium bg-gradient-to-r from-[#5B51D8] via-[#C13584] to-[#E1306C] text-white hover:brightness-110 transition-all border border-neutral-700 cursor-pointer text-xs sm:text-sm"
                                     >
-                                        <Instagram className="w-4 h-4" />
-                                        <span className="text-sm">Post on Instagram</span>
+                                        <Instagram className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                        <span>Post on Instagram</span>
                                     </button>
                                 </div>
 
                                 {/* Primary Actions - Second Row */}
-                                <div className="flex gap-3">
+                                <div className="flex gap-2 sm:gap-3">
                                     <ActionButton
                                         icon={Download}
                                         label="Download"
@@ -326,7 +326,7 @@ function ActionButton({
             onClick={onClick}
             disabled={disabled || isLoading}
             className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-2 py-4 rounded-md font-medium transition-all cursor-pointer border-2",
+                "flex-1 flex flex-col items-center justify-center gap-1.5 sm:gap-2 py-3 sm:py-4 rounded-md font-medium transition-all cursor-pointer border-2",
                 isSuccess
                     ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400"
                     : disabled
@@ -334,8 +334,8 @@ function ActionButton({
                         : "bg-neutral-800 border-neutral-700 text-neutral-200 hover:bg-emerald-500/10 hover:border-emerald-500/30 hover:text-emerald-400"
             )}
         >
-            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : isSuccess ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
-            <span className="text-sm">
+            {isLoading ? <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" /> : isSuccess ? <Check className="w-4 sm:w-5 h-4 sm:h-5" /> : <Icon className="w-4 sm:w-5 h-4 sm:h-5" />}
+            <span className="text-xs sm:text-sm">
                 {isSuccess ? (label === "Copy" ? "Copied!" : label === "Download" ? "Downloaded!" : "Shared!") : label}
             </span>
         </button>
