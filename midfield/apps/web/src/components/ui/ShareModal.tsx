@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { X, Download, Copy, Share2, Check, Loader2, Sun, Moon } from "lucide-react";
-import { toPng } from "html-to-image";
-import { TakeShareCard } from "./TakeShareCard";
 import { cn } from "@/lib/utils";
 
 interface ShareModalProps {
@@ -25,11 +23,12 @@ export function ShareModal({
     onClose,
     content,
     authorUsername,
+    authorAvatar,
     createdAt,
     topicTitle,
+    topicImageUrl,
     topicType,
 }: ShareModalProps) {
-    const cardRef = useRef<HTMLDivElement>(null);
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [downloadState, setDownloadState] = useState<ActionState>("idle");
@@ -43,47 +42,68 @@ export function ShareModal({
         setCanNativeShare(typeof navigator !== "undefined" && !!navigator.share && !!navigator.canShare);
     }, []);
 
-    // Generate image when modal opens or theme changes
+    // Generate image via server-side API (no CORS issues!)
     const generateImage = useCallback(async () => {
-        if (!cardRef.current) return;
-
         setIsGenerating(true);
         setImageUrl(null);
 
         try {
-            // Wait for render
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            const dataUrl = await toPng(cardRef.current, {
-                quality: 1,
-                pixelRatio: 2,
-                cacheBust: true,
+            const params = new URLSearchParams({
+                content,
+                authorUsername,
+                topicTitle: topicTitle || '',
+                topicType: topicType || 'player',
+                createdAt,
+                theme: isDarkMode ? 'dark' : 'light',
             });
-            setImageUrl(dataUrl);
+
+            if (topicImageUrl) {
+                params.set('topicImageUrl', topicImageUrl);
+            }
+            if (authorAvatar) {
+                params.set('authorAvatarUrl', authorAvatar);
+            }
+
+            const response = await fetch(`/api/share-card?${params.toString()}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to generate image');
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
         } catch (error) {
             console.error("Failed to generate image:", error);
         } finally {
             setIsGenerating(false);
         }
-    }, []);
+    }, [content, authorUsername, authorAvatar, topicTitle, topicImageUrl, topicType, createdAt, isDarkMode]);
 
+    // Generate when modal opens
     useEffect(() => {
         if (isOpen) {
             generateImage();
         } else {
+            // Cleanup blob URL when modal closes
+            if (imageUrl) {
+                URL.revokeObjectURL(imageUrl);
+            }
             setImageUrl(null);
             setDownloadState("idle");
             setCopyState("idle");
             setShareState("idle");
         }
-    }, [isOpen, generateImage]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen]);
 
     // Regenerate when theme changes
     useEffect(() => {
         if (isOpen) {
             generateImage();
         }
-    }, [isDarkMode, isOpen, generateImage]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isDarkMode]);
 
     // Handle escape key
     useEffect(() => {
@@ -260,19 +280,6 @@ export function ShareModal({
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {/* Hidden card for capture */}
-            <div style={{ position: "fixed", left: "-9999px", top: 0, pointerEvents: "none" }}>
-                <TakeShareCard
-                    ref={cardRef}
-                    content={content}
-                    authorUsername={authorUsername}
-                    createdAt={createdAt}
-                    topicTitle={topicTitle}
-                    topicType={topicType}
-                    isDarkMode={isDarkMode}
-                />
             </div>
 
             <style jsx global>{`
