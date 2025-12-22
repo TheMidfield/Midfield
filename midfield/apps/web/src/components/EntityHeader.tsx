@@ -78,24 +78,60 @@ export function EntityHeader({
                 { label: title, href: null }
             ];
 
+    // On mobile, collapse middle breadcrumbs if more than 3 items
+    const getMobileBreadcrumbs = () => {
+        if (breadcrumbs.length <= 3) return breadcrumbs;
+        // Show: first, "...", last two
+        return [
+            breadcrumbs[0],
+            { label: "...", href: null, isEllipsis: true },
+            breadcrumbs[breadcrumbs.length - 2],
+            breadcrumbs[breadcrumbs.length - 1]
+        ];
+    };
+
     return (
         <div className="mb-4 sm:mb-6">
-            {/* Breadcrumb Navigation - Smooth horizontal scroll on mobile */}
-            <nav className="flex items-center gap-1 sm:gap-1.5 mb-2 sm:mb-3 md:mb-4 text-[10px] sm:text-xs md:text-sm overflow-x-auto scrollbar-hide pb-1">
-                <div className="flex items-center gap-1 sm:gap-1.5 min-w-0">
-                    {breadcrumbs.map((crumb, idx) => (
-                        <div key={idx} className="flex items-center gap-0.5 sm:gap-1 md:gap-1.5 shrink-0">
+            {/* Breadcrumb Navigation */}
+            <nav className="flex items-center gap-1 sm:gap-1.5 mb-2 sm:mb-3 md:mb-4 text-[10px] sm:text-xs md:text-sm pb-1">
+                {/* Mobile: collapsed breadcrumbs */}
+                <div className="flex sm:hidden items-center gap-1 min-w-0">
+                    {getMobileBreadcrumbs().map((crumb, idx) => (
+                        <div key={idx} className="flex items-center gap-0.5 shrink-0">
                             {idx > 0 && (
-                                <ChevronRight className="w-2 sm:w-2.5 md:w-3 h-2 sm:h-2.5 md:h-3 text-slate-300 dark:text-neutral-600 shrink-0" />
+                                <ChevronRight className="w-2 h-2 text-slate-300 dark:text-neutral-600 shrink-0" />
                             )}
-                            {crumb.href ? (
+                            {crumb.isEllipsis ? (
+                                <span className="px-1 text-slate-400 dark:text-neutral-500 text-[9px]">...</span>
+                            ) : crumb.href ? (
                                 <Link href={crumb.href}>
-                                    <Button variant="ghost" size="sm" className="h-5 sm:h-6 md:h-7 px-1 sm:px-1.5 md:px-2 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[9px] sm:text-[10px] md:text-xs whitespace-nowrap transition-colors">
+                                    <Button variant="ghost" size="sm" className="h-5 px-1 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[9px] whitespace-nowrap transition-colors">
                                         {crumb.label}
                                     </Button>
                                 </Link>
                             ) : (
-                                <span className="px-1 sm:px-1.5 md:px-2 font-semibold text-slate-900 dark:text-neutral-100 text-[10px] sm:text-xs md:text-sm truncate max-w-[100px] sm:max-w-[130px] md:max-w-none">
+                                <span className="px-1 font-semibold text-slate-900 dark:text-neutral-100 text-[10px] truncate max-w-[100px]">
+                                    {crumb.label}
+                                </span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+                {/* Desktop: full breadcrumbs */}
+                <div className="hidden sm:flex items-center gap-1.5 min-w-0">
+                    {breadcrumbs.map((crumb, idx) => (
+                        <div key={idx} className="flex items-center gap-1 md:gap-1.5 shrink-0">
+                            {idx > 0 && (
+                                <ChevronRight className="w-2.5 md:w-3 h-2.5 md:h-3 text-slate-300 dark:text-neutral-600 shrink-0" />
+                            )}
+                            {crumb.href ? (
+                                <Link href={crumb.href}>
+                                    <Button variant="ghost" size="sm" className="h-6 md:h-7 px-1.5 md:px-2 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[10px] md:text-xs whitespace-nowrap transition-colors">
+                                        {crumb.label}
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <span className="px-1.5 md:px-2 font-semibold text-slate-900 dark:text-neutral-100 text-xs md:text-sm truncate max-w-[130px] md:max-w-none">
                                     {crumb.label}
                                 </span>
                             )}
