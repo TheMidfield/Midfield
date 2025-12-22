@@ -14,6 +14,9 @@ interface ShareModalProps {
     topicTitle?: string;
     topicImageUrl?: string;
     topicType?: string;
+    clubName?: string;
+    clubBadgeUrl?: string;
+    topicPosition?: string;
 }
 
 type ActionState = "idle" | "loading" | "success";
@@ -28,6 +31,9 @@ export function ShareModal({
     topicTitle,
     topicImageUrl,
     topicType,
+    clubName,
+    clubBadgeUrl,
+    topicPosition,
 }: ShareModalProps) {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -63,6 +69,15 @@ export function ShareModal({
             if (authorAvatar) {
                 params.set('authorAvatarUrl', authorAvatar);
             }
+            if (clubName) {
+                params.set('clubName', clubName);
+            }
+            if (clubBadgeUrl) {
+                params.set('clubBadgeUrl', clubBadgeUrl);
+            }
+            if (topicPosition) {
+                params.set('topicPosition', topicPosition);
+            }
 
             const response = await fetch(`/api/share-card?${params.toString()}`);
 
@@ -78,7 +93,7 @@ export function ShareModal({
         } finally {
             setIsGenerating(false);
         }
-    }, [content, authorUsername, authorAvatar, topicTitle, topicImageUrl, topicType, createdAt, isDarkMode]);
+    }, [content, authorUsername, authorAvatar, topicTitle, topicImageUrl, topicType, createdAt, isDarkMode, clubName, clubBadgeUrl, topicPosition]);
 
     // Generate when modal opens
     useEffect(() => {

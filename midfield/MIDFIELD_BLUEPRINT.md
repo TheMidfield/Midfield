@@ -1,4 +1,4 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.0)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.1)
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
 OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
 FORGE DATE: DEC 21, 2025
@@ -269,16 +269,29 @@ Responsive audit checklist (mental model):
 - metadataBase set so relative OG assets resolve correctly
 - Avoid heavy libs by default; justify each dependency
 
+**SHARE CARD IMAGE GENERATION (Server-Side OG Images):**
+- Use `/api/share-card` route with `next/og` (ImageResponse) for server-side rendering
+- Bypasses all CORS issues by fetching/rendering images server-side
+- Design mirrors in-app UI patterns (EntityHeader + TakeCard aesthetics)
+- System fonts only (-apple-system, Inter-like stack) — custom font loading in Satori is fragile
+- Card specs: 1080×1350 (4:5 portrait, optimal for Instagram/social)
+- Dynamic font sizing based on content length for visual harmony
+- Props passed: content, authorUsername, authorAvatar, topicTitle, topicImageUrl, topicType, clubName, clubBadgeUrl, theme
+- Renders: entity header (player cutout/club badge + rating + badges), take zone (avatar + @username + content), footer (logo + slogan + domain)
+
 ──────────────────────────────────────────────────────────────────────────────
 7) CURRENT SITREP (WHAT’S DONE / WHAT’S NEXT)
 ──────────────────────────────────────────────────────────────────────────────
 
-Completed (as of Dec 21, 2025):
+Completed (as of Dec 22, 2025):
 - Shared logic pillars extracted (packages/logic)
 - Strict design language codified (Data Noir)
 - Security-definer hardening rule codified (search_path = public)
 - Search relevance baseline (>= 50) enforced conceptually
 - Performance/SEO priorities identified (images, parallel fetching, metadata)
+- **Share card generation** via server-side `next/og` (CORS-free, in-app UI mirroring)
+- Club badge/name integration in player share cards
+- TakeCard/TakeFeed/TopicPageClient prop threading for club context
 
 Next objectives (likely):
 - Responsiveness hardening for smaller viewports WITHOUT desktop regression

@@ -59,9 +59,12 @@ interface TakeCardProps {
     topicTitle?: string;
     topicImageUrl?: string;
     topicType?: string;
+    clubName?: string;
+    clubBadgeUrl?: string;
+    topicPosition?: string;
 }
 
-export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReaction, currentUser, onDelete, isBookmarked: initialIsBookmarked, topicTitle, topicImageUrl, topicType }: TakeCardProps) {
+export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReaction, currentUser, onDelete, isBookmarked: initialIsBookmarked, topicTitle, topicImageUrl, topicType, clubName, clubBadgeUrl, topicPosition }: TakeCardProps) {
     // Default expanded if there are replies (Always show full replies)
     const [isExpanded, setIsExpanded] = useState((post.reply_count || 0) > 0);
     const [isReplying, setIsReplying] = useState(false);
@@ -707,6 +710,9 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     topicTitle={topicTitle}
                     topicImageUrl={topicImageUrl}
                     topicType={topicType}
+                    clubName={clubName}
+                    clubBadgeUrl={clubBadgeUrl}
+                    topicPosition={topicPosition}
                 />
             </article>
         </>

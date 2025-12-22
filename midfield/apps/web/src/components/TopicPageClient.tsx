@@ -392,6 +392,9 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                         topicType={topic.type}
                         currentUser={currentUser}
                         onAddPostRef={addPostRef}
+                        clubName={clubData.clubName}
+                        clubBadgeUrl={clubData.clubBadgeUrl}
+                        topicPosition={isClub ? metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') : metadata?.position}
                     />
                 </main>
             </div>

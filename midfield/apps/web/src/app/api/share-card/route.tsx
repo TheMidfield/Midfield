@@ -1,14 +1,16 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
-// 1080×1350 (4:5 portrait ratio for Instagram/social)
+// 1080×1350 (4:5 portrait ratio)
 const WIDTH = 1080;
 const HEIGHT = 1350;
 
 /**
- * Format date for display
+ * Format date to match app format
  */
 function formatDate(dateString: string): string {
     try {
@@ -24,14 +26,25 @@ function formatDate(dateString: string): string {
 }
 
 /**
- * Calculate dynamic font size based on content length
+ * Calculate dynamic font size for quote content
+ * Ensures consistent visual weight and space occupation
  */
 function getContentFontSize(length: number): number {
-    if (length < 50) return 64;
-    if (length < 100) return 56;
-    if (length < 200) return 48;
-    if (length < 350) return 40;
-    return 34;
+    // Increased sizes for better visual weight
+    // Very short takes (tweet-length)
+    if (length < 40) return 64;
+    // Short takes
+    if (length < 80) return 56;
+    // Medium-short takes
+    if (length < 140) return 48;
+    // Medium takes
+    if (length < 200) return 42;
+    // Medium-long takes
+    if (length < 280) return 36;
+    // Long takes
+    if (length < 400) return 32;
+    // Very long takes
+    return 28;
 }
 
 export async function GET(request: NextRequest) {
@@ -46,24 +59,101 @@ export async function GET(request: NextRequest) {
     const authorAvatarUrl = searchParams.get('authorAvatarUrl');
     const createdAt = searchParams.get('createdAt') || new Date().toISOString();
     const theme = searchParams.get('theme') || 'dark';
+    // Club info for players
+    const clubName = searchParams.get('clubName');
+    const clubBadgeUrl = searchParams.get('clubBadgeUrl');
+    const topicPosition = searchParams.get('topicPosition');
 
     const isDark = theme === 'dark';
     const isClub = topicType === 'club';
 
-    // Theme colors - Clinical, modern palette
-    const bg = isDark ? '#09090b' : '#fafafa';
-    const cardBg = isDark ? '#18181b' : '#ffffff';
-    const textPrimary = isDark ? '#fafafa' : '#09090b';
-    const textSecondary = isDark ? '#a1a1aa' : '#71717a';
-    const textMuted = isDark ? '#71717a' : '#a1a1aa';
-    const borderColor = isDark ? '#27272a' : '#e4e4e7';
+    // App color palette - exact match
+    const bg = isDark ? '#0a0a0a' : '#fafafa';
+    const cardBg = isDark ? '#171717' : '#ffffff';
+    const textPrimary = isDark ? '#fafafa' : '#0a0a0a';
+    const textSecondary = isDark ? '#a3a3a3' : '#525252';
+    const textMuted = isDark ? '#737373' : '#737373';
+    const border = isDark ? '#262626' : '#e5e5e5';
     const accent = '#10b981';
+    const accentBg = isDark ? '#022c22' : '#d1fae5';
 
     const contentFontSize = getContentFontSize(content.length);
-
-    // Get the base URL for the logo
     const origin = request.nextUrl.origin;
-    const logoUrl = `${origin}/midfield-logo.png`;
+    // Optimization: Load logo from FS to avoid internal fetch issues
+    const logoPath = path.join(process.cwd(), 'public/midfield-logo.png');
+    let logoUrl = `${origin}/midfield-logo.png`;
+
+    // Try to load local logo as base64 for robustness
+    try {
+        const logoPathLocal = path.join(process.cwd(), 'apps/web/public/midfield-logo.png'); // Try repo path first
+        if (fs.existsSync(logoPathLocal)) {
+            const logoBuffer = fs.readFileSync(logoPathLocal);
+            logoUrl = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+        } else if (fs.existsSync(logoPath)) {
+            // Fallback to runtime cwd
+            const logoBuffer = fs.readFileSync(logoPath);
+            logoUrl = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+        }
+    } catch (e) {
+        console.warn("Could not load logo locally, falling back to URL", e);
+    }
+
+    // Load fonts
+    let fonts: any[] = [];
+
+    try {
+        const cwd = process.cwd();
+
+        // Define possible file variants and locations to search
+        const findFontFile = (filename: string, subpaths: string[]) => {
+            const searchPaths = [
+                // In apps/web (typical runtime CWD)
+                path.join(cwd, 'public/fonts'),
+                path.join(cwd, 'src/assets/fonts'),
+                // From root (if running from monorepo root)
+                path.join(cwd, 'apps/web/public/fonts'),
+                path.join(cwd, 'apps/web/src/assets/fonts'),
+            ];
+
+            for (const basePath of searchPaths) {
+                for (const subpath of subpaths) {
+                    const fullPath = path.join(basePath, subpath, filename);
+                    if (fs.existsSync(fullPath)) {
+                        return fullPath;
+                    }
+                }
+                // Also check direct children of base path
+                const directPath = path.join(basePath, filename);
+                if (fs.existsSync(directPath)) {
+                    return directPath;
+                }
+            }
+            return null;
+        };
+
+        const loadFontBuffer = (filename: string, subpaths: string[]) => {
+            const fontPath = findFontFile(filename, subpaths);
+            if (!fontPath) throw new Error(`Font file not found: ${filename}`);
+            // Convert Buffer to ArrayBuffer for Satori compatibility
+            return new Uint8Array(fs.readFileSync(fontPath)).buffer;
+        };
+
+        // Load fonts with fallback search
+        const dmSansRegular = loadFontBuffer('DMSans-Regular.ttf', ['DM_Sans/static', 'DM_Sans']);
+        const dmSansBold = loadFontBuffer('DMSans-Bold.ttf', ['DM_Sans/static', 'DM_Sans']);
+        const onestMedium = loadFontBuffer('Onest-Medium.ttf', ['Onest/static', 'Onest']);
+        const onestBold = loadFontBuffer('Onest-Bold.ttf', ['Onest/static', 'Onest']);
+
+        fonts = [
+            { name: 'DM Sans', data: dmSansRegular, style: 'normal', weight: 400 },
+            { name: 'DM Sans', data: dmSansBold, style: 'normal', weight: 700 },
+            { name: 'Onest', data: onestMedium, style: 'normal', weight: 500 },
+            { name: 'Onest', data: onestBold, style: 'normal', weight: 700 },
+        ];
+    } catch (e: any) {
+        console.error("ShareCard: Font loading failed (FS)", e);
+        // Fail gracefully to system fonts if something goes wrong
+    }
 
     return new ImageResponse(
         (
@@ -74,8 +164,8 @@ export async function GET(request: NextRequest) {
                     display: 'flex',
                     flexDirection: 'column',
                     backgroundColor: bg,
-                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                    padding: 48,
+                    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                    padding: 40,
                 }}
             >
                 {/* Main Card */}
@@ -85,151 +175,205 @@ export async function GET(request: NextRequest) {
                         display: 'flex',
                         flexDirection: 'column',
                         backgroundColor: cardBg,
-                        borderRadius: 32,
-                        border: `2px solid ${borderColor}`,
+                        borderRadius: 12,
+                        border: `1px solid ${border}`,
                         overflow: 'hidden',
                     }}
                 >
-                    {/* Header - Entity Info */}
+                    {/* HEADER ZONE - Entity Header Style */}
                     <div
                         style={{
                             display: 'flex',
-                            alignItems: 'center',
-                            gap: 28,
-                            padding: '40px 48px',
-                            borderBottom: `1px solid ${borderColor}`,
+                            padding: isClub ? '48px 56px 48px 56px' : '48px 56px 0 56px',
+                            borderBottom: `1px solid ${border}`,
+                            gap: 40,
+                            alignItems: isClub ? 'center' : 'flex-end', // Center align for clubs
+                            position: 'relative',
+                            overflow: 'hidden', // Contain the watermark
                         }}
                     >
-                        {/* Entity Image */}
+                        {/* Watermark - Only for clubs/teams */}
+                        {isClub && topicImageUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                                src={topicImageUrl}
+                                width={600}
+                                height={600}
+                                style={{
+                                    position: 'absolute',
+                                    right: -150,
+                                    top: -150,
+                                    opacity: 0.04,
+                                    transform: 'rotate(15deg)',
+                                    pointerEvents: 'none',
+                                }}
+                                alt=""
+                            />
+                        )}
+
+                        {/* Player/Club Image */}
                         <div
                             style={{
-                                width: 100,
-                                height: 100,
-                                borderRadius: isClub ? 20 : 50,
-                                backgroundColor: isDark ? '#27272a' : '#f4f4f5',
-                                border: `2px solid ${borderColor}`,
                                 display: 'flex',
-                                alignItems: 'center',
+                                position: 'relative',
+                                width: isClub ? 200 : 250,
+                                height: isClub ? 200 : 340,
+                                alignItems: 'flex-end',
                                 justifyContent: 'center',
-                                overflow: 'hidden',
+                                marginBottom: isClub ? 0 : -44,
                             }}
                         >
                             {topicImageUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                     src={topicImageUrl}
-                                    width={100}
-                                    height={100}
+                                    width={isClub ? 200 : 250}
+                                    height={isClub ? 200 : 340}
                                     style={{
-                                        objectFit: 'cover',
-                                        width: '100%',
-                                        height: '100%',
+                                        objectFit: 'contain',
+                                        objectPosition: isClub ? 'center' : 'bottom',
+                                        display: 'block',
                                     }}
                                     alt=""
                                 />
                             ) : (
-                                <span
+                                <div
                                     style={{
-                                        fontSize: 48,
+                                        width: '100%',
+                                        height: '100%',
+                                        backgroundColor: isDark ? '#262626' : '#f5f5f5',
+                                        borderRadius: isClub ? 24 : 12,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 84,
                                         fontWeight: 700,
                                         color: textMuted,
+                                        fontFamily: '"Onest", -apple-system, sans-serif',
+                                        marginBottom: 48,
                                     }}
                                 >
                                     {topicTitle.charAt(0).toUpperCase()}
-                                </span>
+                                </div>
                             )}
                         </div>
 
-                        {/* Topic Info */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <span
+                        {/* Entity Info */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 24,
+                                flex: 1,
+                                justifyContent: 'center',
+                                marginBottom: isClub ? 0 : 34, // Reset text lift for clubs
+                            }}
+                        >
+                            {/* Title */}
+                            <h1
                                 style={{
-                                    fontSize: 44,
+                                    fontSize: 56,
                                     fontWeight: 700,
                                     color: textPrimary,
+                                    margin: 0,
+                                    lineHeight: 1.05,
                                     letterSpacing: '-0.02em',
+                                    fontFamily: '"Onest", -apple-system, sans-serif',
                                 }}
                             >
                                 {topicTitle}
-                            </span>
-                            <span
-                                style={{
-                                    fontSize: 22,
-                                    fontWeight: 500,
-                                    color: textSecondary,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '0.05em',
-                                }}
-                            >
-                                {isClub ? 'Club' : 'Player'} Discussion
-                            </span>
+                            </h1>
+
+                            {/* Club Badge & Name (Prominent) + Metadata */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+                                {/* CLUB ENTITY - League Badge */}
+                                {/* PLAYER ENTITY - Club Info */}
+                                {!isClub && clubName && clubBadgeUrl && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img
+                                            src={clubBadgeUrl}
+                                            width={44}
+                                            height={44}
+                                            style={{ objectFit: 'contain' }}
+                                            alt=""
+                                        />
+                                        <span
+                                            style={{
+                                                fontSize: 32,
+                                                color: textSecondary,
+                                                fontWeight: 500,
+                                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                            }}
+                                        >
+                                            {clubName}
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Badges row */}
+                                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                    {/* Type badge */}
+                                    <div
+                                        style={{
+                                            backgroundColor: isDark ? '#262626' : '#f5f5f5',
+                                            color: textSecondary,
+                                            padding: '8px 16px',
+                                            borderRadius: 8,
+                                            fontSize: 20,
+                                            fontWeight: 600,
+                                            textTransform: 'capitalize',
+                                            fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                        }}
+                                    >
+                                        {isClub ? 'Club' : 'Player'}
+                                    </div>
+
+                                    {/* Position / League badge */}
+                                    {(topicPosition || !isClub) && (
+                                        <div
+                                            style={{
+                                                backgroundColor: accentBg,
+                                                color: accent,
+                                                padding: '8px 16px',
+                                                borderRadius: 8,
+                                                fontSize: 20,
+                                                fontWeight: 600,
+                                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                            }}
+                                        >
+                                            {topicPosition || 'Player'}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Content Area */}
+                    {/* TAKE ZONE - Expanded & Refined */}
                     <div
                         style={{
                             flex: 1,
                             display: 'flex',
                             flexDirection: 'column',
                             padding: '48px 56px',
-                            position: 'relative',
                         }}
                     >
-                        {/* Accent Line */}
+                        {/* Top: Avatar, Username, Date */}
                         <div
                             style={{
-                                position: 'absolute',
-                                left: 48,
-                                top: 48,
-                                bottom: 48,
-                                width: 4,
-                                backgroundColor: accent,
-                                borderRadius: 2,
-                            }}
-                        />
-
-                        {/* Quote Content */}
-                        <div
-                            style={{
-                                flex: 1,
                                 display: 'flex',
-                                alignItems: 'center',
-                                paddingLeft: 24,
+                                alignItems: 'center', // This ensures vertical centering for the whole row
+                                gap: 16,
+                                marginBottom: 32,
                             }}
                         >
-                            <span
-                                style={{
-                                    fontSize: contentFontSize,
-                                    lineHeight: 1.35,
-                                    fontWeight: 500,
-                                    color: textPrimary,
-                                    wordBreak: 'break-word',
-                                }}
-                            >
-                                "{content}"
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Author Section */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '32px 48px',
-                            borderTop: `1px solid ${borderColor}`,
-                            backgroundColor: isDark ? '#0f0f10' : '#f4f4f5',
-                        }}
-                    >
-                        {/* Author Info */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                             {/* Avatar */}
                             <div
                                 style={{
-                                    width: 64,
-                                    height: 64,
+                                    width: 80,
+                                    height: 80,
                                     borderRadius: 16,
                                     backgroundColor: accent,
                                     display: 'flex',
@@ -242,8 +386,8 @@ export async function GET(request: NextRequest) {
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
                                         src={authorAvatarUrl}
-                                        width={64}
-                                        height={64}
+                                        width={80}
+                                        height={80}
                                         style={{
                                             objectFit: 'cover',
                                             width: '100%',
@@ -254,9 +398,10 @@ export async function GET(request: NextRequest) {
                                 ) : (
                                     <span
                                         style={{
-                                            fontSize: 28,
+                                            fontSize: 36,
                                             fontWeight: 700,
                                             color: '#ffffff',
+                                            fontFamily: '"Onest", -apple-system, sans-serif',
                                         }}
                                     >
                                         {authorUsername.charAt(0).toUpperCase()}
@@ -265,21 +410,24 @@ export async function GET(request: NextRequest) {
                             </div>
 
                             {/* Username & Date */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}> {/* Changed from baseline to center */}
                                 <span
                                     style={{
-                                        fontSize: 26,
-                                        fontWeight: 700,
-                                        color: textPrimary,
+                                        fontSize: 36,
+                                        fontWeight: 600,
+                                        color: accent,
+                                        fontFamily: '"Onest", -apple-system, sans-serif',
                                     }}
                                 >
                                     @{authorUsername}
                                 </span>
+                                <span style={{ color: isDark ? '#404040' : '#d4d4d8', fontSize: 24, marginTop: 4 }}>•</span> {/* Added marginTop to optically center the dot */}
                                 <span
                                     style={{
-                                        fontSize: 20,
-                                        fontWeight: 500,
+                                        fontSize: 28,
                                         color: textMuted,
+                                        fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                        marginTop: 2, // Minute adjustment for optical alignment
                                     }}
                                 >
                                     {formatDate(createdAt)}
@@ -287,54 +435,89 @@ export async function GET(request: NextRequest) {
                             </div>
                         </div>
 
-                        {/* Midfield Logo */}
-                        <div
+                        {/* Take content - full width, no indent */}
+                        <p
                             style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 16,
+                                fontSize: contentFontSize,
+                                lineHeight: 1.4,
+                                color: textPrimary,
+                                margin: 0,
+                                fontWeight: 400,
+                                whiteSpace: 'pre-wrap',
+                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                             }}
                         >
+                            {content}
+                        </p>
+                    </div>
+
+                    {/* FOOTER */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '40px 56px',
+                            borderTop: `1px solid ${border}`,
+                            backgroundColor: isDark ? '#0f0f0f' : '#fafafa',
+                        }}
+                    >
+                        {/* Logo + Wordmark */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                                 src={logoUrl}
-                                width={160}
-                                height={40}
+                                width={48}
+                                height={48}
                                 style={{
                                     objectFit: 'contain',
-                                    opacity: isDark ? 1 : 0.9,
                                 }}
                                 alt=""
                             />
+                            <span
+                                style={{
+                                    fontSize: 36,
+                                    fontWeight: 700,
+                                    color: textPrimary,
+                                    letterSpacing: '-0.02em',
+                                    fontFamily: '"Onest", -apple-system, sans-serif',
+                                }}
+                            >
+                                Midfield
+                            </span>
+                        </div>
+
+                        {/* Slogan & Domain */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                            <span
+                                style={{
+                                    fontSize: 24,
+                                    color: textSecondary,
+                                    fontWeight: 500,
+                                    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                }}
+                            >
+                                Join the conversation
+                            </span>
+                            <span
+                                style={{
+                                    fontSize: 24,
+                                    color: accent,
+                                    fontWeight: 600,
+                                    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                }}
+                            >
+                                midfield.one
+                            </span>
                         </div>
                     </div>
-                </div>
-
-                {/* Footer - CTA */}
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        paddingTop: 32,
-                    }}
-                >
-                    <span
-                        style={{
-                            fontSize: 24,
-                            fontWeight: 500,
-                            color: textMuted,
-                        }}
-                    >
-                        Join the conversation at{' '}
-                        <span style={{ color: accent, fontWeight: 700 }}>midfield.app</span>
-                    </span>
                 </div>
             </div>
         ),
         {
             width: WIDTH,
             height: HEIGHT,
+            fonts: fonts.length > 0 ? fonts : undefined,
         }
     );
 }

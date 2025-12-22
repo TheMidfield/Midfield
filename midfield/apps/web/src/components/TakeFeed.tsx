@@ -35,6 +35,9 @@ interface TakeFeedProps {
         username: string | null;
     };
     onAddPostRef?: React.MutableRefObject<((post: Post) => void) | null>;
+    clubName?: string;
+    clubBadgeUrl?: string;
+    topicPosition?: string;
 }
 
 export function TakeFeed({
@@ -46,7 +49,10 @@ export function TakeFeed({
     emptyTitle,
     emptyMessage,
     currentUser,
-    onAddPostRef
+    onAddPostRef,
+    clubName,
+    clubBadgeUrl,
+    topicPosition,
 }: TakeFeedProps) {
     const [posts, setPosts] = useState<Post[]>(initialPosts);
     const [hasMore, setHasMore] = useState(initialPosts.length >= 10);
@@ -146,6 +152,9 @@ export function TakeFeed({
                     topicTitle={topicTitle}
                     topicImageUrl={topicImageUrl}
                     topicType={topicType}
+                    clubName={clubName}
+                    clubBadgeUrl={clubBadgeUrl}
+                    topicPosition={topicPosition}
                 />
             ))}
 
