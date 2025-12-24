@@ -2,6 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+
+import { getURL } from '@/lib/url'
 
 /**
  * Sign in with email (magic link)
@@ -9,10 +12,19 @@ import { redirect } from 'next/navigation'
 export async function signInWithEmail(email: string) {
     const supabase = await createClient()
 
+    // Attempt to get the origin from the request headers to support Vercel Preview URLs
+    const headersList = await headers()
+    const origin = headersList.get('origin')
+
+    // Only use origin if it's a valid http(s) URL.
+    // This prevents issues where origin might be 'null' or malformed.
+    const isValidOrigin = origin && origin.startsWith('http')
+    const baseUrl = isValidOrigin ? `${origin}/` : getURL()
+
     const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+            emailRedirectTo: `${baseUrl}auth/callback`,
         },
     })
 
@@ -29,10 +41,17 @@ export async function signInWithEmail(email: string) {
 export async function signInWithGoogle() {
     const supabase = await createClient()
 
+    // Attempt to get the origin from the request headers to support Vercel Preview URLs
+    const headersList = await headers()
+    const origin = headersList.get('origin')
+
+    const isValidOrigin = origin && origin.startsWith('http')
+    const baseUrl = isValidOrigin ? `${origin}/` : getURL()
+
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback`,
+            redirectTo: `${baseUrl}auth/callback`,
         },
     })
 
