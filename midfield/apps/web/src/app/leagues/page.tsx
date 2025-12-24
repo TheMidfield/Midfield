@@ -35,26 +35,33 @@ export default async function LeaguesPage() {
 
   return (
     <div className="w-full">
-      {/* Elegant Hero Banner - Discrete Grid with Greenish Zone */}
+      {/* Elegant Hero Banner - Single Grid with Visible Gradient Stain */}
       <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 border border-slate-200 dark:border-neutral-800/50">
-        {/* Base grid pattern */}
-        <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]" style={{
-          backgroundImage: `linear-gradient(to right, rgb(100 116 139 / 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgb(100 116 139 / 0.25) 1px, transparent 1px)`,
-          backgroundSize: '24px 24px'
-        }}></div>
-
-        {/* Greenish grid zone - top right corner */}
-        <div className="absolute top-0 right-0 w-1/3 h-full opacity-[0.2] dark:opacity-[0.12]" style={{
-          backgroundImage: `linear-gradient(to right, rgb(16 185 129 / 0.3) 1px, transparent 1px), linear-gradient(to bottom, rgb(16 185 129 / 0.3) 1px, transparent 1px)`,
-          backgroundSize: '24px 24px'
-        }}></div>
+        {/* Single grid with radial gradient mask for greenish stain - MORE VISIBLE */}
+        <div
+          className="absolute inset-0 opacity-[0.2] dark:opacity-[0.12]"
+          style={{
+            backgroundImage: `linear-gradient(to right, rgb(100 116 139 / 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgb(100 116 139 / 0.25) 1px, transparent 1px)`,
+            backgroundSize: '24px 24px',
+            maskImage: `
+              radial-gradient(ellipse 800px 500px at top right, rgb(16 185 129) 0%, transparent 65%),
+              linear-gradient(to right, rgb(100 116 139) 0%, rgb(100 116 139) 100%)
+            `,
+            WebkitMaskImage: `
+              radial-gradient(ellipse 800px 500px at top right, rgb(16 185 129) 0%, transparent 65%),
+              linear-gradient(to right, rgb(100 116 139) 0%, rgb(100 116 139) 100%)
+            `,
+            maskComposite: 'add',
+            WebkitMaskComposite: 'source-over'
+          }}
+        ></div>
 
         {/* Content */}
         <div className="relative px-6 py-10 sm:px-8 sm:py-12">
           {/* Beta Badge - Small, top right corner */}
-          <div className="absolute top-4 right-4 sm:top-6 sm:right-6 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
+          <div className="absolute top-4 right-4 sm:top-6 sm:right-8 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
             <Sparkles className="w-2.5 h-2.5" />
-            More coming soon!
+            More Coming Soon!
           </div>
 
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
