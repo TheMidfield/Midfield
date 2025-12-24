@@ -51,7 +51,7 @@ export function NavbarSearch({ onSearchStart }: NavbarSearchProps = {}) {
                     "bg-slate-100 dark:bg-neutral-800",
                     isFocused
                         ? "border-emerald-500 dark:border-emerald-400 bg-white dark:bg-neutral-900 ring-4 ring-emerald-500/10"
-                        : "border-slate-300 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-600"
+                        : "border-slate-300 dark:border-neutral-700 hover:border-slate-500 dark:hover:border-neutral-500"
                 )}
             >
                 <Search className="ml-3 mr-2 h-4 w-4 shrink-0 text-slate-400 dark:text-neutral-500" />

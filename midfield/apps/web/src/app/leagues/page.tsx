@@ -1,125 +1,128 @@
-import { getLeagues, getClubsByLeague } from "@midfield/logic/src/topics";
+import { supabase } from "@midfield/logic/src/supabase";
+import { getClubsByLeague } from "@midfield/logic/src/topics";
 import Link from "next/link";
-import { Trophy, Shield, ChevronRight } from "lucide-react";
+import { Trophy, Shield, Globe2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
-// League metadata
-const LEAGUE_INFO: Record<string, { country: string; flag: string; color: string }> = {
-  "English Premier League": { country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "from-purple-500 to-pink-500" },
-  "Spanish La Liga": { country: "Spain", flag: "🇪🇸", color: "from-red-500 to-yellow-500" },
-  "Italian Serie A": { country: "Italy", flag: "🇮🇹", color: "from-blue-500 to-green-500" },
-  "German Bundesliga": { country: "Germany", flag: "🇩🇪", color: "from-gray-800 to-red-600" },
-  "French Ligue 1": { country: "France", flag: "🇫🇷", color: "from-blue-600 to-red-600" },
+// Country flag image mapping
+const COUNTRY_FLAG_IMAGES: Record<string, string> = {
+  "England": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/england.png",
+  "Spain": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/spain.png",
+  "Italy": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/italy.png",
+  "Germany": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/germany.png",
+  "France": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/france.png",
 };
 
 export default async function LeaguesPage() {
-  const leagues = await getLeagues();
+  // Fetch league topics directly from database
+  const { data: leagues } = await supabase
+    .from('topics')
+    .select('*')
+    .eq('type', 'league')
+    .eq('is_active', true)
+    .order('title', { ascending: true });
 
   // Get club counts for each league
   const leaguesWithCounts = await Promise.all(
-    leagues.map(async (league) => {
-      const clubs = await getClubsByLeague(league);
+    (leagues || []).map(async (league: any) => {
+      const clubs = await getClubsByLeague(league.title);
       return {
-        name: league,
+        ...league,
         clubCount: clubs.length,
-        ...LEAGUE_INFO[league]
       };
     })
   );
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto pb-24">
-      {/* Header */}
-      <div className="py-12">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600">
-            <Trophy className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-neutral-100">
-              Leagues
-            </h1>
-            <p className="text-slate-500 dark:text-neutral-400 font-medium mt-1">
-              Top 5 European football leagues
-            </p>
+    <div className="w-full">
+      {/* Elegant Hero Banner */}
+      <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 dark:from-black dark:via-neutral-950 dark:to-black border border-slate-800/50 dark:border-neutral-800/30">
+        {/* Subtle grid overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+        {/* Content */}
+        <div className="relative px-6 py-10 sm:px-8 sm:py-12">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            {/* Left: Title & Icon */}
+            <div className="flex items-center gap-4">
+              <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" />
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                  Leagues
+                </h1>
+                <p className="text-sm sm:text-base text-slate-400 font-medium mt-1">
+                  Top 5 European football leagues
+                </p>
+              </div>
+            </div>
+
+            {/* Right: Stats */}
+            <div className="flex items-center gap-3 px-5 py-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 self-start sm:self-auto">
+              <Globe2 className="w-5 h-5 text-emerald-400" />
+              <div>
+                <div className="text-2xl font-black text-white tabular-nums leading-none">{leaguesWithCounts.length}</div>
+                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Leagues</div>
+              </div>
+            </div>
           </div>
         </div>
-
-        {/* Beta Badge */}
-        <Badge variant="secondary" className="text-xs">
-          🚀 Beta — More leagues coming soon
-        </Badge>
       </div>
 
       {/* Leagues Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {leaguesWithCounts.map((league) => (
-          <Link
-            key={league.name}
-            href={`/leagues/${encodeURIComponent(league.name.toLowerCase().replace(/\s+/g, '-'))}`}
-          >
-            <Card variant="interactive" className="group overflow-hidden">
-              {/* Gradient Header */}
-              <div className={`h-32 bg-gradient-to-br ${league.color} relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/45-degree-fabric-light.png')] opacity-20" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {leaguesWithCounts.map((league: any) => {
+          const countryFlagImg = COUNTRY_FLAG_IMAGES[league.metadata?.country || ""];
 
-                {/* Flag */}
-                <div className="absolute top-4 right-4 text-5xl opacity-90">
-                  {league.flag}
+          return (
+            <Link key={league.id} href={`/topic/${league.slug}`}>
+              <Card variant="interactive" className="p-5 flex items-center gap-4 group h-full">
+                {/* League Logo */}
+                <div className="w-16 h-16 shrink-0 flex items-center justify-center">
+                  {league.metadata?.logo_url ? (
+                    <>
+                      <img
+                        src={league.metadata.logo_url}
+                        alt={league.title}
+                        className="max-w-full max-h-full object-contain dark:hidden"
+                      />
+                      <img
+                        src={league.metadata.logo_url_dark || league.metadata.logo_url}
+                        alt={league.title}
+                        className="max-w-full max-h-full object-contain hidden dark:block"
+                      />
+                    </>
+                  ) : (
+                    <Trophy className="w-10 h-10 text-slate-300 dark:text-neutral-600" />
+                  )}
                 </div>
 
-                {/* League Name */}
-                <div className="absolute bottom-4 left-6">
-                  <h2 className="text-2xl font-black text-white drop-shadow-lg">
-                    {league.name.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
-                  </h2>
-                  <p className="text-white/80 text-sm font-semibold mt-0.5">
-                    {league.country}
-                  </p>
-                </div>
-              </div>
-
-              {/* Stats Section */}
-              <div className="p-6 bg-white dark:bg-neutral-900">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                    <div>
-                      <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">
-                        {league.clubCount}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-neutral-400 font-medium">
-                        Clubs
-                      </p>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                    {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
+                  </h3>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    {/* Country Flag Badge with Image */}
+                    <Badge variant="secondary" className="text-[10px] flex items-center gap-1.5 px-2 py-1">
+                      {countryFlagImg && (
+                        <img src={countryFlagImg} alt={league.metadata?.country} className="w-3.5 h-3.5 object-cover rounded-sm" />
+                      )}
+                      <span className="truncate">{league.metadata?.country || "Europe"}</span>
+                    </Badge>
+                    {/* Club Count */}
+                    <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-neutral-400">
+                      <Shield className="w-3 h-3" />
+                      <span>{league.clubCount}</span>
                     </div>
                   </div>
-
-                  <ChevronRight className="w-5 h-5 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors" />
                 </div>
-              </div>
-            </Card>
-          </Link>
-        ))}
-      </div>
-
-      {/* Coming Soon Section */}
-      <div className="mt-16 p-8 rounded-3xl border-2 border-dashed border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/30 text-center">
-        <div className="mx-auto" style={{ maxWidth: '500px' }}>
-          <p className="text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2">
-            Coming Soon
-          </p>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-neutral-100 mb-2">
-            More Leagues & Competitions
-          </h3>
-          <p className="text-slate-600 dark:text-neutral-400 text-sm">
-            We're expanding coverage to include Champions League, Europa League, and domestic competitions worldwide.
-          </p>
-        </div>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
     </div>
   );
 }
-
-

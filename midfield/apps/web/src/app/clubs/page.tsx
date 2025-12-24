@@ -1,9 +1,8 @@
 import { getTopicsByType } from "@midfield/logic/src/topics";
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { Shield, Grid3x3 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-
 
 export default async function ClubsPage() {
     const clubs = await getTopicsByType('club');
@@ -13,17 +12,38 @@ export default async function ClubsPage() {
 
     return (
         <div className="w-full">
-            <div className="flex items-center gap-3 mb-8">
-                <div className="p-3 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                    <Shield className="w-8 h-8" />
-                </div>
-                <div>
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-neutral-100">
-                        Clubs
-                    </h1>
-                    <p className="text-slate-500 dark:text-neutral-400 font-medium mt-1">
-                        Browse football clubs from top leagues
-                    </p>
+            {/* Elegant Hero Banner */}
+            <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 dark:from-black dark:via-neutral-950 dark:to-black border border-slate-800/50 dark:border-neutral-800/30">
+                {/* Subtle grid overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+                {/* Content */}
+                <div className="relative px-6 py-10 sm:px-8 sm:py-12">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                        {/* Left: Title & Icon */}
+                        <div className="flex items-center gap-4">
+                            <div className="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+                                    Clubs
+                                </h1>
+                                <p className="text-sm sm:text-base text-slate-400 font-medium mt-1">
+                                    Browse football clubs from top leagues
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Right: Stats */}
+                        <div className="flex items-center gap-3 px-5 py-3 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 self-start sm:self-auto">
+                            <Grid3x3 className="w-5 h-5 text-emerald-400" />
+                            <div>
+                                <div className="text-2xl font-black text-white tabular-nums leading-none">{sortedClubs.length}</div>
+                                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">Clubs</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

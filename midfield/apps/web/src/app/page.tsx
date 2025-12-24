@@ -1,34 +1,43 @@
 import { TopicCard } from "@/components/TopicCard";
 import { Hero } from "@/components/Hero";
 import { FeaturedPlayers } from "@/components/FeaturedPlayers";
-import { getTopicsByType, getLeagues, getClubsByLeague } from "@midfield/logic/src/topics";
+import { getTopicsByType } from "@midfield/logic/src/topics";
 import { getRandomFeaturedPlayers } from "@midfield/logic/src/featured";
+import { supabase } from "@midfield/logic/src/supabase";
 import { Flame, Shield, Trophy, ChevronRight, User } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 
-// League display info
-const LEAGUE_INFO: Record<string, { flag: string; color: string }> = {
-    "English Premier League": { flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", color: "from-purple-500 to-pink-500" },
-    "Spanish La Liga": { flag: "🇪🇸", color: "from-red-500 to-yellow-500" },
-    "Italian Serie A": { flag: "🇮🇹", color: "from-blue-500 to-green-500" },
-    "German Bundesliga": { flag: "🇩🇪", color: "from-gray-800 to-red-600" },
-    "French Ligue 1": { flag: "🇫🇷", color: "from-blue-600 to-red-600" },
+// Country flag image mapping
+const COUNTRY_FLAG_IMAGES: Record<string, string> = {
+    "England": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/england.png",
+    "Spain": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/spain.png",
+    "Italy": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/italy.png",
+    "Germany": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/germany.png",
+    "France": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/france.png",
 };
 
 export default async function Home() {
+    // Fetch leagues from database
+    const { data: leagues } = await supabase
+        .from('topics')
+        .select('*')
+        .eq('type', 'league')
+        .eq('is_active', true)
+        .order('title', { ascending: true });
+
     // Fetch data concurrently for better performance
-    const [leagues, allClubs, playersWithClubs] = await Promise.all([
-        getLeagues(),
+    const [allClubs, playersWithClubs] = await Promise.all([
         getTopicsByType('club'),
         getRandomFeaturedPlayers(10)
     ]);
 
     // Get 6 featured clubs (2 from each of 3 leagues)
-    const featuredClubs = leagues.slice(0, 3).flatMap(league =>
-        allClubs.filter((club: any) => club.metadata?.league === league).slice(0, 2)
+    const topLeagues = (leagues || []).slice(0, 3);
+    const featuredClubs = topLeagues.flatMap((league: any) =>
+        allClubs.filter((club: any) => club.metadata?.league === league.title).slice(0, 2)
     ).slice(0, 6);
 
     return (
@@ -54,18 +63,35 @@ export default async function Home() {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {leagues.map((league) => {
-                        const info = LEAGUE_INFO[league];
-                        const slug = league.toLowerCase().replace(/\s+/g, '-');
+                    {leagues.map((league: any) => {
+                        const countryFlagImg = COUNTRY_FLAG_IMAGES[league.metadata?.country || ""];
+                        const slug = league.slug;
 
                         return (
-                            <Link key={league} href={`/leagues/${slug}`}>
+                            <Link key={league.id} href={`/topic/${slug}`}>
                                 <Card variant="interactive" className="group p-4 text-center">
-                                    <div className="text-4xl mb-2 transition-transform">
-                                        {info?.flag || "🏆"}
+                                    <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                                        {league.metadata?.logo_url ? (
+                                            <>
+                                                <img
+                                                    src={league.metadata.logo_url}
+                                                    alt={league.title}
+                                                    className="max-w-full max-h-full object-contain dark:hidden"
+                                                />
+                                                <img
+                                                    src={league.metadata.logo_url_dark || league.metadata.logo_url}
+                                                    alt={league.title}
+                                                    className="max-w-full max-h-full object-contain hidden dark:block"
+                                                />
+                                            </>
+                                        ) : countryFlagImg ? (
+                                            <img src={countryFlagImg} alt={league.metadata?.country} className="w-10 h-10 object-cover rounded" />
+                                        ) : (
+                                            <Trophy className="w-10 h-10 text-slate-300 dark:text-neutral-600" />
+                                        )}
                                     </div>
                                     <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
-                                        {league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
+                                        {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                     </h3>
                                 </Card>
                             </Link>

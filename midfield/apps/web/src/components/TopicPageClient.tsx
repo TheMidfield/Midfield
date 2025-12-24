@@ -16,6 +16,7 @@ interface TopicPageClientProps {
     squad: any[];
     groupedSquad: Record<string, any[]>;
     playerClub?: any;
+    leagueClubs?: any[];
     posts?: any[];
     currentUser?: {
         id?: string;
@@ -44,12 +45,13 @@ const getPositionInfo = (pos: string) => {
     return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts = [], currentUser }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], posts = [], currentUser }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
+    const isLeague = topic.type === 'league';
     const metadata = topic.metadata as any;
-    // Players section always open for clubs
-    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isClub ? ["players"] : ["stats"]));
+    // Clubs section always open for leagues, Players for clubs
+    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isLeague ? ["clubs"] : isClub ? ["players"] : ["stats"]));
 
     // Ref to add posts to TakeFeed
     const addPostRef = useRef<((post: any) => void) | null>(null);
@@ -69,17 +71,23 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
     };
 
     // Define sections based on entity type
-    const sections = isClub
+    const sections = isLeague
         ? [
-            { id: "players", title: "Players", icon: Users, count: squad.length },
-            { id: "fixtures", title: "Fixtures", icon: Calendar },
+            { id: "clubs", title: "Clubs", icon: Trophy, count: leagueClubs.length },
+            { id: "standings", title: "Standings", icon: BarChart3 },
             { id: "about", title: "About", icon: Info },
         ]
-        : [
-            { id: "stats", title: "Statistics", icon: BarChart3 },
-            { id: "ratings", title: "FC26 Ratings", icon: Star },
-            { id: "about", title: "About", icon: Info },
-        ];
+        : isClub
+            ? [
+                { id: "players", title: "Players", icon: Users, count: squad.length },
+                { id: "fixtures", title: "Fixtures", icon: Calendar },
+                { id: "about", title: "About", icon: Info },
+            ]
+            : [
+                { id: "stats", title: "Statistics", icon: BarChart3 },
+                { id: "ratings", title: "FC26 Ratings", icon: Star },
+                { id: "about", title: "About", icon: Info },
+            ];
 
     // Build club metadata from playerClub relationship
     const clubData = playerClub ? {
@@ -187,9 +195,10 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
             {/* Header */}
             <EntityHeader
                 title={topic.title}
-                type={isClub ? "club" : "player"}
+                type={isLeague ? "league" : isClub ? "club" : "player"}
                 imageUrl={metadata?.photo_url}
-                badgeUrl={metadata?.badge_url}
+                badgeUrl={isLeague ? (metadata?.logo_url) : metadata?.badge_url}
+                badgeUrlDark={isLeague ? metadata?.logo_url_dark : undefined}
                 postCount={topic.post_count || 0}
                 metadata={{
                     position: metadata?.position,
@@ -346,13 +355,57 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, posts 
                                                     <EmptyState message="Fixture data coming soon" />
                                                 )}
 
+                                                {/* Clubs Section (Leagues) */}
+                                                {section.id === "clubs" && isLeague && (
+                                                    leagueClubs.length > 0 ? (
+                                                        <div
+                                                            className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 space-y-1 overflow-y-auto"
+                                                            style={{ maxHeight: '400px' }}
+                                                        >
+                                                            {leagueClubs.map((club: any) => (
+                                                                <Link key={club.id} href={`/topic/${club.slug}`} className="block">
+                                                                    <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 group">
+                                                                        {/* Club Badge */}
+                                                                        <div className="relative w-8 h-8 sm:w-9 sm:h-9 shrink-0">
+                                                                            {club.metadata?.badge_url && (
+                                                                                <NextImage
+                                                                                    src={club.metadata.badge_url}
+                                                                                    alt={club.title}
+                                                                                    fill
+                                                                                    sizes="36px"
+                                                                                    className="object-contain"
+                                                                                />
+                                                                            )}
+                                                                        </div>
+                                                                        {/* Club Name */}
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                                                                                {club.title}
+                                                                            </h3>
+                                                                        </div>
+                                                                    </Card>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <EmptyState message="No clubs data available" />
+                                                    )
+                                                )}
+
+                                                {/* Standings Section (Leagues) */}
+                                                {section.id === "standings" && isLeague && (
+                                                    <EmptyState message="Standings coming soon" />
+                                                )}
+
                                                 {/* About Section */}
                                                 {section.id === "about" && (
                                                     <div className="pt-3 sm:pt-4">
                                                         <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">
-                                                            {isClub
-                                                                ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
-                                                                : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
+                                                            {isLeague
+                                                                ? `${topic.title} is one of the top professional football leagues in ${metadata?.country || 'Europe'}.`
+                                                                : isClub
+                                                                    ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
+                                                                    : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
                                                             }
                                                         </p>
                                                     </div>

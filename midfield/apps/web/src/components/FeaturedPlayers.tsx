@@ -116,7 +116,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                         size="sm"
                         onClick={() => setViewMode("list")}
                         icon={LayoutList}
-                        className={viewMode === "list" ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}
+                        className={viewMode === "list" ? '!bg-emerald-50 dark:!bg-emerald-950/30 !border-emerald-500 dark:!border-emerald-500 !text-emerald-600 dark:!text-emerald-400 hover:!bg-emerald-100 dark:hover:!bg-emerald-950/50' : ''}
                     >
                         List
                     </Button>
@@ -125,7 +125,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                         size="sm"
                         onClick={() => setViewMode("grid")}
                         icon={LayoutGrid}
-                        className={viewMode === "grid" ? '!bg-[#132019] !border-[#0D542B] !text-emerald-400 hover:!bg-[#1a2d24]' : ''}
+                        className={viewMode === "grid" ? '!bg-emerald-50 dark:!bg-emerald-950/30 !border-emerald-500 dark:!border-emerald-500 !text-emerald-600 dark:!text-emerald-400 hover:!bg-emerald-100 dark:hover:!bg-emerald-950/50' : ''}
                     >
                         Grid
                     </Button>
@@ -159,7 +159,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                     src={imageUrl}
                                                     alt={player.title}
                                                     fill
-                                                    sizes="48px"
+                                                    sizes="96px"
                                                     {...PLAYER_IMAGE_STYLE}
                                                 />
                                             ) : (

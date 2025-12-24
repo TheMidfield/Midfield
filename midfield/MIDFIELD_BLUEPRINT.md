@@ -173,6 +173,20 @@ F) SEO LAW (100/100 DISCOVERABILITY)
 - Crawlability requires fast SSR and stable structure.
 - SEO is not keyword spam; it’s structure + speed + clean metadata.
 
+K) AUTH FLOW (PRODUCTION-CRITICAL)
+- Middleware must EXCLUDE /auth/callback from processing:
+  - config.matcher must skip /auth/callback to prevent OAuth code consumption
+  - Pattern: `'/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'`
+- URL resolution for Vercel: use apps/web/src/lib/url.ts getURL() utility
+  - Prioritizes: NEXT_PUBLIC_SITE_URL → NEXT_PUBLIC_VERCEL_URL → VERCEL_URL → localhost
+  - Auth actions read origin header with validation fallback to getURL()
+- Supabase Dashboard: Site URL + all deployment domains must be in Redirect URLs list
+- Navbar auth UX pattern (when logged out):
+  - Desktop/Tablet (≥768px): "Log in" (ghost) + "Join Midfield" (primary emerald)
+  - Small tablet (640-767px): "Join Midfield" only
+  - Mobile (<640px): User icon only
+  - Rationale: Dual CTA follows modern SaaS standard; "Join" emphasizes community
+
 G) SEARCH QUALITY BASELINE
 - Server-side filter: relevance score must be >= 50
 - Low-score results are noise; do not show them.

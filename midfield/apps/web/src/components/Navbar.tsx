@@ -131,12 +131,27 @@ export function Navbar() {
                                     )}
                                 </Link>
                             ) : (
-                                <Link href="/auth">
-                                    <Button variant="default" size="sm" className="hidden xs:flex">
-                                        Sign In
-                                    </Button>
-                                    <IconButton icon={UserIcon} variant="ghost" className="flex xs:hidden" />
-                                </Link>
+                                <div className="flex items-center gap-2">
+                                    <Link href="/auth/login" className="hidden md:block">
+                                        <Button variant="ghost" size="sm">
+                                            Log in
+                                        </Button>
+                                    </Link>
+                                    <Link href="/auth/signup">
+                                        <Button variant="default" size="sm" className="hidden sm:flex group">
+                                            <span>Join Midfield</span>
+                                            <svg
+                                                className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                            </svg>
+                                        </Button>
+                                        <IconButton icon={UserIcon} variant="ghost" className="flex sm:hidden" />
+                                    </Link>
+                                </div>
                             )
                         ) : (
                             <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 animate-pulse" />

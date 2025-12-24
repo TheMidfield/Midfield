@@ -13,6 +13,7 @@ interface EntityHeaderProps {
     type: "club" | "player" | "league";
     imageUrl?: string;
     badgeUrl?: string;
+    badgeUrlDark?: string;
     postCount?: number;
     metadata?: {
         position?: string;
@@ -39,12 +40,14 @@ export function EntityHeader({
     type,
     imageUrl,
     badgeUrl,
+    badgeUrlDark,
     postCount = 0,
     metadata,
     backHref = "/",
 }: EntityHeaderProps) {
     const isPlayer = type === "player";
     const isClub = type === "club";
+    const isLeague = type === "league";
     const displayImage = isPlayer ? imageUrl : badgeUrl;
 
     // Build proper breadcrumb: League > Club > Player
@@ -203,7 +206,7 @@ export function EntityHeader({
 
                         {/* Info - Unified padding for both types */}
                         <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
-                            
+
                             {/* Row 1: Title + Actions (actions hidden on mobile, shown in footer instead) */}
                             <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
                                 <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
@@ -221,10 +224,24 @@ export function EntityHeader({
 
                             {/* Row 2: Badges */}
                             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
-                                <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
-                                    {type}
-                                </Badge>
-                                {isPlayer && metadata?.position && (
+                                {/* Show Manager badge if position is Manager/Coach, otherwise show Player badge */}
+                                {isPlayer && (
+                                    metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach') ? (
+                                        <Badge variant="secondary" className="text-[10px] sm:text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 capitalize">
+                                            Manager
+                                        </Badge>
+                                    ) : (
+                                        <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
+                                            {type}
+                                        </Badge>
+                                    )
+                                )}
+                                {!isPlayer && (
+                                    <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
+                                        {type}
+                                    </Badge>
+                                )}
+                                {isPlayer && metadata?.position && !(metadata.position.toLowerCase().includes('manager') || metadata.position.toLowerCase().includes('coach')) && (
                                     <Badge variant="secondary" className="text-[10px] sm:text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
                                         {metadata.position}
                                     </Badge>
@@ -310,7 +327,7 @@ export function EntityHeader({
                         <MessageSquare className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
                         <span className="whitespace-nowrap font-medium">{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
                     </div>
-                    
+
                     {/* Mobile: Follow + Share buttons | Desktop: Trending badge */}
                     <div className="flex sm:hidden items-center gap-2 shrink-0">
                         <Button variant="pill" size="pill-sm" className="h-7 px-3.5 text-[11px]">
