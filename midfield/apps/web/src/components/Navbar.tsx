@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 export function Navbar() {
     const pathname = usePathname();
     const [userAvatar, setUserAvatar] = useState<string | null>(null);
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -22,10 +23,13 @@ export function Navbar() {
                 const response = await fetch('/api/user-profile');
                 if (response.ok) {
                     const data = await response.json();
+                    // If we got a response with user data (even if avatar_url is null), user is authenticated
+                    setIsAuthenticated(data.isAuthenticated || false);
                     setUserAvatar(data.avatar_url);
                 }
             } catch (error) {
                 console.error('Failed to load user profile:', error);
+                setIsAuthenticated(false);
             } finally {
                 setIsLoading(false);
             }
@@ -109,19 +113,34 @@ export function Navbar() {
 
                         <ThemeToggle />
 
-                        <Link href="/profile">
-                            {!isLoading && userAvatar ? (
-                                <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-slate-400 dark:hover:border-neutral-600 transition-all cursor-pointer">
-                                    <img
-                                        src={userAvatar}
-                                        alt="Profile"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
+                        {!isLoading ? (
+                            isAuthenticated ? (
+                                <Link href="/profile">
+                                    {userAvatar ? (
+                                        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                                            <img
+                                                src={userAvatar}
+                                                alt="Profile"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-center">
+                                            <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 dark:text-neutral-500" />
+                                        </div>
+                                    )}
+                                </Link>
                             ) : (
-                                <IconButton icon={UserIcon} variant="ghost" />
-                            )}
-                        </Link>
+                                <Link href="/auth">
+                                    <Button variant="default" size="sm" className="hidden xs:flex">
+                                        Sign In
+                                    </Button>
+                                    <IconButton icon={UserIcon} variant="ghost" className="flex xs:hidden" />
+                                </Link>
+                            )
+                        ) : (
+                            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 animate-pulse" />
+                        )}
 
                         {/* Hamburger Menu - Below lg breakpoint */}
                         <button
@@ -140,11 +159,10 @@ export function Navbar() {
 
             {/* Mobile Menu Overlay - Behind navbar, darkens/blurs content */}
             <div
-                className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ease-out ${
-                    isMobileMenuOpen 
-                        ? 'opacity-100 pointer-events-auto' 
-                        : 'opacity-0 pointer-events-none'
-                }`}
+                className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ease-out ${isMobileMenuOpen
+                    ? 'opacity-100 pointer-events-auto'
+                    : 'opacity-0 pointer-events-none'
+                    }`}
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-hidden={!isMobileMenuOpen}
             >
@@ -154,11 +172,10 @@ export function Navbar() {
 
             {/* Mobile Menu Drawer - Slides down from navbar */}
             <div
-                className={`fixed top-14 sm:top-16 left-0 right-0 z-40 lg:hidden transition-all duration-300 ease-out transform-gpu ${
-                    isMobileMenuOpen 
-                        ? 'translate-y-0 opacity-100' 
-                        : '-translate-y-4 opacity-0 pointer-events-none'
-                }`}
+                className={`fixed top-14 sm:top-16 left-0 right-0 z-40 lg:hidden transition-all duration-300 ease-out transform-gpu ${isMobileMenuOpen
+                    ? 'translate-y-0 opacity-100'
+                    : '-translate-y-4 opacity-0 pointer-events-none'
+                    }`}
             >
                 <div className="bg-white dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 shadow-xl">
                     <div className="px-4 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -166,48 +183,48 @@ export function Navbar() {
                         <div className="mb-4 md:hidden">
                             <NavbarSearch onSearchStart={() => setIsMobileMenuOpen(false)} />
                         </div>
-                        
+
                         {/* Navigation Links with Icons */}
-                        <MobileNavLink 
-                            href="/" 
+                        <MobileNavLink
+                            href="/"
                             icon={Home}
-                            active={isActive("/")} 
+                            active={isActive("/")}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Home
                         </MobileNavLink>
-                        <MobileNavLink 
-                            href="/players" 
+                        <MobileNavLink
+                            href="/players"
                             icon={Users}
-                            active={isActive("/players")} 
+                            active={isActive("/players")}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Players
                         </MobileNavLink>
-                        <MobileNavLink 
-                            href="/clubs" 
+                        <MobileNavLink
+                            href="/clubs"
                             icon={Shield}
-                            active={isActive("/clubs")} 
+                            active={isActive("/clubs")}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Clubs
                         </MobileNavLink>
-                        <MobileNavLink 
-                            href="/leagues" 
+                        <MobileNavLink
+                            href="/leagues"
                             icon={Trophy}
-                            active={isActive("/leagues")} 
+                            active={isActive("/leagues")}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Leagues
                         </MobileNavLink>
-                        
+
                         {/* Divider */}
                         <div className="my-3 border-t border-slate-200 dark:border-neutral-800" />
-                        
-                        <MobileNavLink 
-                            href="/design-system" 
+
+                        <MobileNavLink
+                            href="/design-system"
                             icon={Terminal}
-                            active={isActive("/design-system")} 
+                            active={isActive("/design-system")}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
                             Showcase
@@ -236,17 +253,17 @@ function NavLink({ href, children, active }: { href: string; children: React.Rea
     );
 }
 
-function MobileNavLink({ 
-    href, 
-    children, 
+function MobileNavLink({
+    href,
+    children,
     icon: Icon,
-    active, 
-    onClick 
-}: { 
-    href: string; 
-    children: React.ReactNode; 
+    active,
+    onClick
+}: {
+    href: string;
+    children: React.ReactNode;
     icon: React.ComponentType<{ className?: string }>;
-    active?: boolean; 
+    active?: boolean;
     onClick?: () => void;
 }) {
     return (

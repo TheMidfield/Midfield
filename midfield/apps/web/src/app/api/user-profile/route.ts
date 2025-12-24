@@ -7,7 +7,7 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        return NextResponse.json({ avatar_url: null }, { status: 200 })
+        return NextResponse.json({ isAuthenticated: false, avatar_url: null }, { status: 200 })
     }
 
     const { data: profile } = await supabase
@@ -16,5 +16,5 @@ export async function GET() {
         .eq('id', user.id)
         .single()
 
-    return NextResponse.json({ avatar_url: profile?.avatar_url || null })
+    return NextResponse.json({ isAuthenticated: true, avatar_url: profile?.avatar_url || null })
 }
