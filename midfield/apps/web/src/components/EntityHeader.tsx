@@ -191,15 +191,39 @@ export function EntityHeader({
                                     )}
                                 </div>
                             ) : (
+                                // Badge for clubs and leagues
                                 <div className="pl-1 sm:pl-2 md:pl-3 lg:pl-4 py-4 sm:py-5 md:py-8 lg:py-10 relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28">
-                                    <NextImage
-                                        src={badgeUrl || ''}
-                                        alt={title}
-                                        fill
-                                        className="object-contain p-1 sm:p-1.5"
-                                        sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, 112px"
-                                        priority
-                                    />
+                                    {isLeague ? (
+                                        // League - Show logo with theme switching
+                                        <>
+                                            {badgeUrl && (
+                                                <img
+                                                    src={badgeUrl}
+                                                    alt={title}
+                                                    className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 dark:hidden"
+                                                />
+                                            )}
+                                            {(badgeUrlDark || badgeUrl) && (
+                                                <img
+                                                    src={badgeUrlDark || badgeUrl}
+                                                    alt={title}
+                                                    className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 hidden dark:block"
+                                                />
+                                            )}
+                                        </>
+                                    ) : (
+                                        // Club badge
+                                        badgeUrl && (
+                                            <NextImage
+                                                src={badgeUrl}
+                                                alt={title}
+                                                fill
+                                                className="object-contain p-1 sm:p-1.5"
+                                                sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, 112px"
+                                                priority
+                                            />
+                                        )
+                                    )}
                                 </div>
                             )}
                         </div>

@@ -57,7 +57,7 @@ export default function SignupPage() {
         <div style={{ width: '100%', maxWidth: '448px', margin: '0 auto', paddingTop: '64px', paddingBottom: '64px' }}>
             <h1 className="text-3xl font-bold mb-2 text-slate-900 dark:text-neutral-100">Join Midfield</h1>
             <p className="text-sm text-slate-600 dark:text-neutral-400 mb-8">
-                Where football meets conversation
+                Your home for intelligent football discussion
             </p>
 
             {error && (
@@ -86,7 +86,7 @@ export default function SignupPage() {
                     <div className="w-full border-t border-slate-200 dark:border-neutral-700"></div>
                 </div>
                 <div className="relative flex justify-center text-xs">
-                    <span className="px-3 text-slate-400 dark:text-neutral-500 font-medium">
+                    <span className="px-3 bg-white dark:bg-neutral-900 text-slate-400 dark:text-neutral-500 font-medium">
                         or continue with email
                     </span>
                 </div>
