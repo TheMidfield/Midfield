@@ -34,8 +34,9 @@ export async function GET(request: Request) {
                 .from('users')
                 .upsert({
                     id: data.user.id,
+                    username: null, // Will be set during onboarding
                     avatar_url: data.user.user_metadata?.avatar_url || null,
-                    full_name: data.user.user_metadata?.full_name || null,
+                    display_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || null,
                     onboarding_completed: false
                 }, {
                     onConflict: 'id',
@@ -46,6 +47,8 @@ export async function GET(request: Request) {
                 console.error('User record upsert error:', upsertError)
             }
         }
+
+
 
 
         // Success - redirect to destination
