@@ -216,6 +216,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                     stadium: metadata?.stadium,
                     founded: metadata?.founded,
                     country: metadata?.country,
+                    render_url: metadata?.render_url,
+                    trophy_url: metadata?.trophy_url,
                     ...clubData,
                 }}
                 backHref="/"

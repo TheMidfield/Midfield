@@ -155,7 +155,13 @@ async function importTheSportsDB(config: ImportConfig) {
 // Import a league and all its teams
 async function importLeague(leagueId: string, leagueName: string, dryRun: boolean) {
     try {
-        // 1. Upsert League Topic first
+        // 1. Fetch full league details from V1 API for images
+        const leagueDetailsUrl = `https://www.thesportsdb.com/api/v1/json/${apiKey}/lookupleague.php?id=${leagueId}`;
+        const leagueDetailsRes = await fetch(leagueDetailsUrl);
+        const leagueDetailsData = await leagueDetailsRes.json();
+        const leagueDetails = leagueDetailsData.leagues?.[0];
+
+        // 2. Upsert League Topic
         const leagueUuid = generateUUID('league', leagueId);
         const leagueSlug = await generateSafeSlug(leagueName, leagueId, 'league');
 
@@ -164,12 +170,16 @@ async function importLeague(leagueId: string, leagueName: string, dryRun: boolea
             slug: leagueSlug,
             type: 'league' as const,
             title: leagueName,
-            description: `Official page for ${leagueName}.`,
+            description: leagueDetails?.strDescriptionEN?.substring(0, 500) || `Official page for ${leagueName}.`,
             metadata: {
                 external: {
                     thesportsdb_id: leagueId,
                     source: 'thesportsdb'
-                }
+                },
+                logo_url: leagueDetails?.strLogo,
+                trophy_url: leagueDetails?.strTrophy,
+                badge_url: leagueDetails?.strBadge,
+                country: leagueDetails?.strCountry
             },
             is_active: true
         };
@@ -284,6 +294,7 @@ async function processTeam(team: any, dryRun: boolean) {
                         source: 'thesportsdb'
                     },
                     photo_url: player.strCutout || player.strThumb,
+                    render_url: player.strRender,
                     position: player.strPosition,
                     nationality: player.strNationality,
                     birth_date: player.dateBorn,

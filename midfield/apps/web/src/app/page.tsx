@@ -34,11 +34,16 @@ export default async function Home() {
         getRandomFeaturedPlayers(10)
     ]);
 
-    // Get 6 featured clubs (2 from each of 3 leagues)
+    // Get 6 featured clubs (2 from each of 3 leagues) - deduplicated by ID
     const topLeagues = (leagues || []).slice(0, 3);
-    const featuredClubs = topLeagues.flatMap((league: any) =>
+    const clubsByLeague = topLeagues.flatMap((league: any) =>
         allClubs.filter((club: any) => club.metadata?.league === league.title).slice(0, 2)
-    ).slice(0, 6);
+    );
+
+    // Deduplicate by ID to prevent React key warnings
+    const uniqueClubsMap = new Map(clubsByLeague.map(club => [club.id, club]));
+    const featuredClubs = Array.from(uniqueClubsMap.values()).slice(0, 6);
+
 
     return (
         <div className="w-full">

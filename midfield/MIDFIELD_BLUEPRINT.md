@@ -1,7 +1,7 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.2)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.3)
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
 OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
-FORGE DATE: DEC 24, 2025
+FORGE DATE: DEC 27, 2025 (Updated)
 OWNER: Developer is the master of this repo. Standards are non-negotiable.
 
 This file is designed to enable "fresh context window" resets at any time.
@@ -232,6 +232,47 @@ L) SYNC INFRASTRUCTURE ("THE TICKET SYSTEM")
   - History: Closes old relationships (valid_until) on transfer; never overwrites.
 - Security: `sync_jobs` table protected by RLS (Service Role Only).
 - Resilience: Scheduler automatically resets "Zombie" jobs (stuck in 'processing' > 1h) to 'pending' before queuing new work.
+
+M) PLAYER METADATA ENRICHMENT ("LAZY SMART FETCH")
+- Problem: V2 API list/players endpoint lacks height, nationality, kit number, weight.
+- Solution: Hybrid V1/V2 strategy:
+  - V2 for bulk imports (fast, unlimited)
+  - V1 lookupplayer.php for detailed metadata (on-demand)
+- Implementation:
+  - New job type: `enrich_player`
+  - Batch enrichment: Nightly job finds players with missing metadata
+  - Priority: Popular players first (by follower_count)
+  - Fields enriched: height, weight, nationality, jersey_number, render_url (full body PNG)
+- Data Storage:
+  - `metadata.render_url`: Full body render for premium watermarks
+  - `metadata.trophy_url`: League trophy images
+  - All stored in topics.metadata JSONB
+- Script: `scripts/enrich-players.ts` - Scans DB, enqueues missing
+- Worker: Enhanced sync-worker handles enrichment jobs
+
+N) ONBOARDING WIZARD ("ZERO FRICTION")
+- Trigger: New users without `username` or `onboarding_completed = false`
+- Flow:
+  - Step 1: Username + Optional Avatar
+    - Real-time validation (checks uniqueness)
+    - Auto-generated avatar fallback (DiceBear)
+    - Formatted input (lowercase, alphanumeric + underscore)
+  - Step 2: Favorite Club Selection
+    - Searchable club grid (by name/league)
+    - Visual badges for recognition
+    - Optional (can skip)
+- Implementation:
+  - `OnboardingWizard.tsx`: 2-step modal (can't dismiss)
+  - `OnboardingProvider.tsx`: Auto-detects need, triggers wizard
+  - Auth callback: Creates user record with `onboarding_completed = false`
+- Schema:
+  - `users.favorite_club_id`: UUID FK to topics(id)
+  - `users.onboarding_completed`: Boolean (default false)
+  - RLS: Users can update own profile
+- UX:
+  - Progress bar, smooth transitions
+  - Mobile-responsive grid
+  - Never shows again after completion
 
 
 ──────────────────────────────────────────────────────────────────────────────

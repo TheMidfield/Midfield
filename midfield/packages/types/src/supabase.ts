@@ -465,7 +465,9 @@ export type Database = {
           bio: string | null
           created_at: string
           display_name: string | null
+          favorite_club_id: string | null
           id: string
+          onboarding_completed: boolean | null
           updated_at: string
           username: string
         }
@@ -474,7 +476,9 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_club_id?: string | null
           id: string
+          onboarding_completed?: boolean | null
           updated_at?: string
           username: string
         }
@@ -483,11 +487,21 @@ export type Database = {
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_club_id?: string | null
           id?: string
+          onboarding_completed?: boolean | null
           updated_at?: string
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_favorite_club_id_fkey"
+            columns: ["favorite_club_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

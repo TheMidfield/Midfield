@@ -21,12 +21,32 @@ export async function GET(request: Request) {
         }
 
         const supabase = await createClient()
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+        const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
 
         if (exchangeError) {
             console.error('Code exchange error:', exchangeError)
             return NextResponse.redirect(`${origin}/auth?error=${encodeURIComponent(exchangeError.message)}`)
         }
+
+        // Ensure user record exists in public.users table
+        if (data.user) {
+            const { error: upsertError } = await supabase
+                .from('users')
+                .upsert({
+                    id: data.user.id,
+                    avatar_url: data.user.user_metadata?.avatar_url || null,
+                    full_name: data.user.user_metadata?.full_name || null,
+                    onboarding_completed: false
+                }, {
+                    onConflict: 'id',
+                    ignoreDuplicates: false
+                })
+
+            if (upsertError) {
+                console.error('User record upsert error:', upsertError)
+            }
+        }
+
 
         // Success - redirect to destination
         const forwardedHost = request.headers.get('x-forwarded-host')

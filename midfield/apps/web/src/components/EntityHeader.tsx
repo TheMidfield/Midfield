@@ -31,6 +31,8 @@ interface EntityHeaderProps {
         clubName?: string;
         clubSlug?: string;
         clubBadgeUrl?: string;
+        render_url?: string;
+        trophy_url?: string;
     };
     backHref?: string;
 }
@@ -49,6 +51,13 @@ export function EntityHeader({
     const isClub = type === "club";
     const isLeague = type === "league";
     const displayImage = isPlayer ? imageUrl : badgeUrl;
+
+    // Watermark image: use render for players, trophy for leagues, badge for clubs
+    const watermarkImage = isPlayer
+        ? (metadata?.render_url || imageUrl)
+        : isLeague
+            ? metadata?.trophy_url
+            : badgeUrl;
 
     // Build proper breadcrumb: League > Club > Player
     const breadcrumbs = isPlayer
@@ -146,10 +155,10 @@ export function EntityHeader({
             {/* Hero Card */}
             <Card className="relative overflow-hidden">
                 {/* Background Watermark */}
-                {displayImage && (
+                {watermarkImage && (
                     <div className="absolute right-4 sm:right-6 md:right-8 -bottom-2 sm:-bottom-3 md:-bottom-4 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 opacity-[0.04] grayscale pointer-events-none select-none">
                         <NextImage
-                            src={displayImage}
+                            src={watermarkImage}
                             alt=""
                             fill
                             className="object-contain"
