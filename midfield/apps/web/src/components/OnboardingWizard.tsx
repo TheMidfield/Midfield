@@ -103,7 +103,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <Card className="max-h-[90vh] overflow-hidden" style={{ width: 'calc(100% - 2rem)', maxWidth: '768px' }}>
                 {/* Progress Bar */}
                 <div className="h-1.5 bg-slate-200 dark:bg-neutral-800">
                     <div
@@ -233,8 +233,8 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                             key={club.id}
                                             onClick={() => setSelectedClub(club)}
                                             className={`p-3 rounded-lg border-2 transition-all flex flex-col items-center gap-2 text-center ${selectedClub?.id === club.id
-                                                    ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                                                    : 'border-slate-200 dark:border-neutral-700 hover:border-slate-300 dark:hover:border-neutral-600'
+                                                ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                                                : 'border-slate-200 dark:border-neutral-700 hover:border-slate-300 dark:hover:border-neutral-600'
                                                 }`}
                                         >
                                             {selectedClub?.id === club.id && (
