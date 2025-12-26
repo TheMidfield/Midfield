@@ -131,9 +131,9 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
 
                             {/* Form */}
                             <div className="space-y-5">
-                                {/* Avatar Preview */}
+                                {/* Avatar Upload */}
                                 <div className="flex items-center gap-4">
-                                    <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
+                                    <div className="w-20 h-20 rounded-md bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
                                         {avatarUrl ? (
                                             <NextImage src={avatarUrl} alt="Avatar" width={80} height={80} className="w-full h-full object-cover" />
                                         ) : (
@@ -146,13 +146,25 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                         <label className="block text-xs font-bold text-slate-700 dark:text-neutral-300 mb-1.5">
                                             Profile Picture (Optional)
                                         </label>
-                                        <Input
-                                            type="url"
-                                            value={avatarUrl}
-                                            onChange={(e) => setAvatarUrl(e.target.value)}
-                                            placeholder="https://example.com/avatar.jpg"
-                                            className="text-sm"
-                                        />
+                                        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-md border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-700 dark:text-neutral-300 hover:border-emerald-500 dark:hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all text-sm font-medium">
+                                            <Upload className="w-4 h-4" />
+                                            <span>Upload Image</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            setAvatarUrl(reader.result as string);
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
                                         <p className="text-xs text-slate-500 dark:text-neutral-500 mt-1">
                                             Or leave blank for a default avatar
                                         </p>
@@ -162,19 +174,25 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                 {/* Username */}
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-neutral-300 mb-2">
-                                        Username *
+                                        Choose Your Username *
                                     </label>
-                                    <Input
-                                        type="text"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                                        placeholder="your_username"
-                                        maxLength={20}
-                                        required
-                                        className="text-base"
-                                    />
-                                    <p className="text-xs text-slate-500 dark:text-neutral-500 mt-1">
-                                        Lowercase letters, numbers, and underscores only
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 dark:text-emerald-400 font-bold text-base select-none pointer-events-none">
+                                            @
+                                        </span>
+                                        <Input
+                                            type="text"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                            placeholder="your_username"
+                                            maxLength={20}
+                                            required
+                                            className="text-base pl-9 font-medium tracking-wide border-2 hover:border-emerald-300 dark:hover:border-emerald-700 focus:border-emerald-500 dark:focus:border-emerald-500 transition-colors"
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-slate-500 dark:text-neutral-500 mt-1.5">
+                                        Letters, numbers, and underscores • 3-20 characters
                                     </p>
                                 </div>
 

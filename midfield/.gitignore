@@ -15,6 +15,17 @@ dist
 .env
 .env*.local
 
+# Python
+__pycache__/
+*.py[cod]
+.Python
+*.egg-info/
+.venv/
+venv/
+venv311/
+env/
+ENV/
+
 # System Files
 .DS_Store
 Thumbs.db
