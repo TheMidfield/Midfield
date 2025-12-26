@@ -241,6 +241,40 @@ Deno.serve(async (req) => {
                             }
                         }
                     }
+
+                } else if (job.job_type === 'enrich_player') {
+                    // Enrich Player Metadata from V1 API
+                    const { playerId, thesportsdbId } = job.payload;
+
+                    const playerDetails = await apiClient.lookupPlayer(thesportsdbId);
+                    if (playerDetails) {
+                        // Update only the missing fields
+                        const enrichedMetadata = {
+                            height: playerDetails.strHeight || null,
+                            weight: playerDetails.strWeight || null,
+                            nationality: playerDetails.strNationality || null,
+                            jersey_number: playerDetails.strNumber ? parseInt(playerDetails.strNumber) : null,
+                        };
+
+                        // Fetch existing metadata first
+                        const { data: existingTopic } = await supabase
+                            .from('topics')
+                            .select('metadata')
+                            .eq('id', playerId)
+                            .single();
+
+                        if (existingTopic) {
+                            await supabase
+                                .from('topics')
+                                .update({
+                                    metadata: {
+                                        ...existingTopic.metadata,
+                                        ...enrichedMetadata
+                                    }
+                                })
+                                .eq('id', playerId);
+                        }
+                    }
                 }
 
                 // Success

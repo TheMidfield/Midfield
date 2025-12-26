@@ -36,7 +36,15 @@ export class TheSportsDBClient {
         return data.list || [];
     }
 
+
+    // Individual Player Lookup (V1 - Full Details)
+    async lookupPlayer(playerId: string) {
+        const data = await this.fetchV1<{ players: any[] }>(`lookupplayer.php?id=${playerId}`);
+        return data.players?.[0] || null;
+    }
+
     // --- PHASE 2: AUXILIARY DATA ---
+
 
     async getTeamNextFixtures(teamId: string) {
         const data = await this.fetchV2<{ schedule: any[] }>(`/schedule/next/team/${teamId}`);
