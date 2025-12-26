@@ -311,12 +311,13 @@ D) COMPONENT ARCHETYPES (CANONICAL)
    - Reply button text: hidden on mobile (<xs), visible on xs+ breakpoints
 
 6) **HERO BANNERS (Browse Pages: Players, Clubs, Leagues)**:
-   - **PATTERN**: "Data Noir" with discrete grid + emerald accent zone
+   - **PATTERN**: "Data Noir" with discrete grid + radial gradient stain effect
    - **Layout**: Flex container with icon+title left, stats card right
    - **Grid Background**:
-     - Base grid: 24x24, discrete opacity (0.15 light / 0.08 dark)
-     - Greenish zone: Top-right 1/3 width overlay with emerald-tinted grid
-     - NO diagonal beams or gradient overlays (removed for cleaner look)
+     - Single 24×24 grid with radial gradient mask for greenish "stain" effect
+     - Opacity: 0.2 (light) / 0.12 (dark)
+     - Radial mask: ellipse 800×500px at top-right, emerald fade to 65%
+     - Creates elegant greenish accent without dual-layer alignment issues
    - **Icon Container**:
      - OPAQUE backgrounds: `bg-emerald-100 dark:bg-emerald-950/50`
      - Borders: `border-emerald-200 dark:border-emerald-900`
@@ -328,10 +329,10 @@ D) COMPONENT ARCHETYPES (CANONICAL)
      - Radius: `rounded-md`
    - **Beta Badges** (Leagues only):
      - Small pill: `px-2.5 py-1 text-[10px]`
-     - Positioned absolutely: `top-4 right-4`
+     - Positioned absolutely: `top-4 right-4 sm:top-6 sm:right-8`
      - Static Sparkles icon (no pulsing animation)
      - Emerald colors matching app style
-     - Text: "Expanding" (concise, enthusiastic)
+     - Text: "More Coming Soon!" (enthusiastic, clear)
    - **Color Palette**:
      - Light: `from-slate-50 via-white to-slate-50`
      - Dark: `from-neutral-950 via-neutral-900 to-neutral-950` (NEUTRAL not slate)
