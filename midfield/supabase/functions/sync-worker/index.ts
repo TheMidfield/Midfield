@@ -30,7 +30,6 @@ Deno.serve(async (req) => {
             });
         }
 
-        // 2. Mark as processing
         // 2. Mark as processing (using processed_at as "started_at" for stuck job detection)
         const jobIds = jobs.map(j => j.id);
         const processingPayload = {
@@ -45,7 +44,7 @@ Deno.serve(async (req) => {
         for (const job of jobs) {
             try {
                 if (job.job_type === 'sync_league') {
-                    // Expand League -> Club Jobs
+                    // Expand League -> Club Jobs + Fixtures + Standings
                     const { leagueId } = job.payload;
                     const teams = await apiClient.listLeagueTeams(leagueId);
 
@@ -56,6 +55,19 @@ Deno.serve(async (req) => {
                     }));
 
                     if (clubJobs.length > 0) {
+                        // Add Auxiliary Jobs (League Level)
+                        clubJobs.push({
+                            job_type: 'sync_fixtures',
+                            payload: { leagueId, season: '2024-2025' },
+                            status: 'pending'
+                        } as any);
+
+                        clubJobs.push({
+                            job_type: 'sync_standings',
+                            payload: { leagueId, season: '2024-2025' },
+                            status: 'pending'
+                        } as any);
+
                         await supabase.from('sync_jobs').insert(clubJobs);
                     }
 
@@ -111,15 +123,122 @@ Deno.serve(async (req) => {
                                 birth_date: p.dateBorn,
                                 height: p.strHeight,
                                 weight: p.strWeight,
-                                jersey_number: p.strNumber ? parseInt(p.strNumber) : null
+                                jersey_number: p.strNumber ? parseInt(p.strNumber) : null,
+                                // Contracts (Best Effort)
+                                wage: p.strWage || null,
+                                signed_date: p.dateSigned || null
                             },
                             is_active: true
                         };
 
                         const { data: player } = await smartUpsertTopic(supabase, playerTopic, 'player', p.idPlayer);
 
+                        // Try fetching Contracts (API v2) - Low priority, often empty
+                        try {
+                            const contractData = await apiClient.getPlayerContracts(p.idPlayer);
+                            if (contractData && contractData.length > 0) {
+                                // Update metadata with more contract info if available
+                                const contract = contractData[0];
+                                if (contract.strWage) {
+                                    await supabase.from('topics').update({
+                                        metadata: { ...playerTopic.metadata, wage: contract.strWage, contract_expiry: contract.strSigning }
+                                    }).eq('id', player.id);
+                                }
+                            }
+                        } catch (e) {
+                            // Ignore contract errors
+                        }
+
                         if (club && player) {
                             await syncPlayerForClub(supabase, player.id, club.id);
+                        }
+                    }
+
+                } else if (job.job_type === 'sync_fixtures') {
+                    // Sync Fixtures (League Level) - Next 15 & Prev 15
+                    const { leagueId } = job.payload;
+                    const { data: leagueTopic } = await supabase.from('topics').select('id').eq('type', 'league').contains('metadata', { external: { thesportsdb_id: leagueId } }).single();
+
+                    if (leagueTopic) {
+                        const [next, prev] = await Promise.all([
+                            apiClient.getLeagueNextFixtures(leagueId),
+                            apiClient.getLeagueLastFixtures(leagueId)
+                        ]);
+
+                        const allFixtures = [...next, ...prev];
+                        // Cache club lookups to avoid N+1 DB calls
+                        const clubCache = new Map<string, string>(); // TSDB_ID -> UUID
+
+                        for (const f of allFixtures) {
+                            if (!f.idHomeTeam || !f.idAwayTeam) continue;
+
+                            let homeId = clubCache.get(f.idHomeTeam);
+                            if (!homeId) {
+                                const { data: h } = await supabase.from('topics').select('id').eq('type', 'club').contains('metadata', { external: { thesportsdb_id: f.idHomeTeam } }).single();
+                                if (h) { homeId = h.id; clubCache.set(f.idHomeTeam, h.id); }
+                            }
+
+                            let awayId = clubCache.get(f.idAwayTeam);
+                            if (!awayId) {
+                                const { data: a } = await supabase.from('topics').select('id').eq('type', 'club').contains('metadata', { external: { thesportsdb_id: f.idAwayTeam } }).single();
+                                if (a) { awayId = a.id; clubCache.set(f.idAwayTeam, a.id); }
+                            }
+
+                            if (homeId && awayId) {
+                                const fixturePayload = {
+                                    id: parseInt(f.idEvent),
+                                    home_team_id: homeId,
+                                    away_team_id: awayId,
+                                    competition_id: leagueTopic.id,
+                                    date: f.dateEvent + (f.strTime ? 'T' + f.strTime : ''),
+                                    status: f.strStatus === 'Match Finished' ? 'FT' : 'Not Started',
+                                    home_score: f.intHomeScore ? parseInt(f.intHomeScore) : null,
+                                    away_score: f.intAwayScore ? parseInt(f.intAwayScore) : null,
+                                    venue: f.strVenue,
+                                    gameweek: f.intRound ? parseInt(f.intRound) : null
+                                };
+                                await supabase.from('fixtures').upsert(fixturePayload);
+                            }
+                        }
+                    }
+
+                } else if (job.job_type === 'sync_standings') {
+                    // Sync League Table
+                    const { leagueId, season } = job.payload;
+                    const table = await apiClient.getLeagueTable(leagueId, season || '2024-2025');
+
+                    if (table.length > 0) {
+                        // Resolve League Topic ID
+                        const { data: leagueTopic } = await supabase.from('topics').select('id').eq('type', 'league').contains('metadata', { external: { thesportsdb_id: leagueId } }).single();
+
+                        if (leagueTopic) {
+                            // Clear old standings for this league to avoid ghosts
+                            // Or just upsert? Rank changes means checking unique constraint.
+                            // Best to delete all for this league and re-insert?
+                            await supabase.from('league_standings').delete().eq('league_id', leagueTopic.id);
+
+                            const standingsPayloads = [];
+                            for (const row of table) {
+                                const { data: teamTopic } = await supabase.from('topics').select('id').eq('type', 'club').contains('metadata', { external: { thesportsdb_id: row.idTeam } }).single();
+                                if (teamTopic) {
+                                    standingsPayloads.push({
+                                        league_id: leagueTopic.id,
+                                        team_id: teamTopic.id,
+                                        rank: parseInt(row.intRank),
+                                        points: parseInt(row.intPoints),
+                                        played: parseInt(row.intPlayed),
+                                        goals_diff: parseInt(row.intGoalDifference),
+                                        goals_for: parseInt(row.intGoalsFor),
+                                        goals_against: parseInt(row.intGoalsAgainst),
+                                        form: row.strForm,
+                                        description: row.strDescription
+                                    });
+                                }
+                            }
+
+                            if (standingsPayloads.length > 0) {
+                                await supabase.from('league_standings').insert(standingsPayloads);
+                            }
                         }
                     }
                 }

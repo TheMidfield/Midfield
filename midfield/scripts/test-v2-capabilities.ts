@@ -51,16 +51,18 @@ async function runTests() {
     // Test V2 Schedule endpoints
     // Next 5
     const nextMatches = await fetchV2('/schedule/next/team/133604');
-    if (nextMatches?.results) {
-        console.log(`   ✅ Next Matches: Found ${nextMatches.results.length}`);
-        console.log(`      Sample: ${nextMatches.results[0].strEvent} (${nextMatches.results[0].dateEvent})`);
+    if (nextMatches?.schedule) {
+        console.log(`   ✅ Next Matches: Found ${nextMatches.schedule.length}`);
+        console.log(`      Sample: ${nextMatches.schedule[0].strEvent} (${nextMatches.schedule[0].dateEvent})`);
+    } else {
+        console.log('   ⚠️ No "schedule" key found.', nextMatches);
     }
 
     // Previous 5 (Form)
     const lastMatches = await fetchV2('/schedule/previous/team/133604');
-    if (lastMatches?.results) {
-        console.log(`   ✅ Last Matches: Found ${lastMatches.results.length}`);
-        console.log(`      Sample: ${lastMatches.results[0].strEvent} (${lastMatches.results[0].intHomeScore}-${lastMatches.results[0].intAwayScore})`);
+    if (lastMatches?.schedule) {
+        console.log(`   ✅ Last Matches: Found ${lastMatches.schedule.length}`);
+        console.log(`      Sample: ${lastMatches.schedule[0].strEvent} (${lastMatches.schedule[0].intHomeScore}-${lastMatches.schedule[0].intAwayScore})`);
     }
 
     // 2. LEAGUE STANDINGS
@@ -69,9 +71,10 @@ async function runTests() {
     const standings = await fetchV1('lookuptable.php?l=4328&s=2024-2025');
     if (standings?.table) {
         console.log(`   ✅ League Table: Found ${standings.table.length} rows`);
-        console.log(`      Leader: #${standings.table[0].intRank} ${standings.table[0].strTeam} (${standings.table[0].intPoints} pts)`);
+        const leader = standings.table[0];
+        console.log(`      Leader: #${leader.intRank} ${leader.strTeam} (${leader.intPoints} pts)`);
     } else {
-        console.log('   ⚠️ V1 Table fetch failed or empty (might need season adjustment?)');
+        console.log('   ⚠️ V1 Table fetch failed.', standings);
     }
 
     // 3. PLAYER DATA (Contracts & Honours)
@@ -79,16 +82,24 @@ async function runTests() {
     // Bukayo Saka ID: 34161044
     // Contracts
     const contracts = await fetchV2('/lookup/player_contracts/34161044');
-    if (contracts?.contracts) {
-        console.log(`   ✅ Contracts: Found ${contracts.contracts.length}`);
-        console.log(`      Sample: ${contracts.contracts[0].strTeam} (${contracts.contracts[0].strWage})`);
+    // Note: V2 seems to return 'lookup' or maybe 'contracts' inside? Based on previous run, key was 'lookup'
+    const contractData = contracts?.contracts || contracts?.lookup;
+
+    if (contractData) {
+        console.log(`   ✅ Contracts: Found ${contractData.length}`);
+        console.log(`      Sample: ${contractData[0].strTeam} (${contractData[0].strWage})`);
+    } else {
+        console.log('   ⚠️ No contracts found. Response keys:', Object.keys(contracts || {}));
     }
 
-    // Honours
-    const honours = await fetchV2('/lookup/player_honours/34161044');
+    // Honours - V2 Failed ("Message"), trying V1 fallback
+    console.log('   (Trying V1 Honours...)');
+    const honours = await fetchV1('lookuphonours.php?id=34161044');
     if (honours?.honours) {
-        console.log(`   ✅ Honours: Found ${honours.honours.length}`);
+        console.log(`   ✅ Honours (V1): Found ${honours.honours.length}`);
         console.log(`      Sample: ${honours.honours[0].strHonour} (${honours.honours[0].strSeason})`);
+    } else {
+        console.log('   ⚠️ Honours fetch failed.', honours);
     }
 }
 

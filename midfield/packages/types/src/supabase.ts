@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -13,33 +12,111 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fixtures: {
+        Row: {
+          away_score: number | null
+          away_team_id: string
+          competition_id: string
+          created_at: string | null
+          date: string
+          gameweek: number | null
+          home_score: number | null
+          home_team_id: string
+          id: number
+          status: string | null
+          updated_at: string | null
+          venue: string | null
+        }
+        Insert: {
+          away_score?: number | null
+          away_team_id: string
+          competition_id: string
+          created_at?: string | null
+          date: string
+          gameweek?: number | null
+          home_score?: number | null
+          home_team_id: string
+          id: number
+          status?: string | null
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Update: {
+          away_score?: number | null
+          away_team_id?: string
+          competition_id?: string
+          created_at?: string | null
+          date?: string
+          gameweek?: number | null
+          home_score?: number | null
+          home_team_id?: string
+          id?: number
+          status?: string | null
+          updated_at?: string | null
+          venue?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fixtures_away_team_id_fkey"
+            columns: ["away_team_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixtures_competition_id_fkey"
+            columns: ["competition_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixtures_home_team_id_fkey"
+            columns: ["home_team_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -73,6 +150,66 @@ export type Database = {
           },
         ]
       }
+      league_standings: {
+        Row: {
+          description: string | null
+          form: string | null
+          goals_against: number | null
+          goals_diff: number | null
+          goals_for: number | null
+          id: number
+          league_id: string
+          played: number | null
+          points: number | null
+          rank: number
+          team_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          description?: string | null
+          form?: string | null
+          goals_against?: number | null
+          goals_diff?: number | null
+          goals_for?: number | null
+          id?: number
+          league_id: string
+          played?: number | null
+          points?: number | null
+          rank: number
+          team_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          description?: string | null
+          form?: string | null
+          goals_against?: number | null
+          goals_diff?: number | null
+          goals_for?: number | null
+          id?: number
+          league_id?: string
+          played?: number | null
+          points?: number | null
+          rank?: number
+          team_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_standings_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_standings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       posts: {
         Row: {
           author_id: string
@@ -85,6 +222,7 @@ export type Database = {
           parent_post_id: string | null
           reaction_count: number
           reply_count: number
+          reply_to_post_id: string | null
           root_post_id: string | null
           topic_id: string
           updated_at: string
@@ -100,6 +238,7 @@ export type Database = {
           parent_post_id?: string | null
           reaction_count?: number
           reply_count?: number
+          reply_to_post_id?: string | null
           root_post_id?: string | null
           topic_id: string
           updated_at?: string
@@ -115,6 +254,7 @@ export type Database = {
           parent_post_id?: string | null
           reaction_count?: number
           reply_count?: number
+          reply_to_post_id?: string | null
           root_post_id?: string | null
           topic_id?: string
           updated_at?: string
@@ -130,6 +270,13 @@ export type Database = {
           {
             foreignKeyName: "posts_parent_post_id_fkey"
             columns: ["parent_post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_reply_to_post_id_fkey"
+            columns: ["reply_to_post_id"]
             isOneToOne: false
             referencedRelation: "posts"
             referencedColumns: ["id"]
@@ -189,6 +336,36 @@ export type Database = {
           },
         ]
       }
+      sync_jobs: {
+        Row: {
+          created_at: string | null
+          error_log: string | null
+          id: string
+          job_type: string
+          payload: Json
+          processed_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_log?: string | null
+          id?: string
+          job_type: string
+          payload: Json
+          processed_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_log?: string | null
+          id?: string
+          job_type?: string
+          payload?: Json
+          processed_at?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
       topic_relationships: {
         Row: {
           child_topic_id: string
@@ -247,6 +424,7 @@ export type Database = {
           metadata: Json
           post_count: number
           slug: string
+          thesportsdb_id: string | null
           title: string
           type: string
           updated_at: string
@@ -260,6 +438,7 @@ export type Database = {
           metadata?: Json
           post_count?: number
           slug: string
+          thesportsdb_id?: string | null
           title: string
           type: string
           updated_at?: string
@@ -273,6 +452,7 @@ export type Database = {
           metadata?: Json
           post_count?: number
           slug?: string
+          thesportsdb_id?: string | null
           title?: string
           type?: string
           updated_at?: string
@@ -314,7 +494,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decrement_reply_count: {
+        Args: { root_post_id_param: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
@@ -443,9 +626,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },

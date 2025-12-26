@@ -10,6 +10,8 @@ import { Users, Trophy, Calendar, BarChart3, Minus, Plus, Activity, Star, Info, 
 import Link from "next/link";
 import NextImage from "next/image";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
+import { ClubFixtures } from "@/components/ClubFixtures";
+import { LeagueTable } from "@/components/LeagueTable";
 
 interface TopicPageClientProps {
     topic: any;
@@ -17,6 +19,8 @@ interface TopicPageClientProps {
     groupedSquad: Record<string, any[]>;
     playerClub?: any;
     leagueClubs?: any[];
+    fixtures?: any[];
+    standings?: any[];
     posts?: any[];
     currentUser?: {
         id?: string;
@@ -45,7 +49,7 @@ const getPositionInfo = (pos: string) => {
     return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], posts = [], currentUser }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], posts = [], currentUser }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
@@ -80,7 +84,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
         : isClub
             ? [
                 { id: "players", title: "Players", icon: Users, count: squad.length },
-                { id: "fixtures", title: "Fixtures", icon: Calendar },
+                { id: "fixtures", title: "Fixtures", icon: Calendar, count: fixtures.length > 0 ? fixtures.filter(f => new Date(f.date) >= new Date()).length : undefined },
                 { id: "about", title: "About", icon: Info },
             ]
             : [
@@ -211,6 +215,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                     leagueSlug: clubData.leagueSlug,
                     stadium: metadata?.stadium,
                     founded: metadata?.founded,
+                    country: metadata?.country,
                     ...clubData,
                 }}
                 backHref="/"
@@ -352,7 +357,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
                                                 {/* Fixtures Section (Clubs) */}
                                                 {section.id === "fixtures" && isClub && (
-                                                    <EmptyState message="Fixture data coming soon" />
+                                                    <ClubFixtures clubId={topic.id} fixtures={fixtures} />
                                                 )}
 
                                                 {/* Clubs Section (Leagues) */}
@@ -394,18 +399,20 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
                                                 {/* Standings Section (Leagues) */}
                                                 {section.id === "standings" && isLeague && (
-                                                    <EmptyState message="Standings coming soon" />
+                                                    <LeagueTable standings={standings} />
                                                 )}
 
                                                 {/* About Section */}
                                                 {section.id === "about" && (
                                                     <div className="pt-3 sm:pt-4">
                                                         <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">
-                                                            {isLeague
-                                                                ? `${topic.title} is one of the top professional football leagues in ${metadata?.country || 'Europe'}.`
-                                                                : isClub
-                                                                    ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
-                                                                    : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
+                                                            {topic.description
+                                                                ? topic.description
+                                                                : isLeague
+                                                                    ? `${topic.title} is one of the top professional football leagues in ${metadata?.country || 'Europe'}.`
+                                                                    : isClub
+                                                                        ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
+                                                                        : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
                                                             }
                                                         </p>
                                                     </div>

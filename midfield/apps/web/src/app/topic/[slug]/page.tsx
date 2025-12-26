@@ -1,4 +1,4 @@
-import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague } from "@midfield/logic/src/topics";
+import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getClubFixtures, getLeagueTable } from "@midfield/logic/src/topics";
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
 import { getTakes } from "@/app/actions";
@@ -19,6 +19,8 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     let groupedSquad: Record<string, any[]> = {};
     let playerClub: any = null;
     let leagueClubs: any[] = [];
+    let fixtures: any[] = [];
+    let standings: any[] = [];
 
     if (isClub) {
         squad = await getPlayersByClub(topic.id);
@@ -35,6 +37,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             acc[pos].push(player);
             return acc;
         }, {} as Record<string, any[]>);
+
+        // Fetch fixtures for club
+        fixtures = await getClubFixtures(topic.id);
     }
 
     if (isPlayer) {
@@ -45,6 +50,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     if (isLeague) {
         // Fetch clubs belonging to this league
         leagueClubs = await getClubsByLeague(topic.title);
+
+        // Fetch standings for league
+        standings = await getLeagueTable(topic.id);
     }
 
     // Fetch takes (posts) for this topic
@@ -60,6 +68,8 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             groupedSquad={groupedSquad}
             playerClub={playerClub}
             leagueClubs={leagueClubs}
+            fixtures={fixtures}
+            standings={standings}
             posts={posts}
             currentUser={{
                 id: userData?.user?.id,

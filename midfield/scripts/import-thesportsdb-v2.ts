@@ -57,7 +57,7 @@ const slugify = (text: string): string => {
 };
 
 // Generate collision-safe slug (appends ID if slug exists)
-const generateSafeSlug = async (name: string, thesportsdbId: string, type: 'club' | 'player'): Promise<string> => {
+const generateSafeSlug = async (name: string, thesportsdbId: string, type: 'club' | 'player' | 'league'): Promise<string> => {
     const baseSlug = slugify(name);
 
     // Check if slug already exists
@@ -77,7 +77,7 @@ const generateSafeSlug = async (name: string, thesportsdbId: string, type: 'club
 };
 
 // Generate deterministic UUID from TheSportsDB ID (SAME AS V1)
-const generateUUID = (type: 'club' | 'player', externalId: string): string => {
+const generateUUID = (type: 'club' | 'player' | 'league', externalId: string): string => {
     const hash = createHash('md5').update(`${type}:${externalId}`).digest('hex');
     // Format as UUID v4
     return `${hash.substring(0, 8)}-${hash.substring(8, 12)}-4${hash.substring(13, 16)}-${hash.substring(16, 20)}-${hash.substring(20, 32)}`;
@@ -155,6 +155,30 @@ async function importTheSportsDB(config: ImportConfig) {
 // Import a league and all its teams
 async function importLeague(leagueId: string, leagueName: string, dryRun: boolean) {
     try {
+        // 1. Upsert League Topic first
+        const leagueUuid = generateUUID('league', leagueId);
+        const leagueSlug = await generateSafeSlug(leagueName, leagueId, 'league');
+
+        const leagueTopic = {
+            id: leagueUuid,
+            slug: leagueSlug,
+            type: 'league' as const,
+            title: leagueName,
+            description: `Official page for ${leagueName}.`,
+            metadata: {
+                external: {
+                    thesportsdb_id: leagueId,
+                    source: 'thesportsdb'
+                }
+            },
+            is_active: true
+        };
+
+        if (!dryRun) {
+            await supabase.from('topics').upsert(leagueTopic, { onConflict: 'id' });
+            console.log(`   ✅ Upserted League: ${leagueName}`);
+        }
+
         // v2 endpoint: /list/teams/{leagueId}
         const data = await fetchV2<{ list: any[] }>(`/list/teams/${leagueId}`);
         const teams = data.list || [];

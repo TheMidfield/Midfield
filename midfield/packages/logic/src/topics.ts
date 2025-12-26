@@ -151,3 +151,47 @@ export const getPlayerClub = async (playerId: string): Promise<Topic | null> => 
 
     return (data?.parent_topic as Topic) || null;
 };
+
+/**
+ * Get fixtures for a club (home or away)
+ */
+export const getClubFixtures = async (clubId: string): Promise<any[]> => {
+    const { data, error } = await supabase
+        .from('fixtures')
+        .select(`
+            *,
+            home_team:topics!fixtures_home_team_id_fkey(id, title, slug, metadata),
+            away_team:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
+            competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
+        `)
+        .or(`home_team_id.eq.${clubId},away_team_id.eq.${clubId}`)
+        .order('date', { ascending: true }); // We'll sort into Results/Upcoming in UI
+
+    if (error) {
+        console.error('Error fetching club fixtures:', error);
+        return [];
+    }
+
+    return data || [];
+};
+
+/**
+ * Get standings for a league
+ */
+export const getLeagueTable = async (leagueId: string): Promise<any[]> => {
+    const { data, error } = await supabase
+        .from('league_standings')
+        .select(`
+            *,
+            team:topics!league_standings_team_id_fkey(id, title, slug, metadata)
+        `)
+        .eq('league_id', leagueId)
+        .order('rank', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching league table:', error);
+        return [];
+    }
+
+    return data || [];
+};
