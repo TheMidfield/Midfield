@@ -306,7 +306,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                             {topic.fc26_data?.potential && (
                                                                 <Badge variant="secondary" className="hidden sm:flex text-[10px] sm:text-xs h-6 px-2 py-0 font-bold gap-1 items-center opacity-80">
                                                                     <span className="text-[8px] sm:text-[9px] opacity-70 font-semibold">POT</span>
-                                                                    <span className="font-black text-slate-600 dark:text-slate-400">{metadata.fc26.potential}</span>
+                                                                    <span className="font-black text-slate-600 dark:text-slate-400">{topic.fc26_data?.potential}</span>
                                                                 </Badge>
                                                             )}
                                                         </div>

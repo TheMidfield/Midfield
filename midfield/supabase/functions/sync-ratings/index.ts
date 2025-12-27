@@ -101,85 +101,146 @@ serve(async (req) => {
     const logs = [];
     const newRelationships = [];
 
-    // 2. Iterate Players (Global Search Strategy)
+    // 2. OPTIMAL MATCHING: Get club's player pool first
+    let clubPlayers: any[] = [];
+    if (teamId) {
+      const { data: clubData } = await supabase
+        .from('topic_relationships')
+        .select('child_topic:topics!topic_relationships_child_topic_id_fkey(id, title, metadata)')
+        .eq('parent_topic_id', teamId)
+        .eq('relationship_type', 'plays_for');
+
+      if (clubData) {
+        clubPlayers = clubData.map((r: any) => r.child_topic).filter(Boolean);
+        console.log(`📋 Found ${clubPlayers.length} players in club pool`);
+      }
+    }
+
+    // Helper: Normalize name (remove accents, lowercase)
+    const normalizeName = (name: string): string => {
+      return name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Remove accents
+        .toLowerCase()
+        .trim();
+    };
+
+    // Helper: Find best match in a pool using multi-signal scoring
+    const findBestMatch = (scraped: any, pool: any[]) => {
+      let bestMatch = null;
+      let bestScore = 0;
+      let bestMethod = 'failed';
+
+      const scrapedNorm = normalizeName(scraped.name);
+      const scrapedTokens = scrapedNorm.split(/\s+/);
+      const scrapedDob = scraped.birth_date;
+
+      for (const cand of pool) {
+        const candNorm = normalizeName(cand.title);
+        const candDob = cand.metadata?.birth_date?.split('T')[0];
+
+        let score = 0;
+        let method = 'fuzzy';
+
+        // Signal A: ID Match (Perfect)
+        if (cand.metadata?.external?.sofifa_id === scraped.sofifa_id) {
+          return { match: cand, score: 1.0, method: 'id' };
+        }
+
+        // Signal B: Name Similarity (Jaro-Winkler) - 50% weight
+        const nameScore = jaroWinkler(candNorm, scrapedNorm);
+        score += nameScore * 0.5;
+
+        // Signal C: DOB Match - 40% weight (golden key)
+        if (scrapedDob && candDob && scrapedDob === candDob) {
+          score += 0.4;
+          method = 'dob_match';
+        }
+
+        // Signal D: Token Match (nickname/last name in DB title) - 10% weight
+        const hasTokenMatch = scrapedTokens.some(t =>
+          t.length > 2 && candNorm.includes(t)
+        );
+        if (hasTokenMatch) {
+          score += 0.1;
+        }
+
+        // Also check reverse: DB tokens in scraped name (handles "Beto" case)
+        const candTokens = candNorm.split(/\s+/);
+        const hasReverseToken = candTokens.some(t =>
+          t.length > 2 && scrapedNorm.includes(t)
+        );
+        if (hasReverseToken) {
+          score += 0.05;
+        }
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = cand;
+          bestMethod = method;
+        }
+      }
+
+      return { match: bestMatch, score: bestScore, method: bestMethod };
+    };
+
+    // 3. Iterate Players with Tiered Matching
     for (const scraped of players) {
       let match = null;
       let method = 'failed';
       let confidence = 0.0;
 
-      // A. Is player already linked via ID in metadata?
-      // We can't query JSONB easily in batch efficiently without a specialized index or search
-      // So we will do a targeted search for EACH player.
-      // It's slower (N queries) but safer.
+      // TIER 1: Search within club pool (20-30 players - fast!)
+      if (clubPlayers.length > 0) {
+        const result = findBestMatch(scraped, clubPlayers);
+        if (result.score >= 0.55) {  // Lower threshold - club context provides confidence
+          match = result.match;
+          method = result.method;
+          confidence = result.score;
+        }
+      }
 
-      // Search by ID inside metadata (if we had indexed it, but we haven't)
-      // OR Search by Title (Name)
+      // TIER 2: Global search fallback (if club match failed)
+      if (!match) {
+        // Try normalized name search
+        const normalizedName = normalizeName(scraped.name);
 
-      const { data: candidates, error } = await supabase
-        .from('topics')
-        .select('id, title, metadata')
-        .eq('type', 'player')
-        .ilike('title', scraped.name)
-        .limit(5); // Get a few to check for ambiguity
+        // Search by any token of the name (handles "Beto" case)
+        const tokens = normalizedName.split(/\s+/).filter(t => t.length > 2);
+        const searchPattern = tokens.length > 0 ? `%${tokens[tokens.length - 1]}%` : `%${normalizedName}%`;
 
-      if (!error && candidates && candidates.length > 0) {
-        // Try ID match first
-        const idMatch = candidates.find(c => c.metadata?.external?.sofifa_id === scraped.sofifa_id);
+        const { data: globalCandidates } = await supabase
+          .from('topics')
+          .select('id, title, metadata')
+          .eq('type', 'player')
+          .ilike('title', searchPattern)
+          .limit(15);
 
-        if (idMatch) {
-          match = idMatch;
-          method = 'id';
-          confidence = 1.0;
-        } else {
-          // 2. Name Match + Birth Date (The "Smart" Match)
-          // We iterate candidates to find the best one
-          let bestCandidate = null;
-          let bestScore = 0.0;
-          let bestMethod = 'failed';
-
-          for (const cand of candidates) {
-            let score = 0.0;
-            let currentMethod = 'ambiguous';
-
-            // Name Similarity
-            const nameScore = jaroWinkler(normalize(cand.title), normalize(scraped.name));
-
-            // Birth Date Check (Golden Key)
-            // DB might store as YYYY-MM-DD or ISO. Scraper sends YYYY-MM-DD (from pandas)
-            const dbDob = cand.metadata?.birth_date?.split('T')[0];
-            const scrapedDob = scraped.birth_date;
-
-            if (scrapedDob && dbDob && scrapedDob === dbDob) {
-              // If DOB matches, we trust it highly even with fuzzy name
-              if (nameScore > 0.8) {
-                score = 0.99;
-                currentMethod = 'dob_match';
-              }
-            } else if (nameScore > 0.95) {
-              // Very high name match (Exact-ish)
-              score = 0.90;
-              currentMethod = 'name_exact';
-            } else if (nameScore > 0.85) {
-              score = 0.85;
-              currentMethod = 'name_fuzzy';
-            }
-
-            if (score > bestScore) {
-              bestScore = score;
-              bestCandidate = cand;
-              bestMethod = currentMethod;
-            }
+        if (globalCandidates && globalCandidates.length > 0) {
+          const result = findBestMatch(scraped, globalCandidates);
+          if (result.score >= 0.65) {  // Higher threshold for global
+            match = result.match;
+            method = `global_${result.method}`;
+            confidence = result.score;
           }
+        }
+      }
 
-          if (bestScore >= 0.85) {
-            match = bestCandidate;
-            method = bestMethod;
-            confidence = bestScore;
-          } else if (candidates.length === 1 && bestScore > 0.8) {
-            // Fallback: If only 1 candidate and it's decent
-            match = candidates[0];
-            method = 'single_candidate_fuzzy';
-            confidence = 0.80;
+      // TIER 3: DOB-only search (last resort for edge cases)
+      if (!match && scraped.birth_date) {
+        const { data: dobCandidates } = await supabase
+          .from('topics')
+          .select('id, title, metadata')
+          .eq('type', 'player')
+          .eq('metadata->>birth_date', scraped.birth_date)
+          .limit(5);
+
+        if (dobCandidates && dobCandidates.length > 0) {
+          const result = findBestMatch(scraped, dobCandidates);
+          if (result.score >= 0.5) {  // DOB already matched, just need some name signal
+            match = result.match;
+            method = `dob_search_${result.method}`;
+            confidence = result.score;
           }
         }
       }
