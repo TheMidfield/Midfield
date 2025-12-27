@@ -90,8 +90,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                 { id: "about", title: "About", icon: Info },
             ]
             : [
-                { id: "stats", title: "Statistics", icon: BarChart3 },
                 { id: "ratings", title: "FC26 Ratings", icon: Star },
+                { id: "stats", title: "Statistics", icon: BarChart3 },
                 { id: "about", title: "About", icon: Info },
             ];
 
@@ -114,53 +114,68 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
     // Mini Player Card - Compact version with position colors
     const PlayerMiniCard = ({ player }: { player: any }) => {
-        const rating = player.metadata?.rating;
+        const ratingRaw = player.metadata?.rating || player.metadata?.fc26?.overall || player.rating;
+        const rating = (ratingRaw && ratingRaw !== "?" && ratingRaw !== "0") ? ratingRaw : null;
+        const imageUrl = player.metadata?.photo_url || player.metadata?.badge_url;
         const position = player.metadata?.position || "";
         const posInfo = getPositionInfo(position);
 
         return (
             <Link href={`/topic/${player.slug}`} className="block">
-                <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2 sm:gap-2.5 group">
-                    {/* Player Photo - Compact */}
-                    <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 overflow-hidden shrink-0">
-                        {player.metadata?.photo_url ? (
+                <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all">
+                    {/* Avatar */}
+                    <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
+                        {imageUrl ? (
                             <NextImage
-                                src={player.metadata.photo_url}
+                                src={imageUrl}
                                 alt={player.title}
                                 fill
-                                sizes="36px"
+                                sizes="40px"
                                 {...PLAYER_IMAGE_STYLE}
                             />
                         ) : (
                             <div
                                 className="w-full h-full bg-slate-300 dark:bg-neutral-600"
                                 style={{
-                                    mask: "url('/player-silhouette.png') no-repeat center 8px",
-                                    WebkitMask: "url('/player-silhouette.png') no-repeat center 8px",
-                                    maskSize: "130%",
-                                    WebkitMaskSize: "130%"
+                                    mask: "url('/player-silhouette.png') no-repeat center 4px",
+                                    WebkitMask: "url('/player-silhouette.png') no-repeat center 4px",
+                                    maskSize: "120%",
+                                    WebkitMaskSize: "120%"
                                 }}
                             />
                         )}
                     </div>
 
-                    {/* Player Info */}
+                    {/* Info */}
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-neutral-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                             {player.title}
                         </h3>
-                        <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5">
-                            {/* Rating Badge */}
-                            {rating && (
-                                <div className="px-1 sm:px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[9px] sm:text-[10px] font-bold text-white dark:text-neutral-900">
-                                    {rating}
-                                </div>
-                            )}
-                            {/* Position Badge WITH COLOR */}
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            {/* Position Badge */}
                             {position && (
-                                <Badge variant="secondary" className={`text-[8px] sm:text-[9px] ${posInfo.color}`}>
+                                <Badge variant="secondary" className={`text-[8px] px-1 h-4 ${posInfo.color}`}>
                                     {posInfo.abbr}
                                 </Badge>
+                            )}
+
+                            {/* New Elegant FC26 Badge */}
+                            {rating && (
+                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded px-1 h-4">
+                                    <div className="flex items-center h-full relative">
+                                        <img
+                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/dark-fc26logo.png"
+                                            alt="FC"
+                                            className="h-[5px] w-auto opacity-70 dark:hidden"
+                                        />
+                                        <img
+                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/light-fc26logo.png"
+                                            alt="FC"
+                                            className="h-[5px] w-auto opacity-70 hidden dark:block"
+                                        />
+                                    </div>
+                                    <span className="text-[9px] font-black text-slate-900 dark:text-neutral-200 leading-none">{rating}</span>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -220,6 +235,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                     country: metadata?.country,
                     render_url: metadata?.render_url,
                     trophy_url: metadata?.trophy_url,
+                    fc26: metadata?.fc26,
                     ...clubData,
                 }}
                 backHref="/"
@@ -254,6 +270,22 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                 </span>
                                                 {section.count !== undefined && (
                                                     <Badge variant="secondary" className="text-[9px] sm:text-[10px] shrink-0">{section.count}</Badge>
+                                                )}
+
+                                                {/* FC26 Rating Preview */}
+                                                {section.id === "ratings" && isPlayer && (metadata?.rating || metadata?.fc26?.overall) && (
+                                                    <div className="flex items-center gap-2 ml-2">
+                                                        <div className="flex flex-col items-center leading-none">
+                                                            <span className="text-[8px] text-emerald-600 font-bold">OVR</span>
+                                                            <span className="text-xs font-black text-slate-900 dark:text-neutral-100">{metadata?.rating || metadata?.fc26?.overall}</span>
+                                                        </div>
+                                                        {metadata?.fc26?.potential && (
+                                                            <div className="hidden sm:flex flex-col items-center leading-none border-l border-slate-200 dark:border-neutral-700 pl-2">
+                                                                <span className="text-[8px] text-slate-400 font-bold">POT</span>
+                                                                <span className="text-xs font-black text-slate-500 dark:text-neutral-400">{metadata.fc26.potential}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                             {/* + / - icon animation */}
@@ -305,28 +337,6 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                     ) : (
                                                         <EmptyState message="No squad data available" />
                                                     )
-                                                )}
-
-                                                {/* Statistics Section (Players) */}
-                                                {section.id === "stats" && isPlayer && (
-                                                    <div className="pt-3 sm:pt-4 space-y-2 sm:space-y-3">
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Goals (Season)</span>
-                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">12</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Assists</span>
-                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">8</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Minutes Played</span>
-                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">1,847</span>
-                                                        </div>
-                                                        <div className="flex items-center justify-between">
-                                                            <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Pass Accuracy</span>
-                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">87%</span>
-                                                        </div>
-                                                    </div>
                                                 )}
 
                                                 {/* FC26 Ratings Section (Players) */}
@@ -390,52 +400,63 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                     }
                                                                 ];
 
-                                                                // Filter out Goalkeeping for non-GKs to save space, or just show if values exist > 20? 
-                                                                // Or just show all if user wants completeness. Let's show all for now.
+                                                                // Goalkeeper Logic: Show GK stats first and full-width for GKs. Hide them for others.
+                                                                const isGoalkeeper = /gk|goalkeeper/i.test(metadata.position || '');
+                                                                const gkCategory = categories.find(c => c.name === "Goalkeeping");
+                                                                const otherCategories = categories.filter(c => c.name !== "Goalkeeping");
+
+                                                                const renderCategory = (cat: typeof categories[0]) => {
+                                                                    const validStats = cat.stats.map(name => ({ name, value: getStat(name) })).filter(s => s.value !== null);
+                                                                    if (validStats.length === 0) return null;
+
+                                                                    return (
+                                                                        <div key={cat.name} className="space-y-3 break-inside-avoid">
+                                                                            <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5 border-b border-slate-100 dark:border-neutral-800 pb-1">
+                                                                                {cat.name}
+                                                                            </h4>
+                                                                            <div className="grid gap-3">
+                                                                                {validStats.map((stat) => (
+                                                                                    <div key={stat.name} className="group">
+                                                                                        <div className="flex items-center justify-between mb-1.5">
+                                                                                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 group-hover:text-slate-900 dark:group-hover:text-neutral-200 transition-colors">
+                                                                                                {stat.name}
+                                                                                            </span>
+                                                                                            <span className={`text-xs font-bold ${(stat.value || 0) >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-neutral-300'}`}>
+                                                                                                {stat.value}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                                                                            <div
+                                                                                                className={`h-full rounded-full transition-all duration-500 ${(stat.value || 0) >= 90 ? 'bg-emerald-500' :
+                                                                                                    (stat.value || 0) >= 80 ? 'bg-emerald-600' :
+                                                                                                        (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
+                                                                                                            (stat.value || 0) >= 60 ? 'bg-yellow-500' :
+                                                                                                                (stat.value || 0) >= 50 ? 'bg-orange-500' :
+                                                                                                                    'bg-red-500'
+                                                                                                    }`}
+                                                                                                style={{ width: `${stat.value}%` }}
+                                                                                            />
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ))}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                };
 
                                                                 return (
-                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                                                                        {categories.map((cat) => {
-                                                                            // Check if category has any valid stats
-                                                                            const validStats = cat.stats.map(name => ({ name, value: getStat(name) })).filter(s => s.value !== null);
+                                                                    <div className="space-y-8">
+                                                                        {/* Full-width Goalkeeping section for GKs */}
+                                                                        {isGoalkeeper && gkCategory && (
+                                                                            <div className="w-full">
+                                                                                {renderCategory(gkCategory)}
+                                                                            </div>
+                                                                        )}
 
-                                                                            if (validStats.length === 0) return null;
-
-                                                                            return (
-                                                                                <div key={cat.name} className="space-y-3 break-inside-avoid">
-                                                                                    <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5 border-b border-slate-100 dark:border-neutral-800 pb-1">
-                                                                                        {cat.name}
-                                                                                    </h4>
-                                                                                    <div className="grid gap-3">
-                                                                                        {validStats.map((stat) => (
-                                                                                            <div key={stat.name} className="group">
-                                                                                                <div className="flex items-center justify-between mb-1.5">
-                                                                                                    <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 group-hover:text-slate-900 dark:group-hover:text-neutral-200 transition-colors">
-                                                                                                        {stat.name}
-                                                                                                    </span>
-                                                                                                    <span className={`text-xs font-bold ${(stat.value || 0) >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-neutral-300'}`}>
-                                                                                                        {stat.value}
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                                {/* Progress Bar */}
-                                                                                                <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                                                                                                    <div
-                                                                                                        className={`h-full rounded-full transition-all duration-500 ${(stat.value || 0) >= 90 ? 'bg-emerald-500' :
-                                                                                                            (stat.value || 0) >= 80 ? 'bg-emerald-600' :
-                                                                                                                (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
-                                                                                                                    (stat.value || 0) >= 60 ? 'bg-yellow-500' :
-                                                                                                                        (stat.value || 0) >= 50 ? 'bg-orange-500' :
-                                                                                                                            'bg-red-500'
-                                                                                                            }`}
-                                                                                                        style={{ width: `${stat.value}%` }}
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        ))}
-                                                                                    </div>
-                                                                                </div>
-                                                                            );
-                                                                        })}
+                                                                        {/* 2-Column Grid for other stats */}
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                                                                            {otherCategories.map(renderCategory)}
+                                                                        </div>
                                                                     </div>
                                                                 );
                                                             })() : (
@@ -447,6 +468,19 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                     ) : (
                                                         <EmptyState message="FC26 ratings not available" />
                                                     )
+                                                )}
+
+                                                {/* Statistics Section (Players) - Coming Soon */}
+                                                {section.id === "stats" && isPlayer && (
+                                                    <div className="pt-8 pb-6 flex flex-col items-center justify-center text-center opacity-70">
+                                                        <Activity className="w-8 h-8 text-slate-300 dark:text-neutral-600 mb-3" />
+                                                        <p className="text-sm font-medium text-slate-500 dark:text-neutral-400 mb-1">
+                                                            Season Statistics
+                                                        </p>
+                                                        <p className="text-xs text-slate-400 dark:text-neutral-500">
+                                                            Detailed match data coming soon...
+                                                        </p>
+                                                    </div>
                                                 )}
 
                                                 {/* Fixtures Section (Clubs) */}

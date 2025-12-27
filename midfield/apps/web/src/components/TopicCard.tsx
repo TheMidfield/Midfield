@@ -90,10 +90,21 @@ export function TopicCard({ topic }: { topic: any }) {
                                 )}
                             </div>
 
-                            {/* Rating Badge - Players only */}
                             {!isClub && rating && (
-                                <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[10px] font-bold text-white dark:text-neutral-900">
-                                    {rating}
+                                <div className="absolute -bottom-1 -right-1 shadow-sm flex flex-col items-center justify-center bg-slate-950 dark:bg-white/95 backdrop-blur-sm border border-slate-800 dark:border-neutral-200 rounded min-w-[28px] overflow-hidden">
+                                    <div className="w-full bg-slate-800 dark:bg-neutral-200/50 flex justify-center py-0.5 relative h-[5px]">
+                                        <img
+                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/light-fc26logo.png"
+                                            alt="FC26"
+                                            className="h-full w-auto opacity-80 dark:hidden"
+                                        />
+                                        <img
+                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/dark-fc26logo.png"
+                                            alt="FC26"
+                                            className="h-full w-auto opacity-80 hidden dark:block"
+                                        />
+                                    </div>
+                                    <div className="text-[10px] font-black text-white dark:text-black leading-tight px-1 py-0.5">{rating}</div>
                                 </div>
                             )}
                         </div>

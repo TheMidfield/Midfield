@@ -198,8 +198,20 @@ export function EntityHeader({
                                         const rating = metadata?.rating || metadata?.fc26?.overall;
                                         if (!rating || rating === "?" || rating === "0" || rating === 0) return null;
                                         return (
-                                            <div className="absolute top-0 sm:top-1 md:top-2 right-0 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-900 dark:bg-slate-100 rounded-md text-[10px] sm:text-xs font-bold text-white dark:text-neutral-900 shadow-sm">
-                                                {rating}
+                                            <div className="absolute top-0 right-0 shadow-sm flex flex-col items-center justify-center bg-slate-950 dark:bg-white/95 backdrop-blur-sm border border-slate-800 dark:border-neutral-200 rounded min-w-[28px] sm:min-w-[32px] overflow-hidden">
+                                                <div className="w-full bg-slate-800 dark:bg-neutral-200/50 flex justify-center py-0.5 relative h-2">
+                                                    <img
+                                                        src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/light-fc26logo.png"
+                                                        alt="FC26"
+                                                        className="h-full w-auto opacity-80 dark:hidden"
+                                                    />
+                                                    <img
+                                                        src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/dark-fc26logo.png"
+                                                        alt="FC26"
+                                                        className="h-full w-auto opacity-80 hidden dark:block"
+                                                    />
+                                                </div>
+                                                <div className="text-[10px] sm:text-xs font-black text-white dark:text-black leading-tight px-1 py-0.5">{rating}</div>
                                             </div>
                                         );
                                     })()}
