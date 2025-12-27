@@ -10,7 +10,7 @@ import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { useAuthModal } from "@/components/ui/useAuthModal";
 import { voteTopic } from "@/app/actions/vote-topic";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 interface EntityHeaderProps {
     title: string;
@@ -70,19 +70,18 @@ export function EntityHeader({
     const [upvoteCount, setUpvoteCount] = useState(initialUpvoteCount);
     const [downvoteCount, setDownvoteCount] = useState(initialDownvoteCount);
     const [userVote, setUserVote] = useState(initialUserVote);
-    const [isPending, startTransition] = useTransition();
 
-    // Handle vote
+    // Handle vote - instant optimistic update
     const handleVote = async (voteType: 'upvote' | 'downvote') => {
         if (!requireAuth(isAuthenticated, "default")) return;
         if (!topicId) return;
 
-        // Optimistic update
+        // Store previous state for potential rollback
         const previousUserVote = userVote;
         const previousUpvoteCount = upvoteCount;
         const previousDownvoteCount = downvoteCount;
 
-        // Update UI optimistically
+        // Instant optimistic update
         if (previousUserVote === voteType) {
             // Remove vote
             setUserVote(null);
@@ -107,16 +106,19 @@ export function EntityHeader({
             }
         }
 
-        // Server update
-        startTransition(async () => {
-            const result = await voteTopic(topicId, voteType);
+        // Fire-and-forget server update (no loading state)
+        voteTopic(topicId, voteType).then(result => {
             if (!result.success) {
-                // Revert on error
+                // Silently revert on error
                 setUserVote(previousUserVote);
                 setUpvoteCount(previousUpvoteCount);
                 setDownvoteCount(previousDownvoteCount);
-                console.error('Vote failed:', result.error);
             }
+        }).catch(() => {
+            // Silently revert on error
+            setUserVote(previousUserVote);
+            setUpvoteCount(previousUpvoteCount);
+            setDownvoteCount(previousDownvoteCount);
         });
     };
 
@@ -238,8 +240,8 @@ export function EntityHeader({
                     {/* Background Watermark */}
                     {watermarkImage && (
                         <div className={`absolute pointer-events-none select-none ${isPlayer
-                                ? 'right-8 sm:right-12 md:right-16 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12]'
-                                : 'right-0 top-1/2 -translate-y-1/2 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 opacity-[0.08] rotate-12'
+                            ? 'right-8 sm:right-12 md:right-16 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12]'
+                            : 'right-0 top-1/2 -translate-y-1/2 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 opacity-[0.08] rotate-12'
                             }`}>
                             <NextImage
                                 src={watermarkImage}
@@ -456,11 +458,10 @@ export function EntityHeader({
                                     e.stopPropagation();
                                     handleVote('upvote');
                                 }}
-                                disabled={isPending}
                                 className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'upvote'
                                     ? 'border-emerald-500 dark:border-emerald-500 bg-emerald-100 dark:bg-emerald-950/30'
                                     : 'border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-neutral-900 hover:border-emerald-500 dark:hover:border-emerald-500'
-                                    } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
+                                    }`}
                             >
                                 <ThumbsUp className={`w-4 h-4 transition-transform ${userVote === 'upvote'
                                     ? 'text-emerald-600 dark:text-emerald-500'
@@ -477,11 +478,10 @@ export function EntityHeader({
                                     e.stopPropagation();
                                     handleVote('downvote');
                                 }}
-                                disabled={isPending}
                                 className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'downvote'
                                     ? 'border-red-500 dark:border-red-500 bg-red-100 dark:bg-red-950/30'
                                     : 'border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500'
-                                    } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
+                                    }`}
                             >
                                 <ThumbsDown className={`w-4 h-4 transition-transform ${userVote === 'downvote'
                                     ? 'text-red-600 dark:text-red-500'
