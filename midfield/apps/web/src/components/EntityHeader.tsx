@@ -38,6 +38,7 @@ interface EntityHeaderProps {
         render_url?: string;
         trophy_url?: string;
         fc26?: { overall?: string | number };
+        fc26_data?: any; // FC26 data from dedicated column
     };
     backHref?: string;
     userId?: string;

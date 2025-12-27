@@ -128,6 +128,11 @@ A) UNIFIED ENTITY MODEL: "topics"
 - Every entity is a Topic: club, player, league, match, etc.
 - topics.type discriminates entity type
 - topics.metadata (JSONB) stores flexible fields (position, kit, etc.)
+- **topics.fc26_data (JSONB)** stores FC26/SoFIFA ratings data separately
+  - **CRITICAL**: TheSportsDB sync writes to `metadata`; FC26 sync writes to `fc26_data`
+  - **NEVER** merge external data sources into same column (causes overwrites)
+  - Pattern: Separate column per external data source to prevent sync conflicts
+  - Migration: `20250128000000_add_fc26_data_column.sql`
 - topic_relationships stores graph links (club→player, league→club, etc.)
 
 B) UNIVERSAL CODE RELIGION (MOBILE-NATIVE LAW)
@@ -243,6 +248,20 @@ M) PLAYER METADATA ENRICHMENT ("LAZY SMART FETCH")
   - Batch enrichment: Nightly job finds players with missing metadata
   - Priority: Popular players first (by follower_count)
   - Fields enriched: height, weight, nationality, jersey_number, render_url (full body PNG)
+  - Rate limiting: 1 request / 2.5s (respects SoFIFA)
+
+N) FC26 RATINGS SYNC (MANUAL/ON-DEMAND)
+- **CRITICAL**: FC26 data stored in `topics.fc26_data` column (NOT `metadata`)
+- **Why**: Prevents overwrite conflicts with TheSportsDB sync
+- **Scraper**: `scripts/fc26-scraper/scrape.py`
+  - Run: `cd scripts/fc26-scraper && ../../venv311/bin/python3 scrape.py`
+  - Duration: ~15-30 minutes for Top 5 Leagues
+- **Edge Function**: `supabase/functions/sync-ratings/index.ts`
+  - Writes to `fc26_data` column
+  - Smart matching: ID → DOB+name → fuzzy name (Jaro-Winkler)
+- **UI**: Components read from `topic.fc26_data?.overall` (not `metadata`)
+- **Pattern**: Separate columns for separate external data sources
+- **Status**: Manual/on-demand (not scheduled)
 - Data Storage:
   - `metadata.render_url`: Full body render for premium watermarks
   - `metadata.trophy_url`: League trophy images

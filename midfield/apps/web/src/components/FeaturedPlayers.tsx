@@ -136,7 +136,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
             {viewMode === "list" && (
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                     {players.map((player: any) => {
-                        const rating = player.metadata?.rating || player.metadata?.fc26?.overall || player.rating || "88";
+                        const rating = player.fc26_data?.overall || player.rating || "88";
                         const position = player.metadata?.position || "";
                         const positionInfo = getPositionInfo(position);
                         const imageUrl = player.metadata?.photo_url;
@@ -240,7 +240,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
             {viewMode === "grid" && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                     {players.map((player: any) => {
-                        const rating = player.metadata?.rating || player.metadata?.fc26?.overall || player.rating || "88";
+                        const rating = player.fc26_data?.overall || player.rating || "88";
                         const position = player.metadata?.position || "";
                         const positionInfo = getPositionInfo(position);
                         const imageUrl = player.metadata?.photo_url;

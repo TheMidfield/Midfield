@@ -13,6 +13,56 @@ function normalize(str: string): string {
   return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
+// Simple Jaro-Winkler implementation
+function jaroWinkler(s1: string, s2: string): number {
+  let m = 0;
+  if (s1 === s2) return 1.0;
+  if (!s1 || !s2) return 0.0;
+
+  const len1 = s1.length;
+  const len2 = s2.length;
+  const matchWindow = Math.floor(Math.max(len1, len2) / 2) - 1;
+
+  const s1Matches = new Array(len1).fill(false);
+  const s2Matches = new Array(len2).fill(false);
+
+  for (let i = 0; i < len1; i++) {
+    const start = Math.max(0, i - matchWindow);
+    const end = Math.min(i + matchWindow + 1, len2);
+    for (let j = start; j < end; j++) {
+      if (s2Matches[j]) continue;
+      if (s1[i] !== s2[j]) continue;
+      s1Matches[i] = true;
+      s2Matches[j] = true;
+      m++;
+      break;
+    }
+  }
+
+  if (m === 0) return 0.0;
+
+  let k = 0;
+  let t = 0;
+  for (let i = 0; i < len1; i++) {
+    if (!s1Matches[i]) continue;
+    while (!s2Matches[k]) k++;
+    if (s1[i] !== s2[k]) t++;
+    k++;
+  }
+  t /= 2;
+
+  let dw = ((m / len1) + (m / len2) + ((m - t) / m)) / 3.0;
+
+  // Winkler modification
+  let l = 0;
+  if (dw > 0.7) {
+    const p = 0.1;
+    while (s1[l] === s2[l] && l < 4) l++;
+    dw = dw + l * p * (1 - dw);
+  }
+  return dw;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -73,8 +123,9 @@ serve(async (req) => {
         .limit(5); // Get a few to check for ambiguity
 
       if (!error && candidates && candidates.length > 0) {
+        // Try ID match first
+        const idMatch = candidates.find(c => c.metadata?.external?.sofifa_id === scraped.sofifa_id);
 
-        // Filter candidates
         if (idMatch) {
           match = idMatch;
           method = 'id';
@@ -135,98 +186,94 @@ serve(async (req) => {
 
       // UPDATE
       if (match) {
-        const newMetadata = {
-          ...match.metadata,
-          fc26: {
-            id: scraped.sofifa_id,
-            slug: scraped.name.toLowerCase().replace(/\s+/g, '-'),
-            overall: scraped.overall,
-            potential: scraped.potential,
-            stats: scraped.full_stats,
-            match_confidence: confidence,
-            last_updated: new Date().toISOString()
-          },
-          // Mirror to top-level rating for UI compatibility
-          rating: scraped.overall,
+        const fc26Data = {
+          id: scraped.sofifa_id,
+          slug: scraped.name.toLowerCase().replace(/\s+/g, '-'),
+          overall: scraped.overall,
+          potential: scraped.potential,
+          stats: scraped.full_stats,
+          match_confidence: confidence,
+          last_updated: new Date().toISOString()
+        };
 
-          updates.push({
-            id: match.id,
-            metadata: newMetadata
-          });
+        updates.push({
+          id: match.id,
+          fc26_data: fc26Data
+        });
 
-          logs.push({
-            player_id: match.id,
-            sofifa_name: scraped.name,
-            sofifa_id: scraped.sofifa_id,
-            match_confidence: confidence,
-            match_method: method,
-            match_details: { overall: scraped.overall, team: team }
-          });
+        logs.push({
+          player_id: match.id,
+          sofifa_name: scraped.name,
+          sofifa_id: scraped.sofifa_id,
+          match_confidence: confidence,
+          match_method: method,
+          match_details: { overall: scraped.overall, team: team }
+        });
 
-          // SELF-HEALING: Create Relationship if Team is known and not already linked?
-          // Checking existence of relationship is expensive (another query). 
-          // We can try to INSERT ON CONFLICT DO NOTHING if we had a constraint.
-          // But 'relationships' usually doesn't have unique constraint on (from, to, type). 
-          // We'll check first to be clean.
-          if(teamId) {
-            const { count } = await supabase
-              .from('relationships')
-              .select('*', { count: 'exact', head: true })
-              .eq('from_id', match.id)
-              .eq('to_id', teamId)
-              .eq('type', 'member_of');
+        // SELF-HEALING: Create Relationship if Team is known and not already linked?
+        // Checking existence of relationship is expensive (another query). 
+        // We can try to INSERT ON CONFLICT DO NOTHING if we had a constraint.
+        // But 'relationships' usually doesn't have unique constraint on (from, to, type). 
+        // We'll check first to be clean.
+        if (teamId) {
+          const { count } = await supabase
+            .from('relationships')
+            .select('*', { count: 'exact', head: true })
+            .eq('from_id', match.id)
+            .eq('to_id', teamId)
+            .eq('type', 'member_of');
 
-            if (count === 0) {
-              newRelationships.push({
-                from_id: match.id,
-                to_id: teamId,
-                type: 'member_of'
-              });
-            }
+          if (count === 0) {
+            newRelationships.push({
+              from_id: match.id,
+              to_id: teamId,
+              type: 'member_of'
+            });
           }
         }
       }
-
-      // Batch Execute
-      let matchedCount = 0;
-
-      // Updates
-      for (const update of updates) {
-        await supabase.from('topics').update({ metadata: update.metadata }).eq('id', update.id);
-        matchedCount++;
-      }
-
-      // Relationships (Heal)
-      if (newRelationships.length > 0) {
-        try {
-          await supabase.from('relationships').insert(newRelationships);
-          console.log(`Healed ${newRelationships.length} relationships for ${team}`);
-        } catch (e) {
-          console.error("Error healing relationships:", e);
-          // Table might be missing? We ignore to not break ratings sync
-        }
-      }
-
-      // Logs
-      if (logs.length > 0) {
-        await supabase.from('player_match_log').insert(logs);
-      }
-
-      return new Response(
-        JSON.stringify({
-          message: 'Sync processed',
-          team: team,
-          processed: players.length,
-          matched: matchedCount,
-          healed: newRelationships.length
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: error.message }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-      )
     }
-  })
+
+    // Batch Execute
+    let matchedCount = 0;
+
+    // Updates
+    for (const update of updates) {
+      await supabase.from('topics').update({ fc26_data: update.fc26_data }).eq('id', update.id);
+      matchedCount++;
+    }
+
+    // Relationships (Heal)
+    if (newRelationships.length > 0) {
+      try {
+        await supabase.from('relationships').insert(newRelationships);
+        console.log(`Healed ${newRelationships.length} relationships for ${team}`);
+      } catch (e) {
+        console.error("Error healing relationships:", e);
+        // Table might be missing? We ignore to not break ratings sync
+      }
+    }
+
+    // Logs
+    if (logs.length > 0) {
+      await supabase.from('player_match_log').insert(logs);
+    }
+
+    return new Response(
+      JSON.stringify({
+        message: 'Sync processed',
+        team: team,
+        processed: players.length,
+        matched: matchedCount,
+        healed: newRelationships.length
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+    )
+  }
+})
