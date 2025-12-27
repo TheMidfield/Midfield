@@ -1,0 +1,49 @@
+name: Sync Fixtures (TheSportsDB)
+
+on:
+  schedule:
+    # Run daily at 06:00 UTC (Early morning updates)
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry Run (no DB writes)'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  sync-fixtures:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./midfield
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Import Script
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          THESPORTSDB_API_KEY: ${{ secrets.THESPORTSDB_API_KEY }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npx tsx scripts/import-thesportsdb-v2.ts --dry-run
+          else
+            npx tsx scripts/import-thesportsdb-v2.ts
+          fi
