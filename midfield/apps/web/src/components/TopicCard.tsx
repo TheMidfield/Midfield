@@ -34,7 +34,7 @@ const getPositionInfo = (pos: string) => {
 
 export function TopicCard({ topic }: { topic: any }) {
     const isClub = topic.type === 'club';
-    const ratingRaw = topic.metadata?.rating || topic.rating;
+    const ratingRaw = topic.metadata?.rating || topic.metadata?.fc26?.overall || topic.rating;
     const rating = (ratingRaw && ratingRaw !== "?" && ratingRaw !== "0") ? ratingRaw : null;
     const imageUrl = topic.metadata?.photo_url || topic.metadata?.badge_url;
     const position = topic.metadata?.position || "";

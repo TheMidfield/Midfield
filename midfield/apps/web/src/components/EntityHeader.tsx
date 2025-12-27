@@ -33,6 +33,7 @@ interface EntityHeaderProps {
         clubBadgeUrl?: string;
         render_url?: string;
         trophy_url?: string;
+        fc26?: { overall?: string | number };
     };
     backHref?: string;
 }
@@ -193,11 +194,15 @@ export function EntityHeader({
                                             }}
                                         />
                                     )}
-                                    {metadata?.rating && metadata.rating !== "?" && metadata.rating !== "0" && (
-                                        <div className="absolute top-0 sm:top-1 md:top-2 right-0 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-900 dark:bg-slate-100 rounded-md text-[10px] sm:text-xs font-bold text-white dark:text-neutral-900 shadow-sm">
-                                            {metadata.rating}
-                                        </div>
-                                    )}
+                                    {(() => {
+                                        const rating = metadata?.rating || metadata?.fc26?.overall;
+                                        if (!rating || rating === "?" || rating === "0" || rating === 0) return null;
+                                        return (
+                                            <div className="absolute top-0 sm:top-1 md:top-2 right-0 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-slate-900 dark:bg-slate-100 rounded-md text-[10px] sm:text-xs font-bold text-white dark:text-neutral-900 shadow-sm">
+                                                {rating}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                             ) : (
                                 // Badge for clubs and leagues

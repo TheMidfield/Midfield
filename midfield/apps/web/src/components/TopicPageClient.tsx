@@ -351,10 +351,10 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                 const getStat = (target: string) => {
                                                                     // Try exact match first
                                                                     if (metadata.fc26.stats[target]) return Number(metadata.fc26.stats[target]);
-                                                                    // Try case-insensitive lookup
-                                                                    const lowerTarget = target.toLowerCase().replace(/\s+/g, '');
+                                                                    // Try case-insensitive lookup, stripping spaces, underscores, and dashes
+                                                                    const lowerTarget = target.toLowerCase().replace(/[\s_\-]+/g, '');
                                                                     const foundKey = Object.keys(metadata.fc26.stats).find(k =>
-                                                                        k.toLowerCase().replace(/\s+/g, '') === lowerTarget
+                                                                        k.toLowerCase().replace(/[\s_\-]+/g, '') === lowerTarget
                                                                     );
                                                                     return foundKey ? Number(metadata.fc26.stats[foundKey]) : null;
                                                                 };
@@ -421,11 +421,11 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                                                 <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                                                                                                     <div
                                                                                                         className={`h-full rounded-full transition-all duration-500 ${(stat.value || 0) >= 90 ? 'bg-emerald-500' :
-                                                                                                                (stat.value || 0) >= 80 ? 'bg-emerald-600' :
-                                                                                                                    (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
-                                                                                                                        (stat.value || 0) >= 60 ? 'bg-yellow-500' :
-                                                                                                                            (stat.value || 0) >= 50 ? 'bg-orange-500' :
-                                                                                                                                'bg-red-500'
+                                                                                                            (stat.value || 0) >= 80 ? 'bg-emerald-600' :
+                                                                                                                (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
+                                                                                                                    (stat.value || 0) >= 60 ? 'bg-yellow-500' :
+                                                                                                                        (stat.value || 0) >= 50 ? 'bg-orange-500' :
+                                                                                                                            'bg-red-500'
                                                                                                             }`}
                                                                                                         style={{ width: `${stat.value}%` }}
                                                                                                     />
