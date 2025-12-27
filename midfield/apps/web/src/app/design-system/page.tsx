@@ -207,6 +207,22 @@ export default function DesignSystemPage() {
                 </div>
             </section>
 
+            {/* Status Widgets & Indicators */}
+            <section className="space-y-8">
+                <SectionHeader title="Status Widgets & Indicators" description="Badges and widgets for activity levels, trending status, and metrics." />
+
+                <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 space-y-6">
+                    <div className="space-y-3">
+                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Trending Badge</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-emerald-600 dark:text-emerald-400 text-[11px] sm:text-xs md:text-sm font-semibold">
+                            <Activity className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
+                            <span className="whitespace-nowrap">#3 Trending</span>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-neutral-500">Shows trending rank with activity icon - previously used in EntityHeader</p>
+                    </div>
+                </div>
+            </section>
+
             {/* Domain Components - Player & Club Cards */}
             <section className="space-y-8">
                 <SectionHeader title="Domain Components" description="Player and club cards that embody the Midfield aesthetic." />
@@ -495,6 +511,102 @@ export default function DesignSystemPage() {
                                 Movement Map View
                             </TabsContent>
                         </Tabs>
+                    </div>
+                </div>
+            </section>
+
+            {/* FC26 Rating Badges */}
+            <section className="space-y-8">
+                <SectionHeader title="FC26 Rating Badges" description="Specialized badges for displaying player ratings with color coding." />
+
+                <div className="space-y-8">
+                    {/* Current Style - Inline Badges */}
+                    <div>
+                        <Typography variant="h4" className="mb-4">Current Style - Inline Badges</Typography>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 space-y-6">
+                            <div className="space-y-3">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Color-Coded Ratings</span>
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] opacity-60 font-normal">OVR</span>
+                                        <span className="font-black text-emerald-600 dark:text-emerald-500">92</span>
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] opacity-60 font-normal">OVR</span>
+                                        <span className="font-black text-emerald-500 dark:text-emerald-400">75</span>
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] opacity-60 font-normal">OVR</span>
+                                        <span className="font-black text-yellow-600 dark:text-yellow-500">68</span>
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] opacity-60 font-normal">OVR</span>
+                                        <span className="font-black text-orange-500 dark:text-orange-400">55</span>
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] opacity-60 font-normal">OVR</span>
+                                        <span className="font-black text-red-600 dark:text-red-500">42</span>
+                                    </Badge>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-neutral-500">
+                                    80+: Strong Green | 70-79: Light Green | 60-69: Yellow | 50-59: Orange | &lt;50: Red
+                                </p>
+                            </div>
+                            <Separator />
+                            <div className="space-y-3">
+                                <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">With Potential (POT)</span>
+                                <div className="flex items-center gap-1.5">
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] opacity-60 font-normal">OVR</span>
+                                        <span className="font-black text-emerald-600 dark:text-emerald-500">85</span>
+                                    </Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-5 px-1.5 py-0 font-bold gap-0.5 flex items-center opacity-75">
+                                        <span className="text-[7px] opacity-60 font-normal">POT</span>
+                                        <span className="font-black text-slate-600 dark:text-slate-400">91</span>
+                                    </Badge>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Previous Style - Stacked Columns */}
+                    <div>
+                        <Typography variant="h4" className="mb-4">Alternative Style - Stacked Columns</Typography>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900">
+                            <div className="flex items-center gap-3">
+                                <div className="flex flex-col items-center leading-none">
+                                    <span className="text-[8px] text-emerald-600 dark:text-emerald-500 font-bold">OVR</span>
+                                    <span className="text-xs font-black text-slate-900 dark:text-neutral-100">85</span>
+                                </div>
+                                <div className="flex flex-col items-center leading-none border-l border-slate-200 dark:border-neutral-700 pl-3">
+                                    <span className="text-[8px] text-slate-400 dark:text-slate-500 font-bold">POT</span>
+                                    <span className="text-xs font-black text-slate-500 dark:text-neutral-400">91</span>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-neutral-500 mt-4">Vertical stacked layout with divider - previous design</p>
+                        </div>
+                    </div>
+
+                    {/* FC26 Inline Badge Style */}
+                    <div>
+                        <Typography variant="h4" className="mb-4">Inline Badge - "FC26 Rating"</Typography>
+                        <div className="p-8 border-2 border-slate-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900 space-y-4">
+                            <div className="flex flex-wrap items-center gap-3">
+                                <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                    <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                    <span className="font-black text-emerald-600 dark:text-emerald-500">88</span>
+                                </Badge>
+                                <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                    <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                    <span className="font-black text-yellow-600 dark:text-yellow-500">65</span>
+                                </Badge>
+                                <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                    <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                    <span className="font-black text-orange-500 dark:text-orange-400">52</span>
+                                </Badge>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-neutral-500">Compact inline badge with "FC26" label and color-coded rating - used in mini player cards</p>
+                        </div>
                     </div>
                 </div>
             </section>

@@ -90,23 +90,22 @@ export function TopicCard({ topic }: { topic: any }) {
                                 )}
                             </div>
 
-                            {!isClub && rating && (
-                                <div className="absolute -bottom-1 -right-1 shadow-sm flex flex-col items-center justify-center bg-slate-950 dark:bg-white/95 backdrop-blur-sm border border-slate-800 dark:border-neutral-200 rounded min-w-[28px] overflow-hidden">
-                                    <div className="w-full bg-slate-800 dark:bg-neutral-200/50 flex justify-center py-0.5 relative h-[5px]">
-                                        <img
-                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/light-fc26logo.png"
-                                            alt="FC26"
-                                            className="h-full w-auto opacity-80 dark:hidden"
-                                        />
-                                        <img
-                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/dark-fc26logo.png"
-                                            alt="FC26"
-                                            className="h-full w-auto opacity-80 hidden dark:block"
-                                        />
+                            {!isClub && rating && (() => {
+                                const numRating = typeof rating === 'number' ? rating : parseInt(String(rating), 10);
+                                const colorClass = numRating >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
+                                    numRating >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
+                                        numRating >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
+                                            numRating >= 50 ? 'text-orange-500 dark:text-orange-400' :
+                                                'text-red-600 dark:text-red-500';
+                                return (
+                                    <div className="absolute -bottom-1 -right-1">
+                                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center shadow-sm">
+                                            <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                            <span className={`font-black ${colorClass}`}>{rating}</span>
+                                        </Badge>
                                     </div>
-                                    <div className="text-[10px] font-black text-white dark:text-black leading-tight px-1 py-0.5">{rating}</div>
-                                </div>
-                            )}
+                                );
+                            })()}
                         </div>
 
                         {/* Position Badge + Club Badge - Players only */}

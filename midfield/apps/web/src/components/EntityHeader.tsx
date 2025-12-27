@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
-import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Hash, Activity, MessageSquare } from "lucide-react";
+import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Hash, Activity, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -154,15 +154,19 @@ export function EntityHeader({
             </nav>
 
             {/* Hero Card */}
-            <Card className="relative overflow-hidden">
+            <Card className="relative overflow-hidden bg-white dark:bg-neutral-900">
                 {/* Background Watermark */}
                 {watermarkImage && (
-                    <div className="absolute right-4 sm:right-6 md:right-8 -bottom-2 sm:-bottom-3 md:-bottom-4 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 opacity-[0.08] grayscale pointer-events-none select-none">
+                    <div className="absolute right-2 sm:right-4 md:right-6 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12] pointer-events-none select-none overflow-hidden">
                         <NextImage
                             src={watermarkImage}
                             alt=""
                             fill
-                            className="object-contain"
+                            className="object-contain scale-[1.2]"
+                            style={{
+                                objectPosition: '50% 0%',
+                                transformOrigin: '50% 0%'
+                            }}
                         />
                     </div>
                 )}
@@ -194,27 +198,7 @@ export function EntityHeader({
                                             }}
                                         />
                                     )}
-                                    {(() => {
-                                        const rating = metadata?.rating || metadata?.fc26?.overall;
-                                        if (!rating || rating === "?" || rating === "0" || rating === 0) return null;
-                                        return (
-                                            <div className="absolute top-0 right-0 shadow-sm flex flex-col items-center justify-center bg-slate-950 dark:bg-white/95 backdrop-blur-sm border border-slate-800 dark:border-neutral-200 rounded min-w-[28px] sm:min-w-[32px] overflow-hidden">
-                                                <div className="w-full bg-slate-800 dark:bg-neutral-200/50 flex justify-center py-0.5 relative h-2">
-                                                    <img
-                                                        src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/light-fc26logo.png"
-                                                        alt="FC26"
-                                                        className="h-full w-auto opacity-80 dark:hidden"
-                                                    />
-                                                    <img
-                                                        src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/dark-fc26logo.png"
-                                                        alt="FC26"
-                                                        className="h-full w-auto opacity-80 hidden dark:block"
-                                                    />
-                                                </div>
-                                                <div className="text-[10px] sm:text-xs font-black text-white dark:text-black leading-tight px-1 py-0.5">{rating}</div>
-                                            </div>
-                                        );
-                                    })()}
+
                                 </div>
                             ) : (
                                 // Badge for clubs and leagues
@@ -257,19 +241,11 @@ export function EntityHeader({
                         {/* Info - Unified padding for both types */}
                         <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
 
-                            {/* Row 1: Title + Actions (actions hidden on mobile, shown in footer instead) */}
+                            {/* Row 1: Title */}
                             <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
                                 <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
                                     {title}
                                 </h1>
-                                <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 shrink-0">
-                                    <Button variant="pill" size="pill-sm" className="h-7 sm:h-8 px-3.5 sm:px-4 text-[11px] sm:text-xs">
-                                        Follow
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300">
-                                        <Share2 className="w-4 sm:w-4 h-4 sm:h-4" />
-                                    </Button>
-                                </div>
                             </div>
 
                             {/* Row 2: Badges */}
@@ -301,12 +277,30 @@ export function EntityHeader({
                                         {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                     </Badge>
                                 )}
+
                             </div>
 
                             {/* Row 3: Stats */}
                             <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
                                 {isPlayer && (
                                     <>
+                                        {metadata?.clubName && (
+                                            <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                                                    {metadata.clubBadgeUrl && (
+                                                        <div className="relative w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 shrink-0">
+                                                            <NextImage
+                                                                src={metadata.clubBadgeUrl}
+                                                                alt=""
+                                                                fill
+                                                                className="object-contain"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <span className="whitespace-nowrap">{metadata.clubName}</span>
+                                                </Button>
+                                            </Link>
+                                        )}
                                         {metadata?.height && (
                                             <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                                 <Ruler className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
@@ -331,23 +325,6 @@ export function EntityHeader({
                                                 <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
                                             </div>
                                         )}
-                                        {metadata?.clubName && (
-                                            <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
-                                                <Button variant="ghost" size="sm" className="h-6 sm:h-7 px-1.5 sm:px-2 gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-medium hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
-                                                    {metadata.clubBadgeUrl && (
-                                                        <div className="relative w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 shrink-0">
-                                                            <NextImage
-                                                                src={metadata.clubBadgeUrl}
-                                                                alt=""
-                                                                fill
-                                                                className="object-contain"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    <span className="whitespace-nowrap">{metadata.clubName}</span>
-                                                </Button>
-                                            </Link>
-                                        )}
                                     </>
                                 )}
                                 {isClub && (
@@ -371,25 +348,37 @@ export function EntityHeader({
                     </div>
                 </div>
 
-                {/* Footer - Balanced spacing */}
-                <div className="relative z-10 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-3.5 border-t border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                {/* Footer - Opaque background to block watermark */}
+                <div className="relative z-20 bg-white dark:bg-neutral-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-3.5 border-t-2 border-slate-200 dark:border-neutral-800 flex items-center justify-between">
                     <div className="flex items-center gap-1.5 sm:gap-2 text-slate-500 dark:text-neutral-400 text-[11px] sm:text-xs md:text-sm">
                         <MessageSquare className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
                         <span className="whitespace-nowrap font-medium">{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
                     </div>
 
-                    {/* Mobile: Follow + Share buttons | Desktop: Trending badge */}
-                    <div className="flex sm:hidden items-center gap-2 shrink-0">
-                        <Button variant="pill" size="pill-sm" className="h-7 px-3.5 text-[11px]">
-                            Follow
+                    {/* Upvote/Downvote + Share buttons */}
+                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                        {/* Upvote/Downvote Group */}
+                        <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 border border-slate-200 dark:border-neutral-700">
+                            {/* Upvote */}
+                            <button className="group flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all hover:bg-emerald-100 dark:hover:bg-emerald-950/30">
+                                <ThumbsUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors" />
+                                <span className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors">245</span>
+                            </button>
+
+                            {/* Divider */}
+                            <div className="w-px h-4 bg-slate-300 dark:bg-neutral-600" />
+
+                            {/* Downvote */}
+                            <button className="group flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all hover:bg-red-100 dark:hover:bg-red-950/30">
+                                <ThumbsDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-neutral-500 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors" />
+                                <span className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-neutral-400 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">18</span>
+                            </button>
+                        </div>
+
+                        {/* Share Button */}
+                        <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
+                            <Share2 className="w-4 sm:w-4 h-4 sm:h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="w-7 h-7 p-0 rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300">
-                            <Share2 className="w-4 h-4" />
-                        </Button>
-                    </div>
-                    <div className="hidden sm:flex items-center gap-1.5 sm:gap-2 text-emerald-600 dark:text-emerald-400 text-[11px] sm:text-xs md:text-sm font-semibold">
-                        <Activity className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
-                        <span className="whitespace-nowrap">#3 Trending</span>
                     </div>
                 </div>
             </Card>

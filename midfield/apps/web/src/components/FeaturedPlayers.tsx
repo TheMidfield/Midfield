@@ -136,7 +136,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
             {viewMode === "list" && (
                 <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
                     {players.map((player: any) => {
-                        const rating = player.metadata?.rating || player.rating || "88";
+                        const rating = player.metadata?.rating || player.metadata?.fc26?.overall || player.rating || "88";
                         const position = player.metadata?.position || "";
                         const positionInfo = getPositionInfo(position);
                         const imageUrl = player.metadata?.photo_url;
@@ -184,10 +184,21 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                             </h3>
 
                                             <div className="flex items-center gap-2">
-                                                {/* Rating Badge */}
-                                                <div className="px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[10px] font-bold text-white dark:text-neutral-900">
-                                                    {rating}
-                                                </div>
+                                                {/* FC26 Rating Badge */}
+                                                {rating && (() => {
+                                                    const numRating = typeof rating === 'number' ? rating : parseInt(String(rating), 10);
+                                                    const colorClass = numRating >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
+                                                        numRating >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
+                                                            numRating >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
+                                                                numRating >= 50 ? 'text-orange-500 dark:text-orange-400' :
+                                                                    'text-red-600 dark:text-red-500';
+                                                    return (
+                                                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                                            <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                                            <span className={`font-black ${colorClass}`}>{rating}</span>
+                                                        </Badge>
+                                                    );
+                                                })()}
 
                                                 {/* Position Badge - Next to Rating */}
                                                 {position && (
@@ -229,7 +240,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
             {viewMode === "grid" && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
                     {players.map((player: any) => {
-                        const rating = player.metadata?.rating || player.rating || "88";
+                        const rating = player.metadata?.rating || player.metadata?.fc26?.overall || player.rating || "88";
                         const position = player.metadata?.position || "";
                         const positionInfo = getPositionInfo(position);
                         const imageUrl = player.metadata?.photo_url;
@@ -274,10 +285,21 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                         {/* Info Column - Right */}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-1.5 flex-wrap">
-                                                {/* Rating Badge */}
-                                                <div className="inline-block px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[9px] font-bold text-white dark:text-neutral-900">
-                                                    {rating}
-                                                </div>
+                                                {/* FC26 Rating Badge */}
+                                                {rating && (() => {
+                                                    const numRating = typeof rating === 'number' ? rating : parseInt(String(rating), 10);
+                                                    const colorClass = numRating >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
+                                                        numRating >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
+                                                            numRating >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
+                                                                numRating >= 50 ? 'text-orange-500 dark:text-orange-400' :
+                                                                    'text-red-600 dark:text-red-500';
+                                                    return (
+                                                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                                            <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                                            <span className={`font-black ${colorClass}`}>{rating}</span>
+                                                        </Badge>
+                                                    );
+                                                })()}
 
                                                 {/* Position Badge - Next to Rating, Same Size */}
                                                 {position && (

@@ -151,7 +151,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                         <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-neutral-100 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                             {player.title}
                         </h3>
-                        <div className="flex items-center gap-1.5 mt-0.5">
+                        <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                             {/* Position Badge */}
                             {position && (
                                 <Badge variant="secondary" className={`text-[8px] px-1 h-4 ${posInfo.color}`}>
@@ -159,24 +159,38 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                 </Badge>
                             )}
 
-                            {/* New Elegant FC26 Badge */}
-                            {rating && (
-                                <div className="flex items-center gap-1 bg-slate-100 dark:bg-neutral-800 border border-slate-200 dark:border-neutral-700 rounded px-1 h-4">
-                                    <div className="flex items-center h-full relative">
-                                        <img
-                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/dark-fc26logo.png"
-                                            alt="FC"
-                                            className="h-[5px] w-auto opacity-70 dark:hidden"
-                                        />
-                                        <img
-                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/light-fc26logo.png"
-                                            alt="FC"
-                                            className="h-[5px] w-auto opacity-70 hidden dark:block"
-                                        />
-                                    </div>
-                                    <span className="text-[9px] font-black text-slate-900 dark:text-neutral-200 leading-none">{rating}</span>
-                                </div>
+                            {/* FC26 Rating */}
+                            {rating && (() => {
+                                const numRating = typeof rating === 'number' ? rating : parseInt(String(rating), 10);
+                                const colorClass = numRating >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
+                                    numRating >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
+                                        numRating >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
+                                            numRating >= 50 ? 'text-orange-500 dark:text-orange-400' :
+                                                'text-red-600 dark:text-red-500';
+                                return (
+                                    <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                                        <span className="text-[7px] font-bold italic opacity-70">FC26</span>
+                                        <span className={`font-black ${colorClass}`}>{rating}</span>
+                                    </Badge>
+                                );
+                            })()}
+
+                            {/* Kit Number */}
+                            {(player.metadata?.kit_number || player.metadata?.jersey_number) && (
+                                <Badge variant="secondary" className="text-[8px] h-4 px-1.5 py-0 font-black text-slate-600 dark:text-slate-400">
+                                    #{player.metadata?.kit_number || player.metadata?.jersey_number}
+                                </Badge>
                             )}
+
+                            {/* Age */}
+                            {player.metadata?.birth_date && (() => {
+                                const age = new Date().getFullYear() - new Date(player.metadata.birth_date).getFullYear();
+                                return (
+                                    <Badge variant="secondary" className="text-[8px] h-4 px-1.5 py-0 font-medium text-slate-500 dark:text-slate-400">
+                                        {age}y
+                                    </Badge>
+                                );
+                            })()}
                         </div>
                     </div>
                 </Card>
@@ -273,20 +287,29 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                 )}
 
                                                 {/* FC26 Rating Preview */}
-                                                {section.id === "ratings" && isPlayer && (metadata?.rating || metadata?.fc26?.overall) && (
-                                                    <div className="flex items-center gap-2 ml-2">
-                                                        <div className="flex flex-col items-center leading-none">
-                                                            <span className="text-[8px] text-emerald-600 font-bold">OVR</span>
-                                                            <span className="text-xs font-black text-slate-900 dark:text-neutral-100">{metadata?.rating || metadata?.fc26?.overall}</span>
+                                                {section.id === "ratings" && isPlayer && (metadata?.rating || metadata?.fc26?.overall) && (() => {
+                                                    const ovrRating = metadata?.rating || metadata?.fc26?.overall;
+                                                    const numOvr = typeof ovrRating === 'number' ? ovrRating : parseInt(String(ovrRating), 10);
+                                                    const ovrColor = numOvr >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
+                                                        numOvr >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
+                                                            numOvr >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
+                                                                numOvr >= 50 ? 'text-orange-500 dark:text-orange-400' :
+                                                                    'text-red-600 dark:text-red-500';
+                                                    return (
+                                                        <div className="flex items-center gap-1.5 ml-2">
+                                                            <Badge variant="secondary" className="text-[10px] sm:text-xs h-6 px-2 py-0 font-bold gap-1 flex items-center">
+                                                                <span className="text-[8px] sm:text-[9px] opacity-70 font-semibold">OVR</span>
+                                                                <span className={`font-black ${ovrColor}`}>{ovrRating}</span>
+                                                            </Badge>
+                                                            {metadata?.fc26?.potential && (
+                                                                <Badge variant="secondary" className="hidden sm:flex text-[10px] sm:text-xs h-6 px-2 py-0 font-bold gap-1 items-center opacity-80">
+                                                                    <span className="text-[8px] sm:text-[9px] opacity-70 font-semibold">POT</span>
+                                                                    <span className="font-black text-slate-600 dark:text-slate-400">{metadata.fc26.potential}</span>
+                                                                </Badge>
+                                                            )}
                                                         </div>
-                                                        {metadata?.fc26?.potential && (
-                                                            <div className="hidden sm:flex flex-col items-center leading-none border-l border-slate-200 dark:border-neutral-700 pl-2">
-                                                                <span className="text-[8px] text-slate-400 font-bold">POT</span>
-                                                                <span className="text-xs font-black text-slate-500 dark:text-neutral-400">{metadata.fc26.potential}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
+                                                    );
+                                                })()}
                                             </div>
                                             {/* + / - icon animation */}
                                             <div className="relative w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center shrink-0">
