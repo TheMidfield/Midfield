@@ -1,3 +1,4 @@
 soccerdata
 pandas
 requests
+cloudscraper

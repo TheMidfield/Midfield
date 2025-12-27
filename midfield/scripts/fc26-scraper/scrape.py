@@ -3,17 +3,20 @@ import pandas as pd
 import json
 import time
 import requests
+import cloudscraper
+
 # Monkey-patch requests.Session to header-spoof SoFIFA (Anti-Bot bypass)
-original_session = requests.Session
+# We use cloudscraper to handle Cloudflare challenges if present
 def patched_session(*args, **kwargs):
-    s = original_session(*args, **kwargs)
-    s.headers.update({
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://sofifa.com/"
-    })
-    return s
+    # create_scraper returns a Session object pre-configured to look like a browser
+    # and solve simple JS challenges
+    return cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'darwin',
+            'desktop': True
+        }
+    )
 requests.Session = patched_session
 
 import os
