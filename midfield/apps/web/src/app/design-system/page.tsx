@@ -16,6 +16,8 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PlayerCard } from "@/components/ui/PlayerCard";
 import { ClubCard } from "@/components/ui/ClubCard";
 import { ModalShowcase } from "@/components/design-system/ModalShowcase";
+import { TrendingWidget } from "@/components/widgets/TrendingWidget";
+import { RelatedTopicsWidget } from "@/components/widgets/RelatedTopicsWidget";
 import {
     AlertCircle, Check, Terminal, User, ArrowRight, Zap, Search, Shield, Layout, MousePointer2,
     Download, Upload, Plus, Settings, Trash2, Edit, Heart, Share2, Star, TrendingUp, Users,
