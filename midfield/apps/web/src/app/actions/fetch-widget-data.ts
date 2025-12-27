@@ -67,8 +67,8 @@ export async function getRelatedTopicsData(slug?: string) {
             title: p.title,
             slug: p.slug,
             type: p.type,
-            imageUrl: p.metadata?.photo_url || p.metadata?.badge_url,
-            relation: p.metadata?.position || "Player"
+            imageUrl: (p.metadata as any)?.photo_url || (p.metadata as any)?.badge_url,
+            relation: (p.metadata as any)?.position || "Player"
         }));
     } else if (topic.type === 'player') {
         const club = await getPlayerClub(topic.id);
@@ -78,7 +78,7 @@ export async function getRelatedTopicsData(slug?: string) {
                 title: club.title,
                 slug: club.slug,
                 type: club.type,
-                imageUrl: club.metadata?.badge_url,
+                imageUrl: (club.metadata as any)?.badge_url,
                 relation: "Club"
             });
 
@@ -92,19 +92,19 @@ export async function getRelatedTopicsData(slug?: string) {
                     title: t.title,
                     slug: t.slug,
                     type: t.type,
-                    imageUrl: t.metadata?.photo_url,
+                    imageUrl: (t.metadata as any)?.photo_url,
                     relation: "Teammate"
                 }));
             entities = [...entities, ...others];
         }
     } else if (topic.type === 'league') {
-        const clubs = await getClubsByLeague(topic.metadata?.league || topic.title);
+        const clubs = await getClubsByLeague((topic.metadata as any)?.league || topic.title);
         entities = clubs.slice(0, 8).map(c => ({
             id: c.id,
             title: c.title,
             slug: c.slug,
             type: c.type,
-            imageUrl: c.metadata?.badge_url,
+            imageUrl: (c.metadata as any)?.badge_url,
             relation: "Club"
         }));
     }
