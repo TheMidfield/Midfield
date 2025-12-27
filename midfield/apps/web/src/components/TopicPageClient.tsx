@@ -22,6 +22,7 @@ interface TopicPageClientProps {
     leagueClubs?: any[];
     fixtures?: any[];
     standings?: any[];
+    clubStanding?: any;
     posts?: any[];
     currentUser?: {
         id?: string;
@@ -50,7 +51,7 @@ const getPositionInfo = (pos: string) => {
     return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], posts = [], currentUser }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
@@ -330,28 +331,123 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
                                                 {/* FC26 Ratings Section (Players) */}
                                                 {section.id === "ratings" && isPlayer && (
-                                                    metadata?.rating ? (
-                                                        <div className="pt-3 sm:pt-4 space-y-2 sm:space-y-3">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Overall Rating</span>
-                                                                <span className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400">{metadata.rating}</span>
+                                                    (metadata?.rating || metadata?.fc26?.overall) ? (
+                                                        <div className="pt-3 sm:pt-4 space-y-6">
+                                                            {/* Overall */}
+                                                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-neutral-800">
+                                                                <span className="text-sm font-medium text-slate-500 dark:text-neutral-400">Overall Rating</span>
+                                                                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+                                                                    {metadata.rating || metadata?.fc26?.overall}
+                                                                </span>
                                                             </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Pace</span>
-                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">89</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Shooting</span>
-                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">85</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Passing</span>
-                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">82</span>
-                                                            </div>
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400">Dribbling</span>
-                                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100">91</span>
-                                                            </div>
+
+                                                            {/* Detailed Stats Categories */}
+                                                            {metadata?.fc26?.stats ? (() => {
+                                                                // Helper to capitalize: "sprint speed" -> "Sprint Speed"
+                                                                const formatName = (key: string) =>
+                                                                    key.split(/[\s_]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+                                                                // Helper to normalize keys for safe lookup (SoFIFA keys can be messy)
+                                                                const getStat = (target: string) => {
+                                                                    // Try exact match first
+                                                                    if (metadata.fc26.stats[target]) return Number(metadata.fc26.stats[target]);
+                                                                    // Try case-insensitive lookup
+                                                                    const lowerTarget = target.toLowerCase().replace(/\s+/g, '');
+                                                                    const foundKey = Object.keys(metadata.fc26.stats).find(k =>
+                                                                        k.toLowerCase().replace(/\s+/g, '') === lowerTarget
+                                                                    );
+                                                                    return foundKey ? Number(metadata.fc26.stats[foundKey]) : null;
+                                                                };
+
+                                                                const categories = [
+                                                                    {
+                                                                        name: "Attacking",
+                                                                        stats: ["Crossing", "Finishing", "Heading Accuracy", "Short Passing", "Volleys"]
+                                                                    },
+                                                                    {
+                                                                        name: "Skill",
+                                                                        stats: ["Dribbling", "Curve", "FK Accuracy", "Long Passing", "Ball Control"]
+                                                                    },
+                                                                    {
+                                                                        name: "Movement",
+                                                                        stats: ["Acceleration", "Sprint Speed", "Agility", "Reactions", "Balance"]
+                                                                    },
+                                                                    {
+                                                                        name: "Power",
+                                                                        stats: ["Shot Power", "Jumping", "Stamina", "Strength", "Long Shots"]
+                                                                    },
+                                                                    {
+                                                                        name: "Mentality",
+                                                                        stats: ["Aggression", "Interceptions", "Attack Position", "Vision", "Penalties", "Composure"]
+                                                                    },
+                                                                    {
+                                                                        name: "Defending",
+                                                                        stats: ["Defensive Awareness", "Standing Tackle", "Sliding Tackle"]
+                                                                    },
+                                                                    {
+                                                                        name: "Goalkeeping",
+                                                                        stats: ["GK Diving", "GK Handling", "GK Kicking", "GK Positioning", "GK Reflexes"]
+                                                                    }
+                                                                ];
+
+                                                                // Filter out Goalkeeping for non-GKs to save space, or just show if values exist > 20? 
+                                                                // Or just show all if user wants completeness. Let's show all for now.
+
+                                                                return (
+                                                                    <div className="space-y-6">
+                                                                        {categories.map((cat) => {
+                                                                            // Check if category has any valid stats
+                                                                            const validStats = cat.stats.map(name => ({ name, value: getStat(name) })).filter(s => s.value !== null);
+
+                                                                            // Heuristic: Hide Goalkeeping if all values are low (<30) typical for outfield players
+                                                                            if (cat.name === "Goalkeeping") {
+                                                                                if (validStats.every(s => (s.value || 0) < 30)) return null;
+                                                                            }
+
+                                                                            if (validStats.length === 0) return null;
+
+                                                                            return (
+                                                                                <div key={cat.name} className="space-y-3">
+                                                                                    <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5">
+                                                                                        {cat.name}
+                                                                                    </h4>
+                                                                                    <div className="grid gap-3">
+                                                                                        {validStats.map((stat) => (
+                                                                                            <div key={stat.name} className="group">
+                                                                                                <div className="flex items-center justify-between mb-1.5">
+                                                                                                    <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 group-hover:text-slate-900 dark:group-hover:text-neutral-200 transition-colors">
+                                                                                                        {stat.name}
+                                                                                                    </span>
+                                                                                                    <span className={`text-xs font-bold ${(stat.value || 0) >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-neutral-300'}`}>
+                                                                                                        {stat.value}
+                                                                                                    </span>
+                                                                                                </div>
+                                                                                                {/* Progress Bar */}
+                                                                                                <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                                                                                    <div
+                                                                                                        className={`h-full rounded-full transition-all duration-500 ${(stat.value || 0) >= 90 ? 'bg-emerald-500' :
+                                                                                                                (stat.value || 0) >= 80 ? 'bg-emerald-600' :
+                                                                                                                    (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
+                                                                                                                        (stat.value || 0) >= 60 ? 'bg-yellow-500' :
+                                                                                                                            (stat.value || 0) >= 50 ? 'bg-orange-500' :
+                                                                                                                                'bg-red-500'
+                                                                                                            }`}
+                                                                                                        style={{ width: `${stat.value}%` }}
+                                                                                                    />
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                );
+                                                            })() : (
+                                                                <div className="text-xs text-slate-400 italic text-center py-2">
+                                                                    Detailed stats unavailable
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     ) : (
                                                         <EmptyState message="FC26 ratings not available" />
@@ -360,7 +456,11 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
                                                 {/* Fixtures Section (Clubs) */}
                                                 {section.id === "fixtures" && isClub && (
-                                                    <ClubFixtures clubId={topic.id} fixtures={fixtures} />
+                                                    <ClubFixtures
+                                                        clubId={topic.id}
+                                                        fixtures={fixtures}
+                                                        clubStanding={clubStanding}
+                                                    />
                                                 )}
 
                                                 {/* Clubs Section (Leagues) */}

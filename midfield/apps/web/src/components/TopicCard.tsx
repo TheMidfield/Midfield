@@ -34,7 +34,8 @@ const getPositionInfo = (pos: string) => {
 
 export function TopicCard({ topic }: { topic: any }) {
     const isClub = topic.type === 'club';
-    const rating = topic.metadata?.rating || topic.rating || "88";
+    const ratingRaw = topic.metadata?.rating || topic.rating;
+    const rating = (ratingRaw && ratingRaw !== "?" && ratingRaw !== "0") ? ratingRaw : null;
     const imageUrl = topic.metadata?.photo_url || topic.metadata?.badge_url;
     const position = topic.metadata?.position || "";
     const positionInfo = getPositionInfo(position);
@@ -90,7 +91,7 @@ export function TopicCard({ topic }: { topic: any }) {
                             </div>
 
                             {/* Rating Badge - Players only */}
-                            {!isClub && (
+                            {!isClub && rating && (
                                 <div className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-slate-900 dark:bg-slate-100 rounded text-[10px] font-bold text-white dark:text-neutral-900">
                                     {rating}
                                 </div>

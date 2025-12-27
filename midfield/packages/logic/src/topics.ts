@@ -186,7 +186,7 @@ export const getLeagueTable = async (leagueId: string): Promise<any[]> => {
             team:topics!league_standings_team_id_fkey(id, title, slug, metadata)
         `)
         .eq('league_id', leagueId)
-        .order('rank', { ascending: true });
+        .order('position', { ascending: true }); // Fixed: rank -> position
 
     if (error) {
         console.error('Error fetching league table:', error);
@@ -194,4 +194,25 @@ export const getLeagueTable = async (leagueId: string): Promise<any[]> => {
     }
 
     return data || [];
+};
+
+/**
+ * Get standing for a specific club
+ */
+export const getClubStanding = async (clubId: string): Promise<any | null> => {
+    const { data, error } = await supabase
+        .from('league_standings')
+        .select(`
+            *,
+            team:topics!league_standings_team_id_fkey(id, title, slug, metadata)
+        `)
+        .eq('team_id', clubId)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching club standing:', error);
+        return null;
+    }
+
+    return data || null;
 };

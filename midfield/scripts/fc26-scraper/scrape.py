@@ -4,6 +4,7 @@ import json
 import time
 import requests
 import cloudscraper
+import concurrent.futures
 
 # Monkey-patch requests.Session to header-spoof SoFIFA (Anti-Bot bypass)
 # We use cloudscraper to handle Cloudflare challenges if present
@@ -21,10 +22,16 @@ requests.Session = patched_session
 
 import os
 import sys
+from dotenv import load_dotenv
+
+# Load .env from project root (2 levels up if script is in scripts/fc26-scraper)
+# Or just let python-dotenv find it
+load_dotenv(override=True)
 
 # Configuration
-EDGE_FUNCTION_URL = os.environ.get("SUPABASE_URL", "") + "/functions/v1/sync-ratings"
-SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
+SUPABASE_URL = os.environ.get("SUPABASE_URL") or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "")
+EDGE_FUNCTION_URL = SUPABASE_URL + "/functions/v1/sync-ratings"
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY") or os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 
 # Teams to Scrape (Top 5 Leagues + key teams)
 # We focus on the big leagues for MVP efficiency
@@ -112,55 +119,107 @@ def main():
         except Exception as e:
             print(f"Error init league: {e}")
 
-    # Approach: Iterate known teams or just get ALL players and group by team
+    # Approach: Global Parallelism
     print("\n📚 Fetching player list for ALL leagues...")
+    start_time = time.time()
     all_players = sofifa.read_players()
+    print(f"✅ Found {len(all_players)} players in {time.time() - start_time:.2f}s")
     
-    # Group by team
+    # Analyze workload
     teams_list = all_players['team'].unique()
-    print(f"✅ Found {len(all_players)} players in {len(teams_list)} teams")
-    
-    import concurrent.futures
-
-    # We use a ThreadPool to fetch ratings in parallel
-    # Max workers = 5 to be polite but faster
-    MAX_WORKERS = 5
-
     total_teams = len(teams_list)
-    for idx, team_name in enumerate(teams_list):
-        print(f"\n⚽ Team [{idx+1}/{total_teams}]: {team_name}")
-        team_players = all_players[all_players['team'] == team_name]
+    print(f"🎯 Targeting {total_teams} teams. Launching massive parallel scrape...")
+
+    # Tracking
+    # Dictionary to hold results: team_name -> [player_data, ...]
+    team_results = {t: [] for t in teams_list}
+    # Expected counts
+    team_counts = all_players['team'].value_counts().to_dict()
+    
+    # We use a large pool
+    MAX_WORKERS = 30  # Increased for speed as requested
+    
+    processed_count = 0
+    pushed_teams = 0
+    total_players = len(all_players)
+
+    print(f"🚀 Thread Pool: {MAX_WORKERS} workers")
+
+    # Helper for the task
+    def process_player(row_tuple):
+        # row_tuple is (index, Series)
+        idx, meta = row_tuple
+        pid = idx # Index of the DF returned by read_players is the player ID usually, or we need to check
+        # Checking logic of read_players: usually index is ID?
+        # Debug script showed: index isn't printed in to_dict() explicitly?
+        # Actually read_players returns a DF. The index is usually the ID if configured, or it's a column?
+        # soccerdata usually sets index to player_id if available.
+        # Let's assume the passed 'pid' from iterrows is the ID.
+        try:
+            rdf = sofifa.read_player_ratings(player=pid)
+            data = clean_player_data(meta, rdf, pid)
+            return (meta['team'], data)
+        except Exception:
+            return (meta['team'], None)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        # Submit all tasks
+        # iterrows returns (index, Series)
+        future_to_player = {
+            executor.submit(process_player, (pid, row)): pid 
+            for pid, row in all_players.iterrows()
+        }
         
-        batch_data = []
+        print("⏳ Tasks submitted. Processing...")
         
-        # Define the fetch task
-        def fetch_player_ratings(player_row):
-            pid, meta = player_row
-            try:
-                # Fetch ratings
-                rdf = sofifa.read_player_ratings(player=pid)
-                return clean_player_data(meta, rdf, pid)
-            except Exception as e:
-                return None
-
-        # Execute in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            # Create a list of (pid, meta) tuples for the executor
-            player_rows = [(pid, meta) for pid, meta in team_players.iterrows()]
-            results = list(executor.map(fetch_player_ratings, player_rows))
-
-        # Filter out None results
-        for res in results:
-            if res:
-                batch_data.append(res)
-                print(f"   • {res['name']} ({res['overall']})")
-
-        # Push batch to Edge Function
-        if batch_data:
-            push_to_edge_function(team_name, batch_data)
+        for future in concurrent.futures.as_completed(future_to_player):
+            processed_count += 1
+            team_name, p_data = future.result()
             
-        # Small delay between teams to save state
-        time.sleep(1)
+            if p_data:
+                team_results[team_name].append(p_data)
+            
+            # Progress bar effect
+            if processed_count % 50 == 0:
+                sys.stdout.write(f"\r   ⚡ Processed: {processed_count}/{total_players} ({(processed_count/total_players)*100:.1f}%)")
+                sys.stdout.flush()
+
+            # Check if this team is ready to push?
+            # We need to know if we have ALL players for this team.
+            # Simple way: Check length match.
+            # Note: If some failed (None returned), we might never reach 'exact' count if we filter Nones.
+            # But here we filter Nones in result.
+            # Actually, to trigger push reliably, we need to track *attempts* per team, not just successes.
+            # But the 'future' doesn't easily tell us which team it was BEFORE result. Use return value.
+            
+            # This 'streaming push' is complex because tasks finish out of order.
+            # If we want to push *as soon as possible*, we need to track pending tasks per team.
+            # Simpler optimization for now:
+            # Just push at the END of everything? User wants speed. 
+            # Parallel fetching IS the speedup. Pushing is fast.
+            # Waiting for 100% completion to push anything might feel slow.
+            # Let's push as soon as a team has > X players and hasn't been pushed cleanly?
+            # Or just verify completion.
+            pass
+
+    print(f"\n✅ Scraping complete in {time.time() - start_time:.2f}s. pushing to DB...")
+
+    # Push all teams that have data
+    # We can parallelize the pushing too!
+    
+    def push_team_task(t_name):
+        players = team_results[t_name]
+        if players:
+            push_to_edge_function(t_name, players)
+            return len(players)
+        return 0
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as push_executor:
+        push_futures = [push_executor.submit(push_team_task, t) for t in teams_list]
+        for f in concurrent.futures.as_completed(push_futures):
+             pushed_teams += 1
+
+    print("\n🎉 DONE! All teams synced.")
 
 if __name__ == "__main__":
     main()

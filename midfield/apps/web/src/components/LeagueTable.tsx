@@ -39,7 +39,7 @@ export function LeagueTable({ standings }: LeagueTableProps) {
                     {standings.map((row) => (
                         <tr key={row.id} className="group hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors">
                             <td className="py-2 pl-2 text-center font-medium text-slate-500 dark:text-neutral-400">
-                                {row.rank}
+                                {row.position}
                             </td>
                             <td className="py-2 pl-2">
                                 <Link href={`/topic/${row.team?.slug}`} className="flex items-center gap-2 max-w-[160px] sm:max-w-none">
@@ -62,9 +62,9 @@ export function LeagueTable({ standings }: LeagueTableProps) {
                                 </Link>
                             </td>
                             <td className="py-2 text-center text-slate-600 dark:text-neutral-400">{row.played}</td>
-                            <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden sm:table-cell">{row.win || 0}</td>
-                            <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden sm:table-cell">{row.draw || 0}</td>
-                            <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden sm:table-cell">{row.loss || 0}</td>
+                            <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden sm:table-cell">{row.won || 0}</td>
+                            <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden sm:table-cell">{row.drawn || 0}</td>
+                            <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden sm:table-cell">{row.lost || 0}</td>
                             <td className="py-2 text-center text-slate-500 dark:text-neutral-500 hidden md:table-cell">
                                 {row.goals_diff > 0 ? `+${row.goals_diff}` : row.goals_diff}
                             </td>

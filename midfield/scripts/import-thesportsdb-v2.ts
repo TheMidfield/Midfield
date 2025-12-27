@@ -126,7 +126,11 @@ async function importTheSportsDB(config: ImportConfig) {
     console.log('');
 
     try {
-        for (const league of MAJOR_LEAGUES) {
+        const leaguesToProcess = config.leagues
+            ? MAJOR_LEAGUES.filter(l => config.leagues?.includes(l.id))
+            : MAJOR_LEAGUES;
+
+        for (const league of leaguesToProcess) {
             console.log(`\n${'='.repeat(60)}`);
             console.log(`🏆 League: ${league.name} (ID: ${league.id})`);
             console.log('='.repeat(60));
@@ -161,6 +165,31 @@ const stubCache = new Set<string>();
 // ... (previous code)
 
 // Import a league and all its teams
+// Custom Assets Mapping (Permament Fix for Logo consistency)
+const CUSTOM_LEAGUE_ASSETS: Record<string, { logo: string, logo_dark?: string }> = {
+    '4328': { // Premier League
+        logo: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/premier-league.png',
+        logo_dark: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/dark-premier-league.png'
+    },
+    '4334': { // Ligue 1
+        logo: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/ligue-1.png',
+        logo_dark: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/dark-ligue-1.png'
+    },
+    '4331': { // Bundesliga
+        logo: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/bundesliga.png',
+        logo_dark: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/dark-bundesliga.png'
+    },
+    '4332': { // Serie A
+        logo: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/serie-a.png',
+        logo_dark: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/dark-serie-a.png'
+    },
+    '4335': { // La Liga
+        logo: 'https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/la-liga.png',
+        // No dark variant found in storage
+    }
+};
+
+// Import a league and all its teams
 async function importLeague(leagueId: string, leagueName: string, dryRun: boolean) {
     try {
         // ... (League Upsert logic remains same)
@@ -171,24 +200,47 @@ async function importLeague(leagueId: string, leagueName: string, dryRun: boolea
         const leagueDetails = leagueDetailsData.leagues?.[0];
 
         // 2. Upsert League Topic
-        const leagueUuid = generateUUID('league', leagueId);
-        const leagueSlug = await generateSafeSlug(leagueName, leagueId, 'league');
+        // CRITICAL DE-DUPLICATION FIX: Check for existing league by External ID first
+        let leagueUuid = generateUUID('league', leagueId);
+        let leagueSlug: string;
+
+        const { data: existingLeague } = await supabase
+            .from('topics')
+            .select('id, slug')
+            .eq('type', 'league')
+            .filter('metadata->external->>thesportsdb_id', 'eq', leagueId)
+            .maybeSingle();
+
+        if (existingLeague) {
+            // Use existing ID and Slug to update in place and prevent duplicates
+            leagueUuid = existingLeague.id;
+            leagueSlug = existingLeague.slug;
+            console.log(`   🔄 Updating existing league: ${leagueName} (${leagueSlug})`);
+        } else {
+            // Only generate new slug if it's a fresh insert
+            leagueSlug = await generateSafeSlug(leagueName, leagueId, 'league');
+        }
 
         // Cache the league itself so we don't try to stub it
         stubCache.add(leagueUuid);
+
+        // Apply Custom Assets if available
+        const customAssets = CUSTOM_LEAGUE_ASSETS[leagueId];
 
         const leagueTopic = {
             id: leagueUuid,
             slug: leagueSlug,
             type: 'league' as const,
             title: leagueName,
-            description: leagueDetails?.strDescriptionEN?.substring(0, 500) || `Official page for ${leagueName}.`,
+            description: leagueDetails?.strDescriptionEN || `Official page for ${leagueName}.`,
             metadata: {
                 external: {
                     thesportsdb_id: leagueId,
                     source: 'thesportsdb'
                 },
-                logo_url: leagueDetails?.strLogo,
+                // Use Custom Local Assets > API Assets
+                logo_url: customAssets?.logo || leagueDetails?.strLogo,
+                logo_url_dark: customAssets?.logo_dark || null,
                 trophy_url: leagueDetails?.strTrophy,
                 badge_url: leagueDetails?.strBadge,
                 country: leagueDetails?.strCountry
@@ -216,6 +268,7 @@ async function importLeague(leagueId: string, leagueName: string, dryRun: boolea
             await Promise.all(chunk.map(team => upsertClubOnly(team, dryRun)));
         }
 
+
         // Phase 2: Process details (Players & Fixtures)
         // Optimization: Run in chunks of 5 to respect API rate limits but speed up
         console.log(`\n   Phase 2: Fetching details (Players & Fixtures)...`);
@@ -228,9 +281,83 @@ async function importLeague(leagueId: string, leagueName: string, dryRun: boolea
             await sleep(500);
         }
 
+        // Phase 3: Import Standings (Table)
+        if (!dryRun) {
+            await processStandings(leagueUuid, leagueId, '2025-2026');
+        }
+
     } catch (error) {
         console.error(`   ❌ Error fetching league ${leagueName}:`, error);
         stats.errors++;
+    }
+}
+
+// Import Standings for a league
+async function processStandings(leagueUuid: string, tsdbLeagueId: string, season: string) {
+    try {
+        console.log(`\n   Phase 3: Fetching Standings for season ${season}...`);
+
+        // V2 Endpoint: /lookuptable.php?l={id}&s={season} is V1, V2 is ???
+        // Fallback to V1 endpoint structure with V2 key which is known to work for tables
+        // Endpoint: https://www.thesportsdb.com/api/v1/json/{key}/lookuptable.php?l={id}&s={season}
+        const v1Url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/lookuptable.php?l=${tsdbLeagueId}&s=${season}`;
+        console.log(`      🔗 Fetching standings from: ${v1Url.replace(apiKey, 'HIDDEN_KEY')}`);
+
+        const response = await fetch(v1Url);
+        if (!response.ok) {
+            throw new Error(`API Error ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json() as { table: any[] };
+        const table = data.table || [];
+
+        if (table.length === 0) {
+            console.log(`      ⚠️ No standings found for ${season} (Endpoint returned empty table)`);
+            return;
+        }
+
+        const standingsRecords = [];
+
+        for (const row of table) {
+            const teamUuid = generateUUID('club', row.idTeam);
+
+            // Ensure team exists (stub)
+            if (!stubCache.has(teamUuid)) {
+                await ensureStubTopic(teamUuid, row.strTeam, 'club', row.idTeam);
+            }
+
+            standingsRecords.push({
+                league_id: leagueUuid,
+                team_id: teamUuid,
+                season: season,
+                position: parseInt(row.intRank),
+                played: parseInt(row.intPlayed),
+                won: parseInt(row.intWin),
+                drawn: parseInt(row.intDraw),
+                lost: parseInt(row.intLoss),
+                goals_for: parseInt(row.intGoalsFor),
+                goals_against: parseInt(row.intGoalsAgainst),
+                // goal_difference removed as it is not in the schema
+                points: parseInt(row.intPoints),
+                form: row.strForm, // "WWLDW"
+                updated_at: new Date().toISOString()
+            });
+        }
+
+        if (standingsRecords.length > 0) {
+            const { error } = await supabase.from('league_standings').upsert(standingsRecords, {
+                onConflict: 'league_id,team_id,season'
+            });
+
+            if (error) {
+                console.error(`      ❌ Error saving standings:`, error);
+            } else {
+                console.log(`      ✅ Saved ${standingsRecords.length} standing rows`);
+            }
+        }
+
+    } catch (e) {
+        console.error(`      ⚠️ Error fetching standings:`, e);
     }
 }
 
@@ -256,7 +383,7 @@ async function upsertClubOnly(team: any, dryRun: boolean) {
         slug: clubSlug,
         type: 'club' as const,
         title: team.strTeam,
-        description: team.strDescriptionEN?.substring(0, 500) || `The official profile of ${team.strTeam}.`,
+        description: team.strDescriptionEN || `The official profile of ${team.strTeam}.`,
         metadata: {
             external: {
                 thesportsdb_id: team.idTeam,
@@ -311,9 +438,14 @@ async function processTeamFixtures(clubUuid: string, tsdbTeamId: string, teamNam
         const nextData = await fetchV2<{ schedule: any[] }>(`/schedule/next/team/${tsdbTeamId}`);
         const prevData = await fetchV2<{ results: any[] }>(`/schedule/previous/team/${tsdbTeamId}`);
 
+        const next = nextData?.schedule || [];
+        const prev = prevData?.results || [];
+
+        console.log(`      📅 ${teamName}: Found ${next.length} upcoming, ${prev.length} past fixtures.`);
+
         const fixtures = [
-            ...(nextData?.schedule || []),
-            ...(prevData?.results || [])
+            ...next,
+            ...prev
         ];
 
         if (fixtures.length === 0) return;
@@ -401,7 +533,7 @@ async function ensureStubTopic(id: string, title: string, type: 'club' | 'league
             },
             badge_url: null
         },
-        is_active: true
+        is_active: false // Stubs should not be visible in search/navigation until fully imported
     };
 
     const { error } = await supabase.from('topics').insert(stub);
@@ -421,6 +553,42 @@ async function processTeamDetails(team: any, dryRun: boolean) {
 
     // Fetch players using v2 endpoint (NO 10-PLAYER LIMIT!)
     try {
+        // Fetch full team details (for description) - V1 endpoint fallback
+        try {
+            const v1Url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/lookupteam.php?id=${team.idTeam}`;
+            const teamRes = await fetch(v1Url);
+            if (teamRes.ok) {
+                const teamData = await teamRes.json();
+                const fullTeam = teamData.teams?.[0];
+                if (fullTeam?.strDescriptionEN) {
+                    // Update only specific fields to avoid overwriting existing metadata we don't have here
+                    // We need to fetch current metadata first or just merge blindly? 
+                    // Better to just update description for now to be safe, or do a targeted JSON update if Postgres supports it easily via Supabase.
+                    // Supabase .update() merges top-level columns but replaces JSON columns entirely usually.
+                    // Safer: Fetch current topic metadata first.
+
+                    const { data: currentTopic } = await supabase.from('topics').select('metadata').eq('id', clubId).single();
+
+                    if (currentTopic) {
+                        await supabase
+                            .from('topics')
+                            .update({
+                                description: fullTeam.strDescriptionEN,
+                                metadata: {
+                                    ...currentTopic.metadata as object, // Cast to verify
+                                    badge_url: fullTeam.strBadge || fullTeam.strTeamBadge || (currentTopic.metadata as any)?.badge_url,
+                                    stadium: fullTeam.strStadium || (currentTopic.metadata as any)?.stadium,
+                                    capacity: fullTeam.intStadiumCapacity ? parseInt(fullTeam.intStadiumCapacity) : (currentTopic.metadata as any)?.capacity,
+                                }
+                            })
+                            .eq('id', clubId);
+                    }
+                }
+            }
+        } catch (err) {
+            console.warn(`      ⚠️ Failed to fetch full details for ${team.strTeam}`, err);
+        }
+
         // v2 endpoint: /list/players/{teamId}
         const playersData = await fetchV2<{ list: any[] }>(`/list/players/${team.idTeam}`);
         const players = playersData.list || [];
@@ -531,10 +699,18 @@ async function createRelationships(clubId: string, playerIds: string[]) {
 function parseArgs(): ImportConfig {
     const args = process.argv.slice(2);
 
+    // Simple argument parsing
+    const leagueArgIndex = args.indexOf('--leagues');
+    let leagues: string[] | undefined;
+
+    if (leagueArgIndex !== -1 && args[leagueArgIndex + 1]) {
+        leagues = args[leagueArgIndex + 1].split(',');
+    }
+
     const config: ImportConfig = {
         dryRun: args.includes('--dry-run'),
-        testMode: false, // v2 always does full import
-        leagues: undefined
+        testMode: false,
+        leagues
     };
 
     return config;

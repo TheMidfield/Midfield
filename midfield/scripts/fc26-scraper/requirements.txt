@@ -2,3 +2,4 @@ soccerdata
 pandas
 requests
 cloudscraper
+python-dotenv

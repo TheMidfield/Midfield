@@ -1,4 +1,4 @@
-import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getClubFixtures, getLeagueTable } from "@midfield/logic/src/topics";
+import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getClubFixtures, getLeagueTable, getClubStanding } from "@midfield/logic/src/topics";
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
 import { getTakes } from "@/app/actions";
@@ -21,6 +21,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     let leagueClubs: any[] = [];
     let fixtures: any[] = [];
     let standings: any[] = [];
+    let clubStanding: any = null;
 
     if (isClub) {
         squad = await getPlayersByClub(topic.id);
@@ -40,6 +41,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
 
         // Fetch fixtures for club
         fixtures = await getClubFixtures(topic.id);
+
+        // Fetch club standing
+        clubStanding = await getClubStanding(topic.id);
     }
 
     if (isPlayer) {
@@ -70,6 +74,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             leagueClubs={leagueClubs}
             fixtures={fixtures}
             standings={standings}
+            clubStanding={clubStanding}
             posts={posts}
             currentUser={{
                 id: userData?.user?.id,

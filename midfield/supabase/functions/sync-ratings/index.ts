@@ -145,87 +145,88 @@ serve(async (req) => {
             stats: scraped.full_stats,
             match_confidence: confidence,
             last_updated: new Date().toISOString()
-          }
-        };
+          },
+          // Mirror to top-level rating for UI compatibility
+          rating: scraped.overall,
 
-        updates.push({
-          id: match.id,
-          metadata: newMetadata
-        });
+          updates.push({
+            id: match.id,
+            metadata: newMetadata
+          });
 
-        logs.push({
-          player_id: match.id,
-          sofifa_name: scraped.name,
-          sofifa_id: scraped.sofifa_id,
-          match_confidence: confidence,
-          match_method: method,
-          match_details: { overall: scraped.overall, team: team }
-        });
+          logs.push({
+            player_id: match.id,
+            sofifa_name: scraped.name,
+            sofifa_id: scraped.sofifa_id,
+            match_confidence: confidence,
+            match_method: method,
+            match_details: { overall: scraped.overall, team: team }
+          });
 
-        // SELF-HEALING: Create Relationship if Team is known and not already linked?
-        // Checking existence of relationship is expensive (another query). 
-        // We can try to INSERT ON CONFLICT DO NOTHING if we had a constraint.
-        // But 'relationships' usually doesn't have unique constraint on (from, to, type). 
-        // We'll check first to be clean.
-        if (teamId) {
-          const { count } = await supabase
-            .from('relationships')
-            .select('*', { count: 'exact', head: true })
-            .eq('from_id', match.id)
-            .eq('to_id', teamId)
-            .eq('type', 'member_of');
+          // SELF-HEALING: Create Relationship if Team is known and not already linked?
+          // Checking existence of relationship is expensive (another query). 
+          // We can try to INSERT ON CONFLICT DO NOTHING if we had a constraint.
+          // But 'relationships' usually doesn't have unique constraint on (from, to, type). 
+          // We'll check first to be clean.
+          if(teamId) {
+            const { count } = await supabase
+              .from('relationships')
+              .select('*', { count: 'exact', head: true })
+              .eq('from_id', match.id)
+              .eq('to_id', teamId)
+              .eq('type', 'member_of');
 
-          if (count === 0) {
-            newRelationships.push({
-              from_id: match.id,
-              to_id: teamId,
-              type: 'member_of'
-            });
+            if (count === 0) {
+              newRelationships.push({
+                from_id: match.id,
+                to_id: teamId,
+                type: 'member_of'
+              });
+            }
           }
         }
       }
-    }
 
-    // Batch Execute
-    let matchedCount = 0;
+      // Batch Execute
+      let matchedCount = 0;
 
-    // Updates
-    for (const update of updates) {
-      await supabase.from('topics').update({ metadata: update.metadata }).eq('id', update.id);
-      matchedCount++;
-    }
-
-    // Relationships (Heal)
-    if (newRelationships.length > 0) {
-      try {
-        await supabase.from('relationships').insert(newRelationships);
-        console.log(`Healed ${newRelationships.length} relationships for ${team}`);
-      } catch (e) {
-        console.error("Error healing relationships:", e);
-        // Table might be missing? We ignore to not break ratings sync
+      // Updates
+      for (const update of updates) {
+        await supabase.from('topics').update({ metadata: update.metadata }).eq('id', update.id);
+        matchedCount++;
       }
+
+      // Relationships (Heal)
+      if (newRelationships.length > 0) {
+        try {
+          await supabase.from('relationships').insert(newRelationships);
+          console.log(`Healed ${newRelationships.length} relationships for ${team}`);
+        } catch (e) {
+          console.error("Error healing relationships:", e);
+          // Table might be missing? We ignore to not break ratings sync
+        }
+      }
+
+      // Logs
+      if (logs.length > 0) {
+        await supabase.from('player_match_log').insert(logs);
+      }
+
+      return new Response(
+        JSON.stringify({
+          message: 'Sync processed',
+          team: team,
+          processed: players.length,
+          matched: matchedCount,
+          healed: newRelationships.length
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+
+    } catch (error) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
-
-    // Logs
-    if (logs.length > 0) {
-      await supabase.from('player_match_log').insert(logs);
-    }
-
-    return new Response(
-      JSON.stringify({
-        message: 'Sync processed',
-        team: team,
-        processed: players.length,
-        matched: matchedCount,
-        healed: newRelationships.length
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-
-  } catch (error) {
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
-    )
-  }
-})
+  })
