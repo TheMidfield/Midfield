@@ -253,6 +253,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                     ...clubData,
                 }}
                 backHref="/"
+                userId={currentUser.id}
+                topicId={topic.id}
             />
 
             {/* Main Content */}

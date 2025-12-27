@@ -321,11 +321,16 @@ export function EntityHeader({
                             {/* Info - Unified padding for both types */}
                             <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
 
-                                {/* Row 1: Title */}
+                                {/* Row 1: Title + Share Button */}
                                 <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
                                     <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
                                         {title}
                                     </h1>
+
+                                    {/* Share Button - Square */}
+                                    <Button variant="ghost" size="sm" className="w-8 h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-md transition-colors shrink-0">
+                                        <Share2 className="w-4 h-4" />
+                                    </Button>
                                 </div>
 
                                 {/* Row 2: Badges */}
@@ -435,7 +440,7 @@ export function EntityHeader({
                             <span className="whitespace-nowrap font-medium">{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
                         </div>
 
-                        {/* Upvote/Downvote - DataNoir Refined */}
+                        {/* Upvote/Downvote */}
                         <div className="flex items-center gap-2 shrink-0">
                             {/* Upvote */}
                             <button
@@ -468,21 +473,16 @@ export function EntityHeader({
                                 }}
                                 disabled={isPending}
                                 className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'downvote'
-                                        ? 'border-red-500 dark:border-red-500 bg-red-100 dark:bg-red-950/30'
-                                        : 'border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500'
+                                    ? 'border-red-500 dark:border-red-500 bg-red-100 dark:bg-red-950/30'
+                                    : 'border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500'
                                     } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
                             >
                                 <ThumbsDown className={`w-4 h-4 transition-transform ${userVote === 'downvote'
-                                        ? 'text-red-600 dark:text-red-500'
-                                        : 'text-red-600 dark:text-red-500 group-hover:scale-110'
+                                    ? 'text-red-600 dark:text-red-500'
+                                    : 'text-red-600 dark:text-red-500 group-hover:scale-110'
                                     }`} />
                                 <span className="text-xs font-bold text-red-700 dark:text-red-400 min-w-[2ch] text-center">{downvoteCount}</span>
                             </button>
-
-                            {/* Share Button */}
-                            <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
-                                <Share2 className="w-4 sm:w-4 h-4 sm:h-4" />
-                            </Button>
                         </div>
                     </div>
                 </Card>
