@@ -6,7 +6,7 @@ import { TakeFeed } from "@/components/TakeFeed";
 import { EntityHeader } from "@/components/EntityHeader";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Users, Trophy, Calendar, BarChart3, Minus, Plus, Activity, Star, Info, FileQuestion } from "lucide-react";
+import { Users, Trophy, Calendar, BarChart3, Minus, Plus, Activity, Star, Info, FileQuestion, MapPin } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
@@ -557,6 +557,48 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                 {/* Standings Section (Leagues) */}
                                                 {section.id === "standings" && isLeague && (
                                                     <LeagueTable standings={standings} />
+                                                )}
+
+                                                {/* Club Stats (for clubs only, before About section) */}
+                                                {section.id === "about" && isClub && (
+                                                    <>
+                                                        <div className="pt-3 sm:pt-4 space-y-3">
+                                                            {metadata?.founded && (
+                                                                <div className="flex items-start gap-3">
+                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
+                                                                        <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">Founded</span>
+                                                                        <span className="text-sm font-bold text-slate-900 dark:text-neutral-100">{metadata.founded}</span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {metadata?.stadium && (
+                                                                <div className="flex items-start gap-3">
+                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
+                                                                        <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">Stadium</span>
+                                                                        <span className="text-sm font-bold text-slate-900 dark:text-neutral-100">{metadata.stadium}</span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {metadata?.league && (
+                                                                <div className="flex items-start gap-3">
+                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
+                                                                        <Trophy className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">League</span>
+                                                                        <span className="text-sm font-bold text-slate-900 dark:text-neutral-100">{metadata.league}</span>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="h-px bg-slate-100 dark:bg-neutral-800 my-4" />
+                                                    </>
                                                 )}
 
                                                 {/* About Section */}

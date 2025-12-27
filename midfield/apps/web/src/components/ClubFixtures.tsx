@@ -109,7 +109,14 @@ export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesPro
         }
 
         return (
-            <Card className="p-3 sm:p-4 mb-2 flex items-center justify-between">
+            <Card className="relative p-3 sm:p-4 mb-2 flex items-center justify-between">
+                {/* Upcoming Badge - Top Right Corner */}
+                {!isFinished && (
+                    <Badge variant="secondary" className="absolute top-2 right-2 text-[9px] px-1.5 py-0.5 text-slate-500 bg-slate-100 dark:bg-neutral-800">
+                        Upcoming
+                    </Badge>
+                )}
+
                 {/* Date Side */}
                 <div className="flex flex-col w-12 sm:w-16 shrink-0 text-center border-r border-slate-100 dark:border-neutral-800 pr-3 sm:pr-4 mr-3 sm:mr-4">
                     <span className="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase">
@@ -124,7 +131,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesPro
                 </div>
 
                 {/* Match Info */}
-                <div className="flex-1 flex items-center justify-between min-w-0">
+                <div className="flex-1 flex items-center justify-between min-w-0 pr-8">
                     {/* Opponent - Non-clickable for now */}
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0">
@@ -158,29 +165,23 @@ export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesPro
                     </div>
 
                     {/* Score / Result */}
-                    <div className="flex flex-col items-end pl-3 shrink-0">
-                        {isFinished ? (
-                            <div className="flex items-center gap-2">
-                                <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${resultColor}`}>
-                                    {resultLabel}
-                                </span>
-                                <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-neutral-100">
-                                    {homeScore}-{awayScore}
-                                </span>
-                            </div>
-                        ) : (
-                            <Badge variant="secondary" className="text-[10px] text-slate-500 bg-slate-100 dark:bg-neutral-800">
-                                Upcoming
-                            </Badge>
-                        )}
-                    </div>
+                    {isFinished && (
+                        <div className="flex items-center gap-2 shrink-0">
+                            <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${resultColor}`}>
+                                {resultLabel}
+                            </span>
+                            <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-neutral-100">
+                                {homeScore}-{awayScore}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </Card>
         );
     };
 
     return (
-        <div className="space-y-6">
+        <div className="pt-3 sm:pt-4 space-y-6">
             {/* League Table Snippet */}
             {clubStanding && (
                 <div className="mb-6">
@@ -188,6 +189,27 @@ export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesPro
                         Season Performance
                     </h3>
                     <div className="bg-slate-50 dark:bg-neutral-800/50 rounded-lg p-4 border border-slate-100 dark:border-neutral-800">
+                        {/* League Info Header */}
+                        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200 dark:border-neutral-700">
+                            <div className="relative w-5 h-5 flex items-center justify-center">
+                                <NextImage
+                                    src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/premier-league.png"
+                                    alt="Premier League"
+                                    fill
+                                    className="object-contain dark:hidden"
+                                />
+                                <NextImage
+                                    src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/dark-premier-league.png"
+                                    alt="Premier League"
+                                    fill
+                                    className="object-contain hidden dark:block"
+                                />
+                            </div>
+                            <span className="text-sm font-bold text-slate-700 dark:text-neutral-300">
+                                Premier League
+                            </span>
+                        </div>
+
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex flex-col">
                                 <span className="text-xs text-slate-500 dark:text-neutral-400 mb-1">League Position</span>
