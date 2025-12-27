@@ -20,7 +20,7 @@ import {
     AlertCircle, Check, Terminal, User, ArrowRight, Zap, Search, Shield, Layout, MousePointer2,
     Download, Upload, Plus, Settings, Trash2, Edit, Heart, Share2, Star, TrendingUp, Users,
     Activity, BarChart3, Target, Trophy, Mail, Bell, Filter, Calendar, ExternalLink, Info,
-    Eye, Box, Grid, Palette
+    Eye, Box, Grid, Palette, ThumbsUp, ThumbsDown
 } from "lucide-react";
 
 export default function DesignSystemPage() {
@@ -219,6 +219,53 @@ export default function DesignSystemPage() {
                             <span className="whitespace-nowrap">#3 Trending</span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-neutral-500">Shows trending rank with activity icon - previously used in EntityHeader</p>
+                    </div>
+
+                    <Separator />
+
+                    {/* Voting Components */}
+                    <div className="space-y-6">
+                        <div className="space-y-3">
+                            <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Voting - Pill Style (Current)</span>
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 dark:bg-neutral-800 rounded-full p-0.5 border border-slate-200 dark:border-neutral-700">
+                                    <button className="group flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all hover:bg-emerald-100 dark:hover:bg-emerald-950/30">
+                                        <ThumbsUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors" />
+                                        <span className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors">245</span>
+                                    </button>
+                                    <div className="w-px h-4 bg-slate-300 dark:bg-neutral-600" />
+                                    <button className="group flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-full transition-all hover:bg-red-100 dark:hover:bg-red-950/30">
+                                        <ThumbsDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 dark:text-neutral-500 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors" />
+                                        <span className="text-[10px] sm:text-xs font-bold text-slate-600 dark:text-neutral-400 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">18</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-neutral-500">Unified pill container with hover states - currently used in EntityHeader footer</p>
+                        </div>
+
+                        <div className="space-y-3">
+                            <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Voting - DataNoir Refined (New)</span>
+                            <div className="flex items-center gap-2">
+                                {/* Upvote */}
+                                <button className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all">
+                                    <ThumbsUp className="w-4 h-4 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors" />
+                                    <div className="flex flex-col items-start leading-none">
+                                        <span className="text-[9px] font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wide">Upvote</span>
+                                        <span className="text-sm font-black text-slate-700 dark:text-neutral-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors">245</span>
+                                    </div>
+                                </button>
+
+                                {/* Downvote */}
+                                <button className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:border-red-500/50 dark:hover:border-red-500/50 hover:bg-red-50/50 dark:hover:bg-red-950/20 transition-all">
+                                    <ThumbsDown className="w-4 h-4 text-slate-400 dark:text-neutral-500 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors" />
+                                    <div className="flex flex-col items-start leading-none">
+                                        <span className="text-[9px] font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wide">Downvote</span>
+                                        <span className="text-sm font-black text-slate-700 dark:text-neutral-300 group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">18</span>
+                                    </div>
+                                </button>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-neutral-500">Separated cards with labels - more aligned with DataNoir aesthetic (analytical, clear hierarchy)</p>
+                        </div>
                     </div>
                 </div>
             </section>
