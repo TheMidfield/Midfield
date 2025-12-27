@@ -368,136 +368,129 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                 {section.id === "ratings" && isPlayer && (
                                                     (metadata?.rating || topic.fc26_data?.overall) ? (
                                                         <div className="pt-3 sm:pt-4 space-y-6">
-                                                            {topic.fc26_data?.overall ? (
-                                                                <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-lg" style={{ width: '100%' }}>
-                                                                    <div className="text-2xl font-black text-white flex items-baseline gap-1">
-                                                                        <Hash className="w-5 h-5 mb-1 opacity-70" />
-                                                                        <span className="tabular-nums">
-                                                                            {topic.fc26_data.overall}
-                                                                        </span>
-                                                                    </div>
+                                                            {/* Overall Rating */}
+                                                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-neutral-800">
+                                                                <span className="text-sm font-medium text-slate-500 dark:text-neutral-400">Overall Rating</span>
+                                                                <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+                                                                    {topic.fc26_data?.overall || metadata?.rating}
+                                                                </span>
+                                                            </div>
 
-                                                                    {/* Detailed Stats Categories */}
-                                                                    {topic.fc26_data?.stats ? (() => {
-                                                                        // Helper to capitalize: "sprint speed" -> "Sprint Speed"
-                                                                        const formatName = (key: string) =>
-                                                                            key.split(/[\s_]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                                                            {/* Detailed Stats Categories */}
+                                                            {topic.fc26_data?.stats ? (() => {
+                                                                // Helper to capitalize: "sprint speed" -> "Sprint Speed"
+                                                                const formatName = (key: string) =>
+                                                                    key.split(/[\s_]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 
-                                                                        // Helper to normalize keys for safe lookup (SoFIFA keys can be messy)
-                                                                        const getStat = (target: string) => {
-                                                                            // Try exact match first
-                                                                            if (topic.fc26_data.stats[target]) return Number(topic.fc26_data.stats[target]);
-                                                                            // Try case-insensitive lookup, stripping spaces, underscores, and dashes
-                                                                            const foundKey = Object.keys(topic.fc26_data.stats).find(k =>
-                                                                                k.toLowerCase().replace(/[\s_-]/g, '') === target.toLowerCase().replace(/[\s_-]/g, '')
-                                                                            );
-                                                                            return foundKey ? Number(topic.fc26_data.stats[foundKey]) : null;
-                                                                        };
+                                                                // Helper to normalize keys for safe lookup (SoFIFA keys can be messy)
+                                                                const getStat = (target: string) => {
+                                                                    // Try exact match first
+                                                                    if (topic.fc26_data.stats[target]) return Number(topic.fc26_data.stats[target]);
+                                                                    // Try case-insensitive lookup, stripping spaces, underscores, and dashes
+                                                                    const foundKey = Object.keys(topic.fc26_data.stats).find(k =>
+                                                                        k.toLowerCase().replace(/[\s_-]/g, '') === target.toLowerCase().replace(/[\s_-]/g, '')
+                                                                    );
+                                                                    return foundKey ? Number(topic.fc26_data.stats[foundKey]) : null;
+                                                                };
 
-                                                                        const categories = [
-                                                                            {
-                                                                                name: "Attacking",
-                                                                                stats: ["Crossing", "Finishing", "Heading Accuracy", "Short Passing", "Volleys"]
-                                                                            },
-                                                                            {
-                                                                                name: "Skill",
-                                                                                stats: ["Dribbling", "Curve", "FK Accuracy", "Long Passing", "Ball Control"]
-                                                                            },
-                                                                            {
-                                                                                name: "Movement",
-                                                                                stats: ["Acceleration", "Sprint Speed", "Agility", "Reactions", "Balance"]
-                                                                            },
-                                                                            {
-                                                                                name: "Power",
-                                                                                stats: ["Shot Power", "Jumping", "Stamina", "Strength", "Long Shots"]
-                                                                            },
-                                                                            {
-                                                                                name: "Mentality",
-                                                                                stats: ["Aggression", "Interceptions", "Attack Position", "Vision", "Penalties", "Composure"]
-                                                                            },
-                                                                            {
-                                                                                name: "Defending",
-                                                                                stats: ["Defensive Awareness", "Standing Tackle", "Sliding Tackle"]
-                                                                            },
-                                                                            {
-                                                                                name: "Goalkeeping",
-                                                                                stats: ["GK Diving", "GK Handling", "GK Kicking", "GK Positioning", "GK Reflexes"]
-                                                                            }
-                                                                        ];
+                                                                const categories = [
+                                                                    {
+                                                                        name: "Attacking",
+                                                                        stats: ["Crossing", "Finishing", "Heading Accuracy", "Short Passing", "Volleys"]
+                                                                    },
+                                                                    {
+                                                                        name: "Skill",
+                                                                        stats: ["Dribbling", "Curve", "FK Accuracy", "Long Passing", "Ball Control"]
+                                                                    },
+                                                                    {
+                                                                        name: "Movement",
+                                                                        stats: ["Acceleration", "Sprint Speed", "Agility", "Reactions", "Balance"]
+                                                                    },
+                                                                    {
+                                                                        name: "Power",
+                                                                        stats: ["Shot Power", "Jumping", "Stamina", "Strength", "Long Shots"]
+                                                                    },
+                                                                    {
+                                                                        name: "Mentality",
+                                                                        stats: ["Aggression", "Interceptions", "Attack Position", "Vision", "Penalties", "Composure"]
+                                                                    },
+                                                                    {
+                                                                        name: "Defending",
+                                                                        stats: ["Defensive Awareness", "Standing Tackle", "Sliding Tackle"]
+                                                                    },
+                                                                    {
+                                                                        name: "Goalkeeping",
+                                                                        stats: ["GK Diving", "GK Handling", "GK Kicking", "GK Positioning", "GK Reflexes"]
+                                                                    }
+                                                                ];
 
-                                                                        // Goalkeeper Logic: Show GK stats first and full-width for GKs. Hide them for others.
-                                                                        const isGoalkeeper = /gk|goalkeeper/i.test(metadata.position || '');
-                                                                        const gkCategory = categories.find(c => c.name === "Goalkeeping");
-                                                                        const otherCategories = categories.filter(c => c.name !== "Goalkeeping");
+                                                                // Goalkeeper Logic: Show GK stats first and full-width for GKs. Hide them for others.
+                                                                const isGoalkeeper = /gk|goalkeeper/i.test(metadata.position || '');
+                                                                const gkCategory = categories.find(c => c.name === "Goalkeeping");
+                                                                const otherCategories = categories.filter(c => c.name !== "Goalkeeping");
 
-                                                                        const renderCategory = (cat: typeof categories[0]) => {
-                                                                            const validStats = cat.stats.map(name => ({ name, value: getStat(name) })).filter(s => s.value !== null);
-                                                                            if (validStats.length === 0) return null;
+                                                                const renderCategory = (cat: typeof categories[0]) => {
+                                                                    const validStats = cat.stats.map(name => ({ name, value: getStat(name) })).filter(s => s.value !== null);
+                                                                    if (validStats.length === 0) return null;
 
-                                                                            return (
-                                                                                <div key={cat.name} className="space-y-3 break-inside-avoid">
-                                                                                    <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5 border-b border-slate-100 dark:border-neutral-800 pb-1">
-                                                                                        {cat.name}
-                                                                                    </h4>
-                                                                                    <div className="grid gap-3">
-                                                                                        {validStats.map((stat) => (
-                                                                                            <div key={stat.name} className="group">
-                                                                                                <div className="flex items-center justify-between mb-1.5">
-                                                                                                    <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 group-hover:text-slate-900 dark:group-hover:text-neutral-200 transition-colors">
-                                                                                                        {stat.name}
-                                                                                                    </span>
-                                                                                                    <span className={`text-xs font-bold ${(stat.value || 0) >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-neutral-300'}`}>
-                                                                                                        {stat.value}
-                                                                                                    </span>
-                                                                                                </div>
-                                                                                                <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
-                                                                                                    <div
-                                                                                                        className={`h-full rounded-full transition-all duration-500 ${(stat.value || 0) >= 90 ? 'bg-emerald-500' :
-                                                                                                            (stat.value || 0) >= 80 ? 'bg-emerald-600' :
-                                                                                                                (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
-                                                                                                                    (stat.value || 0) >= 60 ? 'bg-yellow-500' :
-                                                                                                                        (stat.value || 0) >= 50 ? 'bg-orange-500' :
-                                                                                                                            'bg-red-500'
-                                                                                                            }`}
-                                                                                                        style={{ width: `${stat.value}%` }}
-                                                                                                    />
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        ))}
+                                                                    return (
+                                                                        <div key={cat.name} className="space-y-3 break-inside-avoid">
+                                                                            <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5 border-b border-slate-100 dark:border-neutral-800 pb-1">
+                                                                                {cat.name}
+                                                                            </h4>
+                                                                            <div className="grid gap-3">
+                                                                                {validStats.map((stat) => (
+                                                                                    <div key={stat.name} className="group">
+                                                                                        <div className="flex items-center justify-between mb-1.5">
+                                                                                            <span className="text-xs font-medium text-slate-600 dark:text-neutral-400 group-hover:text-slate-900 dark:group-hover:text-neutral-200 transition-colors">
+                                                                                                {stat.name}
+                                                                                            </span>
+                                                                                            <span className={`text-xs font-bold ${(stat.value || 0) >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-neutral-300'}`}>
+                                                                                                {stat.value}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <div className="h-1.5 w-full bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden">
+                                                                                            <div
+                                                                                                className={`h-full rounded-full transition-all duration-500 ${(stat.value || 0) >= 90 ? 'bg-emerald-500' :
+                                                                                                    (stat.value || 0) >= 80 ? 'bg-emerald-600' :
+                                                                                                        (stat.value || 0) >= 70 ? 'bg-emerald-700/80' :
+                                                                                                            (stat.value || 0) >= 60 ? 'bg-yellow-500' :
+                                                                                                                (stat.value || 0) >= 50 ? 'bg-orange-500' :
+                                                                                                                    'bg-red-500'
+                                                                                                    }`}
+                                                                                                style={{ width: `${stat.value}%` }}
+                                                                                            />
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            );
-                                                                        };
-
-                                                                        return (
-                                                                            <div className="space-y-8">
-                                                                                {/* Full-width Goalkeeping section for GKs */}
-                                                                                {isGoalkeeper && gkCategory && (
-                                                                                    <div className="w-full">
-                                                                                        {renderCategory(gkCategory)}
-                                                                                    </div>
-                                                                                )}
-
-                                                                                {/* 2-Column Grid for other stats */}
-                                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
-                                                                                    {otherCategories.map(renderCategory)}
-                                                                                </div>
+                                                                                ))}
                                                                             </div>
-                                                                        );
-                                                                    })() : (
-                                                                        <div className="text-xs text-slate-400 italic text-center py-2">
-                                                                            Detailed stats unavailable
                                                                         </div>
-                                                                    )}
+                                                                    );
+                                                                };
+
+                                                                return (
+                                                                    <div className="space-y-8">
+                                                                        {/* Full-width Goalkeeping section for GKs */}
+                                                                        {isGoalkeeper && gkCategory && (
+                                                                            <div className="w-full">
+                                                                                {renderCategory(gkCategory)}
+                                                                            </div>
+                                                                        )}
+
+                                                                        {/* 2-Column Grid for other stats */}
+                                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                                                                            {otherCategories.map(renderCategory)}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })() : (
+                                                                <div className="text-xs text-slate-400 italic text-center py-2">
+                                                                    Detailed stats unavailable
                                                                 </div>
-                                                            ) : (
-                                                                <EmptyState message="FC26 ratings not available" />
                                                             )}
                                                         </div>
                                                     ) : (
-                                                        <div>
-                                                            <EmptyState message="FC26 ratings not available" />
-                                                        </div>
+                                                        <EmptyState message="FC26 ratings not available" />
                                                     )
                                                 )}
 
@@ -620,7 +613,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                     />
                                                 )}
                                             </div>
-                                        )}
+                                        )
+                                        }
                                     </Card>
                                 );
                             })}
@@ -659,7 +653,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                         topicPosition={isClub ? metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') : metadata?.position}
                     />
                 </main>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
