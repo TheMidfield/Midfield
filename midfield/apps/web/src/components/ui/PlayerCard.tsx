@@ -99,8 +99,17 @@ export const PlayerCard = React.forwardRef<HTMLDivElement, PlayerCardProps>(
                             </div>
 
                             {/* Rating Badge - Overlapping Cutout Style */}
-                            <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 bg-slate-900 dark:bg-neutral-100 rounded-full flex items-center justify-center ring-[2.5px] ring-white dark:ring-neutral-900">
-                                <span className="text-[10px] font-bold text-white dark:text-neutral-900">{rating}</span>
+                            {/* Rating Badge - Overlapping Cutout Style */}
+                            <div className={cn(
+                                "absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full flex items-center justify-center ring-[2.5px] ring-white dark:ring-neutral-900 border-2 dark:border-neutral-900",
+                                // Rating Color Logic
+                                parseInt(String(rating)) >= 85 ? "bg-emerald-500 text-white border-emerald-600" :
+                                    parseInt(String(rating)) >= 80 ? "bg-emerald-400 text-white border-emerald-500" :
+                                        parseInt(String(rating)) >= 75 ? "bg-yellow-500 text-white border-yellow-600" :
+                                            parseInt(String(rating)) >= 70 ? "bg-amber-500 text-white border-amber-600" :
+                                                "bg-slate-500 text-white border-slate-600"
+                            )}>
+                                <span className="text-[10px] font-black">{rating}</span>
                             </div>
                         </div>
 
