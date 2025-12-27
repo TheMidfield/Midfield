@@ -394,21 +394,16 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                 // Or just show all if user wants completeness. Let's show all for now.
 
                                                                 return (
-                                                                    <div className="space-y-6">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                                                                         {categories.map((cat) => {
                                                                             // Check if category has any valid stats
                                                                             const validStats = cat.stats.map(name => ({ name, value: getStat(name) })).filter(s => s.value !== null);
 
-                                                                            // Heuristic: Hide Goalkeeping if all values are low (<30) typical for outfield players
-                                                                            if (cat.name === "Goalkeeping") {
-                                                                                if (validStats.every(s => (s.value || 0) < 30)) return null;
-                                                                            }
-
                                                                             if (validStats.length === 0) return null;
 
                                                                             return (
-                                                                                <div key={cat.name} className="space-y-3">
-                                                                                    <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5">
+                                                                                <div key={cat.name} className="space-y-3 break-inside-avoid">
+                                                                                    <h4 className="text-xs font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider pl-0.5 border-b border-slate-100 dark:border-neutral-800 pb-1">
                                                                                         {cat.name}
                                                                                     </h4>
                                                                                     <div className="grid gap-3">

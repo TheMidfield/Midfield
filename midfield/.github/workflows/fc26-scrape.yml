@@ -1,0 +1,35 @@
+name: FC26 Scraper
+
+on:
+  schedule:
+    # Run every Monday and Thursday at 03:00 UTC
+    - cron: '0 3 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r midfield/scripts/fc26-scraper/requirements.txt
+          
+      - name: Run Scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Force python to find the script path correctly
+          PYTHONPATH: ${{ github.workspace }}/midfield/scripts/fc26-scraper
+        run: |
+          cd midfield/scripts/fc26-scraper
+          python scrape.py
