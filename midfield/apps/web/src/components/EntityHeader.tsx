@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
+import { AuthModal } from "@/components/ui/AuthModal";
+import { useAuthModal } from "@/components/ui/useAuthModal";
 
 interface EntityHeaderProps {
     title: string;
@@ -36,6 +38,7 @@ interface EntityHeaderProps {
         fc26?: { overall?: string | number };
     };
     backHref?: string;
+    userId?: string; // Add userId for auth check
 }
 
 export function EntityHeader({
@@ -47,7 +50,12 @@ export function EntityHeader({
     postCount = 0,
     metadata,
     backHref = "/",
+    userId,
 }: EntityHeaderProps) {
+    // Auth modal management
+    const { isAuthModalOpen, authModalContext, requireAuth, closeAuthModal } = useAuthModal();
+    const isAuthenticated = !!userId;
+
     const isPlayer = type === "player";
     const isClub = type === "club";
     const isLeague = type === "league";
@@ -104,292 +112,307 @@ export function EntityHeader({
     };
 
     return (
-        <div className="mb-4 sm:mb-6">
-            {/* Breadcrumb Navigation */}
-            <nav className="flex items-center gap-1 sm:gap-1.5 mb-2 sm:mb-3 md:mb-4 text-[10px] sm:text-xs md:text-sm pb-1">
-                {/* Mobile: collapsed breadcrumbs */}
-                <div className="flex sm:hidden items-center gap-1 min-w-0">
-                    {getMobileBreadcrumbs().map((crumb, idx) => (
-                        <div key={idx} className="flex items-center gap-0.5 shrink-0">
-                            {idx > 0 && (
-                                <ChevronRight className="w-2 h-2 text-slate-300 dark:text-neutral-600 shrink-0" />
-                            )}
-                            {crumb.isEllipsis ? (
-                                <span className="px-1 text-slate-400 dark:text-neutral-500 text-[9px]">...</span>
-                            ) : crumb.href ? (
-                                <Link href={crumb.href}>
-                                    <Button variant="ghost" size="sm" className="h-5 px-1 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[9px] whitespace-nowrap transition-colors">
-                                        {crumb.label}
-                                    </Button>
-                                </Link>
-                            ) : (
-                                <span className="px-1 font-semibold text-slate-900 dark:text-neutral-100 text-[10px] truncate max-w-[100px]">
-                                    {crumb.label}
-                                </span>
-                            )}
-                        </div>
-                    ))}
-                </div>
-                {/* Desktop: full breadcrumbs */}
-                <div className="hidden sm:flex items-center gap-1.5 min-w-0">
-                    {breadcrumbs.map((crumb, idx) => (
-                        <div key={idx} className="flex items-center gap-1 md:gap-1.5 shrink-0">
-                            {idx > 0 && (
-                                <ChevronRight className="w-2.5 md:w-3 h-2.5 md:h-3 text-slate-300 dark:text-neutral-600 shrink-0" />
-                            )}
-                            {crumb.href ? (
-                                <Link href={crumb.href}>
-                                    <Button variant="ghost" size="sm" className="h-6 md:h-7 px-1.5 md:px-2 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[10px] md:text-xs whitespace-nowrap transition-colors">
-                                        {crumb.label}
-                                    </Button>
-                                </Link>
-                            ) : (
-                                <span className="px-1.5 md:px-2 font-semibold text-slate-900 dark:text-neutral-100 text-xs md:text-sm truncate max-w-[130px] md:max-w-none">
-                                    {crumb.label}
-                                </span>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </nav>
+        <>
+            {/* Auth Modal */}
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={closeAuthModal}
+                context={authModalContext}
+            />
 
-            {/* Hero Card */}
-            <Card className="relative overflow-hidden bg-white dark:bg-neutral-900">
-                {/* Background Watermark */}
-                {watermarkImage && (
-                    <div className="absolute right-2 sm:right-4 md:right-6 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12] pointer-events-none select-none overflow-hidden">
-                        <NextImage
-                            src={watermarkImage}
-                            alt=""
-                            fill
-                            className="object-contain scale-[1.6]"
-                            style={{
-                                objectPosition: '50% 0%',
-                                transformOrigin: '50% 0%'
-                            }}
-                        />
+            <div className="mb-4 sm:mb-6">
+                {/* Breadcrumb Navigation */}
+                <nav className="flex items-center gap-1 sm:gap-1.5 mb-2 sm:mb-3 md:mb-4 text-[10px] sm:text-xs md:text-sm pb-1">
+                    {/* Mobile: collapsed breadcrumbs */}
+                    <div className="flex sm:hidden items-center gap-1 min-w-0">
+                        {getMobileBreadcrumbs().map((crumb, idx) => (
+                            <div key={idx} className="flex items-center gap-0.5 shrink-0">
+                                {idx > 0 && (
+                                    <ChevronRight className="w-2 h-2 text-slate-300 dark:text-neutral-600 shrink-0" />
+                                )}
+                                {crumb.isEllipsis ? (
+                                    <span className="px-1 text-slate-400 dark:text-neutral-500 text-[9px]">...</span>
+                                ) : crumb.href ? (
+                                    <Link href={crumb.href}>
+                                        <Button variant="ghost" size="sm" className="h-5 px-1 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[9px] whitespace-nowrap transition-colors">
+                                            {crumb.label}
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <span className="px-1 font-semibold text-slate-900 dark:text-neutral-100 text-[10px] truncate max-w-[100px]">
+                                        {crumb.label}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                )}
+                    {/* Desktop: full breadcrumbs */}
+                    <div className="hidden sm:flex items-center gap-1.5 min-w-0">
+                        {breadcrumbs.map((crumb, idx) => (
+                            <div key={idx} className="flex items-center gap-1 md:gap-1.5 shrink-0">
+                                {idx > 0 && (
+                                    <ChevronRight className="w-2.5 md:w-3 h-2.5 md:h-3 text-slate-300 dark:text-neutral-600 shrink-0" />
+                                )}
+                                {crumb.href ? (
+                                    <Link href={crumb.href}>
+                                        <Button variant="ghost" size="sm" className="h-6 md:h-7 px-1.5 md:px-2 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[10px] md:text-xs whitespace-nowrap transition-colors">
+                                            {crumb.label}
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <span className="px-1.5 md:px-2 font-semibold text-slate-900 dark:text-neutral-100 text-xs md:text-sm truncate max-w-[130px] md:max-w-none">
+                                        {crumb.label}
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </nav>
 
-                {/* Content - Consistent horizontal layout, smart mobile sizing */}
-                <div className="relative z-10 pl-2.5 sm:pl-4 md:pl-6 pt-1.5 sm:pt-0">
-                    <div className={`flex gap-3 sm:gap-5 md:gap-7 ${isPlayer ? 'items-end' : 'items-center'}`}>
-                        {/* Avatar - Unified sizing for both types */}
-                        <div className="shrink-0">
-                            {isPlayer ? (
-                                <div className={`relative ${imageUrl ? 'w-24 h-24 sm:w-28 sm:h-28 md:w-28 md:h-28 lg:w-32 lg:h-32' : 'w-28 h-28 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-36 lg:h-36'} pl-1 sm:pl-2 md:pl-3 lg:pl-4`}>
-                                    {imageUrl ? (
-                                        <NextImage
-                                            src={imageUrl}
-                                            alt={title}
-                                            fill
-                                            className="object-contain object-bottom"
-                                            sizes="(max-width: 640px) 96px, (max-width: 768px) 112px, 144px"
-                                            priority
-                                        />
-                                    ) : (
-                                        <div
-                                            className="w-full h-24 sm:h-32 md:h-36 lg:h-44 bg-slate-300 dark:bg-neutral-700 mx-auto"
-                                            style={{
-                                                mask: "url('/player-silhouette.png') no-repeat bottom center",
-                                                WebkitMask: "url('/player-silhouette.png') no-repeat bottom center",
-                                                maskSize: "contain",
-                                                WebkitMaskSize: "contain"
-                                            }}
-                                        />
-                                    )}
+                {/* Hero Card */}
+                <Card className="relative overflow-hidden bg-white dark:bg-neutral-900">
+                    {/* Background Watermark */}
+                    {watermarkImage && (
+                        <div className="absolute right-2 sm:right-4 md:right-6 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12] pointer-events-none select-none overflow-hidden">
+                            <NextImage
+                                src={watermarkImage}
+                                alt=""
+                                fill
+                                className="object-contain scale-[1.6]"
+                                style={{
+                                    objectPosition: '50% 0%',
+                                    transformOrigin: '50% 0%'
+                                }}
+                            />
+                        </div>
+                    )}
 
-                                </div>
-                            ) : (
-                                // Badge for clubs and leagues
-                                <div className="pl-1 sm:pl-2 md:pl-3 lg:pl-4 py-4 sm:py-5 md:py-8 lg:py-10 relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28">
-                                    {isLeague ? (
-                                        // League - Show logo with theme switching
-                                        <>
-                                            {badgeUrl && (
-                                                <img
-                                                    src={badgeUrl}
-                                                    alt={title}
-                                                    className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 dark:hidden"
-                                                />
-                                            )}
-                                            {(badgeUrlDark || badgeUrl) && (
-                                                <img
-                                                    src={badgeUrlDark || badgeUrl}
-                                                    alt={title}
-                                                    className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 hidden dark:block"
-                                                />
-                                            )}
-                                        </>
-                                    ) : (
-                                        // Club badge
-                                        badgeUrl && (
+                    {/* Content - Consistent horizontal layout, smart mobile sizing */}
+                    <div className="relative z-10 pl-2.5 sm:pl-4 md:pl-6 pt-1.5 sm:pt-0">
+                        <div className={`flex gap-3 sm:gap-5 md:gap-7 ${isPlayer ? 'items-end' : 'items-center'}`}>
+                            {/* Avatar - Unified sizing for both types */}
+                            <div className="shrink-0">
+                                {isPlayer ? (
+                                    <div className={`relative ${imageUrl ? 'w-24 h-24 sm:w-28 sm:h-28 md:w-28 md:h-28 lg:w-32 lg:h-32' : 'w-28 h-28 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-36 lg:h-36'} pl-1 sm:pl-2 md:pl-3 lg:pl-4`}>
+                                        {imageUrl ? (
                                             <NextImage
-                                                src={badgeUrl}
+                                                src={imageUrl}
                                                 alt={title}
                                                 fill
-                                                className="object-contain p-1 sm:p-1.5"
-                                                sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, 112px"
+                                                className="object-contain object-bottom"
+                                                sizes="(max-width: 640px) 96px, (max-width: 768px) 112px, 144px"
                                                 priority
                                             />
-                                        )
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                                        ) : (
+                                            <div
+                                                className="w-full h-24 sm:h-32 md:h-36 lg:h-44 bg-slate-300 dark:bg-neutral-700 mx-auto"
+                                                style={{
+                                                    mask: "url('/player-silhouette.png') no-repeat bottom center",
+                                                    WebkitMask: "url('/player-silhouette.png') no-repeat bottom center",
+                                                    maskSize: "contain",
+                                                    WebkitMaskSize: "contain"
+                                                }}
+                                            />
+                                        )}
 
-                        {/* Info - Unified padding for both types */}
-                        <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
-
-                            {/* Row 1: Title */}
-                            <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
-                                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
-                                    {title}
-                                </h1>
+                                    </div>
+                                ) : (
+                                    // Badge for clubs and leagues
+                                    <div className="pl-1 sm:pl-2 md:pl-3 lg:pl-4 py-4 sm:py-5 md:py-8 lg:py-10 relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28">
+                                        {isLeague ? (
+                                            // League - Show logo with theme switching
+                                            <>
+                                                {badgeUrl && (
+                                                    <img
+                                                        src={badgeUrl}
+                                                        alt={title}
+                                                        className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 dark:hidden"
+                                                    />
+                                                )}
+                                                {(badgeUrlDark || badgeUrl) && (
+                                                    <img
+                                                        src={badgeUrlDark || badgeUrl}
+                                                        alt={title}
+                                                        className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 hidden dark:block"
+                                                    />
+                                                )}
+                                            </>
+                                        ) : (
+                                            // Club badge
+                                            badgeUrl && (
+                                                <NextImage
+                                                    src={badgeUrl}
+                                                    alt={title}
+                                                    fill
+                                                    className="object-contain p-1 sm:p-1.5"
+                                                    sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, 112px"
+                                                    priority
+                                                />
+                                            )
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Row 2: Badges */}
-                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
-                                {/* Show Manager badge if position is Manager/Coach, otherwise show Player badge */}
-                                {isPlayer && (
-                                    metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach') ? (
-                                        <Badge variant="secondary" className="text-[10px] sm:text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 capitalize">
-                                            Manager
-                                        </Badge>
-                                    ) : (
+                            {/* Info - Unified padding for both types */}
+                            <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
+
+                                {/* Row 1: Title */}
+                                <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
+                                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
+                                        {title}
+                                    </h1>
+                                </div>
+
+                                {/* Row 2: Badges */}
+                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
+                                    {/* Show Manager badge if position is Manager/Coach, otherwise show Player badge */}
+                                    {isPlayer && (
+                                        metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach') ? (
+                                            <Badge variant="secondary" className="text-[10px] sm:text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 capitalize">
+                                                Manager
+                                            </Badge>
+                                        ) : (
+                                            <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
+                                                {type}
+                                            </Badge>
+                                        )
+                                    )}
+                                    {!isPlayer && (
                                         <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
                                             {type}
                                         </Badge>
-                                    )
-                                )}
-                                {!isPlayer && (
-                                    <Badge variant="secondary" className="text-[10px] sm:text-xs capitalize h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
-                                        {type}
-                                    </Badge>
-                                )}
-                                {isPlayer && metadata?.position && !(metadata.position.toLowerCase().includes('manager') || metadata.position.toLowerCase().includes('coach')) && (
-                                    <Badge variant="secondary" className="text-[10px] sm:text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
-                                        {metadata.position}
-                                    </Badge>
-                                )}
-                                {isClub && metadata?.league && (
-                                    <Badge variant="secondary" className="text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
-                                        {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
-                                    </Badge>
-                                )}
+                                    )}
+                                    {isPlayer && metadata?.position && !(metadata.position.toLowerCase().includes('manager') || metadata.position.toLowerCase().includes('coach')) && (
+                                        <Badge variant="secondary" className="text-[10px] sm:text-xs bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
+                                            {metadata.position}
+                                        </Badge>
+                                    )}
+                                    {isClub && metadata?.league && (
+                                        <Badge variant="secondary" className="text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
+                                            {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
+                                        </Badge>
+                                    )}
 
-                            </div>
+                                </div>
 
-                            {/* Row 3: Stats */}
-                            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
-                                {isPlayer && (
-                                    <>
-                                        {metadata?.clubName && (
-                                            <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
-                                                <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
-                                                    {metadata.clubBadgeUrl && (
-                                                        <div className="relative w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 shrink-0">
-                                                            <NextImage
-                                                                src={metadata.clubBadgeUrl}
-                                                                alt=""
-                                                                fill
-                                                                className="object-contain"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                    <span className="whitespace-nowrap">{metadata.clubName}</span>
-                                                </Button>
-                                            </Link>
-                                        )}
-                                        {metadata?.height && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <Ruler className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">{metadata.height}</span>
-                                            </div>
-                                        )}
-                                        {metadata?.age && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <Calendar className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">{metadata.age} years</span>
-                                            </div>
-                                        )}
-                                        {metadata?.nationality && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <Flag className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">{metadata.nationality}</span>
-                                            </div>
-                                        )}
-                                        {metadata?.kitNumber && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <Hash className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                                {isClub && (
-                                    <>
-                                        {metadata?.stadium && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <MapPin className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">{metadata.stadium}</span>
-                                            </div>
-                                        )}
-                                        {metadata?.founded && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <Calendar className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">Est. {metadata.founded}</span>
-                                            </div>
-                                        )}
-                                    </>
-                                )}
+                                {/* Row 3: Stats */}
+                                <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
+                                    {isPlayer && (
+                                        <>
+                                            {metadata?.clubName && (
+                                                <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                    <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                                                        {metadata.clubBadgeUrl && (
+                                                            <div className="relative w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 shrink-0">
+                                                                <NextImage
+                                                                    src={metadata.clubBadgeUrl}
+                                                                    alt=""
+                                                                    fill
+                                                                    className="object-contain"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <span className="whitespace-nowrap">{metadata.clubName}</span>
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                            {metadata?.height && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <Ruler className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">{metadata.height}</span>
+                                                </div>
+                                            )}
+                                            {metadata?.age && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <Calendar className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">{metadata.age} years</span>
+                                                </div>
+                                            )}
+                                            {metadata?.nationality && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <Flag className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">{metadata.nationality}</span>
+                                                </div>
+                                            )}
+                                            {metadata?.kitNumber && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <Hash className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                    {isClub && (
+                                        <>
+                                            {metadata?.stadium && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <MapPin className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">{metadata.stadium}</span>
+                                                </div>
+                                            )}
+                                            {metadata?.founded && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <Calendar className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">Est. {metadata.founded}</span>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Footer - Opaque background to block watermark */}
-                <div className="relative z-20 bg-white dark:bg-neutral-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-3.5 border-t-2 border-slate-200 dark:border-neutral-800 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 sm:gap-2 text-slate-500 dark:text-neutral-400 text-[11px] sm:text-xs md:text-sm">
-                        <MessageSquare className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
-                        <span className="whitespace-nowrap font-medium">{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
+                    {/* Footer - Opaque background to block watermark */}
+                    <div className="relative z-20 bg-white dark:bg-neutral-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-3.5 border-t-2 border-slate-200 dark:border-neutral-800 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 sm:gap-2 text-slate-500 dark:text-neutral-400 text-[11px] sm:text-xs md:text-sm">
+                            <MessageSquare className="w-3.5 sm:w-4 md:w-[18px] h-3.5 sm:h-4 md:h-[18px] shrink-0" />
+                            <span className="whitespace-nowrap font-medium">{postCount.toLocaleString()} {postCount === 1 ? 'Take' : 'Takes'}</span>
+                        </div>
+
+                        {/* Upvote/Downvote - DataNoir Refined */}
+                        <div className="flex items-center gap-2 shrink-0">
+                            {/* Upvote */}
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!requireAuth(isAuthenticated, "default")) return;
+                                    // TODO: Implement upvote logic
+                                    console.log('Upvote clicked');
+                                }}
+                                className="group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-neutral-900 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer"
+                            >
+                                <ThumbsUp className="w-4 h-4 text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 min-w-[2ch] text-center">0</span>
+                            </button>
+
+                            {/* Downvote */}
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (!requireAuth(isAuthenticated, "default")) return;
+                                    // TODO: Implement downvote logic
+                                    console.log('Downvote clicked');
+                                }}
+                                className="group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer"
+                            >
+                                <ThumbsDown className="w-4 h-4 text-red-600 dark:text-red-500 group-hover:scale-110 transition-transform" />
+                                <span className="text-xs font-bold text-red-700 dark:text-red-400 min-w-[2ch] text-center">0</span>
+                            </button>
+
+                            {/* Share Button */}
+                            <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
+                                <Share2 className="w-4 sm:w-4 h-4 sm:h-4" />
+                            </Button>
+                        </div>
                     </div>
-
-                    {/* Upvote/Downvote - DataNoir Refined */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        {/* Upvote */}
-                        <button
-                            onClick={() => {
-                                // TODO: Check if user is authenticated
-                                // If not, open signin/signup modal
-                                console.log('Upvote clicked');
-                            }}
-                            className="group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-neutral-900 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer"
-                        >
-                            <ThumbsUp className="w-4 h-4 text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 min-w-[2ch] text-center">0</span>
-                        </button>
-
-                        {/* Downvote */}
-                        <button
-                            onClick={() => {
-                                // TODO: Check if user is authenticated
-                                // If not, open signin/signup modal
-                                console.log('Downvote clicked');
-                            }}
-                            className="group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer"
-                        >
-                            <ThumbsDown className="w-4 h-4 text-red-600 dark:text-red-500 group-hover:scale-110 transition-transform" />
-                            <span className="text-xs font-bold text-red-700 dark:text-red-400 min-w-[2ch] text-center">0</span>
-                        </button>
-
-                        {/* Share Button */}
-                        <Button variant="ghost" size="sm" className="w-7 h-7 sm:w-8 sm:h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-full transition-colors">
-                            <Share2 className="w-4 sm:w-4 h-4 sm:h-4" />
-                        </Button>
-                    </div>
-                </div>
-            </Card>
-        </div>
+                </Card>
+            </div>
+        </>
     );
 }
