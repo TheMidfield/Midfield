@@ -37,7 +37,11 @@ def clean_player_data(player_meta, ratings_df, sofifa_id):
             k: int(v) if pd.notnull(v) and str(v).isdigit() else str(v)
             for k, v in ratings.to_dict().items()
             if k not in ['fifa_edition', 'update']
-        }
+        },
+        "birth_date": str(player_meta.get('birth_date', '')),
+        "height": int(player_meta.get('height', 0)) if pd.notnull(player_meta.get('height')) else None,
+        "weight": int(player_meta.get('weight', 0)) if pd.notnull(player_meta.get('weight')) else None,
+        "nationality": str(player_meta.get('nationality', ''))
     }
 
 def push_to_edge_function(team_name, players_data):

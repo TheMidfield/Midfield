@@ -1,61 +1,12 @@
 
-// Sync Ratings Edge Function - Reconciles SoFIFA data with DB
+// Sync Ratings Edge Function - Reconciles SoFIFA data by Global Matching & Self-Healing
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1"
-import { corsHeaders } from "../_shared/cors.ts"
 
-// Initialize Jaro-Winkler for fuzzy matching
-// Simple implementation since we can't easily import external libs in Deno without proper mapping
-function jaroWinkler(s1: string, s2: string): number {
-  let m = 0;
-  let i = 0;
-  let j = 0;
-
-  if (s1 === s2) return 1.0;
-  if (!s1 || !s2) return 0.0;
-
-  const len1 = s1.length;
-  const len2 = s2.length;
-  const matchWindow = Math.floor(Math.max(len1, len2) / 2) - 1;
-
-  const s1Matches = new Array(len1).fill(false);
-  const s2Matches = new Array(len2).fill(false);
-
-  for (i = 0; i < len1; i++) {
-    const start = Math.max(0, i - matchWindow);
-    const end = Math.min(i + matchWindow + 1, len2);
-    for (j = start; j < end; j++) {
-      if (s2Matches[j]) continue;
-      if (s1[i] !== s2[j]) continue;
-      s1Matches[i] = true;
-      s2Matches[j] = true;
-      m++;
-      break;
-    }
-  }
-
-  if (m === 0) return 0.0;
-
-  let k = 0;
-  let t = 0;
-  for (i = 0; i < len1; i++) {
-    if (!s1Matches[i]) continue;
-    while (!s2Matches[k]) k++;
-    if (s1[i] !== s2[k]) t++;
-    k++;
-  }
-  t /= 2;
-
-  let dw = ((m / len1) + (m / len2) + ((m - t) / m)) / 3.0;
-
-  // Winkler modification
-  let l = 0;
-  if (dw > 0.7) {
-    while (l < 4 && l < len1 && l < len2 && s1[l] === s2[l]) l++;
-    dw += l * 0.1 * (1 - dw);
-  }
-
-  return dw;
+// Inline CORS headers directly
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 function normalize(str: string): string {
@@ -81,105 +32,108 @@ serve(async (req) => {
 
     console.log(`Processing ${players.length} players for team: ${team}`);
 
-    // 1. Fetch potential matches (players in matched team)
-    // First, find the team ID
-    const { data: teamDocs, error: teamError } = await supabase
+    // 1. Try to find the Team Topic ID (for Self-Healing relationships)
+    let teamId = null;
+    const { data: teamDocs } = await supabase
       .from('topics')
       .select('id')
       .eq('type', 'club')
-      .ilike('title', team) // Simple team name match for now
+      .ilike('title', team)
       .limit(1);
 
-    if (teamError) throw teamError;
-
-    let dbPlayers: any[] = [];
-
     if (teamDocs && teamDocs.length > 0) {
-      const teamId = teamDocs[0].id;
-      // Get players linked to this team
-      // Note: Assuming relationships table links player -> team
-      const { data, error } = await supabase
-        .from('relationships')
-        .select(`
-            from_id,
-            topics!relationships_from_id_fkey (id, title, metadata)
-        `)
-        .eq('to_id', teamId)
-        .eq('type', 'member_of');
-
-      if (!error && data) {
-        dbPlayers = data.map((d: any) => d.topics);
-      }
+      teamId = teamDocs[0].id;
     } else {
-      console.warn(`Team '${team}' not found in DB. Doing global name match only.`);
+      console.warn(`⚠️ Team '${team}' not found. Ratings will be synced, but relationships cannot be healed.`);
     }
 
     const updates = [];
     const logs = [];
+    const newRelationships = [];
 
+    // 2. Iterate Players (Global Search Strategy)
     for (const scraped of players) {
       let match = null;
       let method = 'failed';
       let confidence = 0.0;
 
-      // 1. ID MATCH (Best)
-      const idMatch = dbPlayers.find((p: any) => p.metadata?.fc26?.id === scraped.sofifa_id);
-      if (idMatch) {
-        match = idMatch;
-        method = 'id';
-        confidence = 1.0;
-      }
+      // A. Is player already linked via ID in metadata?
+      // We can't query JSONB easily in batch efficiently without a specialized index or search
+      // So we will do a targeted search for EACH player.
+      // It's slower (N queries) but safer.
 
-      // 2. EXACT NAME MATCH (Team Scoped)
-      if (!match) {
-        const exact = dbPlayers.find((p: any) =>
-          normalize(p.title) === normalize(scraped.name) ||
-          normalize(p.title) === normalize(scraped.name.split(' ').pop() || '') // Last name check
-        );
-        if (exact) {
-          match = exact;
-          method = 'exact_team';
-          confidence = 0.95;
-        }
-      }
+      // Search by ID inside metadata (if we had indexed it, but we haven't)
+      // OR Search by Title (Name)
 
-      // 3. FUZZY MATCH (Team Scoped)
-      if (!match && dbPlayers.length > 0) {
-        let bestScore = 0;
-        let bestCand = null;
+      const { data: candidates, error } = await supabase
+        .from('topics')
+        .select('id, title, metadata')
+        .eq('type', 'player')
+        .ilike('title', scraped.name)
+        .limit(5); // Get a few to check for ambiguity
 
-        for (const cand of dbPlayers) {
-          const score = jaroWinkler(normalize(cand.title), normalize(scraped.name));
-          if (score > bestScore) {
-            bestScore = score;
-            bestCand = cand;
+      if (!error && candidates && candidates.length > 0) {
+
+        // Filter candidates
+        if (idMatch) {
+          match = idMatch;
+          method = 'id';
+          confidence = 1.0;
+        } else {
+          // 2. Name Match + Birth Date (The "Smart" Match)
+          // We iterate candidates to find the best one
+          let bestCandidate = null;
+          let bestScore = 0.0;
+          let bestMethod = 'failed';
+
+          for (const cand of candidates) {
+            let score = 0.0;
+            let currentMethod = 'ambiguous';
+
+            // Name Similarity
+            const nameScore = jaroWinkler(normalize(cand.title), normalize(scraped.name));
+
+            // Birth Date Check (Golden Key)
+            // DB might store as YYYY-MM-DD or ISO. Scraper sends YYYY-MM-DD (from pandas)
+            const dbDob = cand.metadata?.birth_date?.split('T')[0];
+            const scrapedDob = scraped.birth_date;
+
+            if (scrapedDob && dbDob && scrapedDob === dbDob) {
+              // If DOB matches, we trust it highly even with fuzzy name
+              if (nameScore > 0.8) {
+                score = 0.99;
+                currentMethod = 'dob_match';
+              }
+            } else if (nameScore > 0.95) {
+              // Very high name match (Exact-ish)
+              score = 0.90;
+              currentMethod = 'name_exact';
+            } else if (nameScore > 0.85) {
+              score = 0.85;
+              currentMethod = 'name_fuzzy';
+            }
+
+            if (score > bestScore) {
+              bestScore = score;
+              bestCandidate = cand;
+              bestMethod = currentMethod;
+            }
+          }
+
+          if (bestScore >= 0.85) {
+            match = bestCandidate;
+            method = bestMethod;
+            confidence = bestScore;
+          } else if (candidates.length === 1 && bestScore > 0.8) {
+            // Fallback: If only 1 candidate and it's decent
+            match = candidates[0];
+            method = 'single_candidate_fuzzy';
+            confidence = 0.80;
           }
         }
-
-        if (bestScore > 0.85) {
-          match = bestCand;
-          method = 'fuzzy_team';
-          confidence = bestScore;
-        }
       }
 
-      // 4. GLOBAL FALLBACK (Only for high value players to avoid false positives)
-      if (!match && scraped.overall > 82) {
-        const { data: globalData } = await supabase
-          .from('topics')
-          .select('id, title, metadata')
-          .eq('type', 'player')
-          .ilike('title', scraped.name)
-          .limit(1);
-
-        if (globalData && globalData.length > 0) {
-          match = globalData[0];
-          method = 'global';
-          confidence = 0.85;
-        }
-      }
-
-      // UPDATE Logic
+      // UPDATE
       if (match) {
         const newMetadata = {
           ...match.metadata,
@@ -188,8 +142,6 @@ serve(async (req) => {
             slug: scraped.name.toLowerCase().replace(/\s+/g, '-'),
             overall: scraped.overall,
             potential: scraped.potential,
-            // Store detailed stats grouped or flat? Plan said grouped but user asked for "individual".
-            // We store "full_stats" which has everything flattened
             stats: scraped.full_stats,
             match_confidence: confidence,
             last_updated: new Date().toISOString()
@@ -209,19 +161,53 @@ serve(async (req) => {
           match_method: method,
           match_details: { overall: scraped.overall, team: team }
         });
+
+        // SELF-HEALING: Create Relationship if Team is known and not already linked?
+        // Checking existence of relationship is expensive (another query). 
+        // We can try to INSERT ON CONFLICT DO NOTHING if we had a constraint.
+        // But 'relationships' usually doesn't have unique constraint on (from, to, type). 
+        // We'll check first to be clean.
+        if (teamId) {
+          const { count } = await supabase
+            .from('relationships')
+            .select('*', { count: 'exact', head: true })
+            .eq('from_id', match.id)
+            .eq('to_id', teamId)
+            .eq('type', 'member_of');
+
+          if (count === 0) {
+            newRelationships.push({
+              from_id: match.id,
+              to_id: teamId,
+              type: 'member_of'
+            });
+          }
+        }
       }
     }
 
-    // Batch execute updates
-    if (updates.length > 0) {
-      // Upsert topics (bulk update metadata)
-      // Note: Supabase JS library doesn't support bulk update of specific columns nicely without upsert
-      // We iterate for safety or use a stored procedure. For < 50 items iteration is fine.
-      for (const update of updates) {
-        await supabase.from('topics').update({ metadata: update.metadata }).eq('id', update.id);
-      }
+    // Batch Execute
+    let matchedCount = 0;
 
-      // Insert logs
+    // Updates
+    for (const update of updates) {
+      await supabase.from('topics').update({ metadata: update.metadata }).eq('id', update.id);
+      matchedCount++;
+    }
+
+    // Relationships (Heal)
+    if (newRelationships.length > 0) {
+      try {
+        await supabase.from('relationships').insert(newRelationships);
+        console.log(`Healed ${newRelationships.length} relationships for ${team}`);
+      } catch (e) {
+        console.error("Error healing relationships:", e);
+        // Table might be missing? We ignore to not break ratings sync
+      }
+    }
+
+    // Logs
+    if (logs.length > 0) {
       await supabase.from('player_match_log').insert(logs);
     }
 
@@ -230,7 +216,8 @@ serve(async (req) => {
         message: 'Sync processed',
         team: team,
         processed: players.length,
-        matched: updates.length
+        matched: matchedCount,
+        healed: newRelationships.length
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
