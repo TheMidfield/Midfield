@@ -195,9 +195,18 @@ async function importLeague(leagueId: string, leagueName: string, dryRun: boolea
 
         console.log(`   Found ${teams.length} teams\n`);
 
+        // Pass 1: Upsert all clubs first (to satisfy FKs for fixtures)
+        console.log(`   Phase 1: Upserting ${teams.length} clubs...`);
         for (const team of teams) {
-            await processTeam(team, dryRun);
+            await upsertClubOnly(team, dryRun);
             stats.clubsProcessed++;
+            // await sleep(100); // Tiny delay
+        }
+
+        // Pass 2: Process players and fixtures
+        console.log(`\n   Phase 2: Fetching details (Players & Fixtures)...`);
+        for (const team of teams) {
+            await processTeamDetails(team, dryRun);
             await sleep(RATE_LIMIT_MS);
         }
     } catch (error) {
@@ -206,12 +215,12 @@ async function importLeague(leagueId: string, leagueName: string, dryRun: boolea
     }
 }
 
-// Process a team and its players
-async function processTeam(team: any, dryRun: boolean) {
+// Phase 1: Upsert Club Topic Only
+async function upsertClubOnly(team: any, dryRun: boolean) {
     const clubId = generateUUID('club', team.idTeam);
     const clubSlug = await generateSafeSlug(team.strTeam, team.idTeam, 'club');
 
-    console.log(`🔵 Processing: ${team.strTeam}...`);
+    // console.log(`🔵 Upserting Club: ${team.strTeam}...`);
 
     // Prepare club topic
     const clubTopic = {
@@ -243,9 +252,8 @@ async function processTeam(team: any, dryRun: boolean) {
     };
 
     if (dryRun) {
-        console.log(`   [DRY RUN] Would upsert club: ${team.strTeam}`);
+        // console.log(`   [DRY RUN] Would upsert club: ${team.strTeam}`);
     } else {
-        // Upsert club
         const { error: clubError } = await supabase
             .from('topics')
             .upsert(clubTopic, { onConflict: 'id' });
@@ -255,20 +263,22 @@ async function processTeam(team: any, dryRun: boolean) {
             stats.errors++;
             return;
         }
-
-        console.log(`   ✅ Upserted club: ${team.strTeam}`);
         stats.clubsInserted++;
     }
+}
+
+// Phase 2: Process Details (Players, Fixtures)
+async function processTeamDetails(team: any, dryRun: boolean) {
+    const clubId = generateUUID('club', team.idTeam);
+    console.log(`🔵 Details for: ${team.strTeam}`);
 
     // Fetch players using v2 endpoint (NO 10-PLAYER LIMIT!)
-    await sleep(RATE_LIMIT_MS);
-
     try {
         // v2 endpoint: /list/players/{teamId}
         const playersData = await fetchV2<{ list: any[] }>(`/list/players/${team.idTeam}`);
         const players = playersData.list || [];
 
-        console.log(`   Players found: ${players.length} (v2 API - UNLIMITED!)`);
+        // console.log(`   Players found: ${players.length} (v2 API - UNLIMITED!)`);
 
         let playerCount = 0;
         const playerIds: string[] = [];
@@ -307,9 +317,7 @@ async function processTeam(team: any, dryRun: boolean) {
                 post_count: 0
             };
 
-            if (dryRun) {
-                // Silent in dry run to avoid spam
-            } else {
+            if (!dryRun) {
                 // Upsert player
                 const { error: playerError } = await supabase
                     .from('topics')
@@ -320,7 +328,6 @@ async function processTeam(team: any, dryRun: boolean) {
                     stats.errors++;
                     continue;
                 }
-
                 stats.playersInserted++;
             }
 
@@ -333,16 +340,20 @@ async function processTeam(team: any, dryRun: boolean) {
         // Create relationships (club -> players)
         if (!dryRun && playerIds.length > 0) {
             await createRelationships(clubId, playerIds);
-        } else if (dryRun && playerIds.length > 0) {
-            console.log(`   [DRY RUN] Would create ${playerIds.length} relationships`);
+        }
+
+        // Fetch fixtures (New)
+        if (!dryRun) {
+            await processTeamFixtures(clubId, team.idTeam, team.strTeam, team.idLeague);
         }
 
     } catch (error) {
-        console.error(`   ❌ Error fetching players:`, error);
+        console.error(`   ❌ Error fetching details for ${team.strTeam}:`, error);
         stats.errors++;
     }
 }
 
+// Create topic relationships (club -> players)
 // Create topic relationships (club -> players)
 async function createRelationships(clubId: string, playerIds: string[]) {
     const relationships = playerIds.map(playerId => ({
@@ -385,3 +396,113 @@ function parseArgs(): ImportConfig {
 // Run the import
 const config = parseArgs();
 importTheSportsDB(config);
+
+// Process fixtures for a team
+async function processTeamFixtures(clubUuid: string, tsdbTeamId: string, teamName: string, tsdbLeagueId: string) {
+    try {
+        // 1. Fetch Next Matches
+        const nextData = await fetchV2<{ schedule: any[] }>(`/schedule/next/team/${tsdbTeamId}`);
+        const prevData = await fetchV2<{ results: any[] }>(`/schedule/previous/team/${tsdbTeamId}`); // Note: endpoint might be 'results' or 'schedule'
+
+        // Combine results. V2 endpoints:
+        // /schedule/next/team/{id} -> { schedule: [...] }
+        // /schedule/previous/team/{id} -> { results: [...] } (Usually called results)
+
+        const fixtures = [
+            ...(nextData?.schedule || []),
+            ...(prevData?.results || [])
+        ];
+
+        if (fixtures.length === 0) return;
+
+        console.log(`      📅 Processing ${fixtures.length} fixtures for ${teamName}...`);
+
+        let count = 0;
+        for (const f of fixtures) {
+            // Basic validation
+            if (!f.strHomeTeam || !f.strAwayTeam || !f.dateEvent) continue;
+
+            // Generate ID from TSDB ID (since DB uses bigint, we use the external ID directly)
+            const fixtureId = parseInt(f.idEvent);
+
+            // Resolve Team UUIDs
+            const homeTeamUuid = generateUUID('club', f.idHomeTeam);
+            const awayTeamUuid = generateUUID('club', f.idAwayTeam);
+
+            const competitionUuid = generateUUID('league', f.idLeague);
+
+            // STUB CREATION: Ensure topics exist before upserting fixture
+            await Promise.all([
+                ensureStubTopic(homeTeamUuid, f.strHomeTeam, 'club', f.idHomeTeam),
+                ensureStubTopic(awayTeamUuid, f.strAwayTeam, 'club', f.idAwayTeam),
+                ensureStubTopic(competitionUuid, f.strLeague, 'league', f.idLeague)
+            ]);
+
+            const fixtureRecord = {
+                id: fixtureId,
+                home_team_id: homeTeamUuid,
+                away_team_id: awayTeamUuid,
+                competition_id: competitionUuid,
+                date: f.dateEvent + (f.strTime ? `T${f.strTime}` : ''),
+                status: f.intHomeScore ? 'completed' : 'scheduled',
+                home_score: f.intHomeScore ? parseInt(f.intHomeScore) : null,
+                away_score: f.intAwayScore ? parseInt(f.intAwayScore) : null,
+                venue: f.strVenue,
+                gameweek: f.intRound ? parseInt(f.intRound) : null
+                // metadata: REMOVED as column does not exist
+            };
+
+            const { error } = await supabase.from('fixtures').upsert(fixtureRecord, { onConflict: 'id' });
+            if (!error) {
+                count++;
+            } else {
+                console.error(`      ❌ Error upserting fixture ${f.strEvent}:`, error);
+            }
+        }
+        // console.log(`      ✅ Saved ${count} fixtures`);
+
+    } catch (e) {
+        console.error(`      ⚠️ Error fetching fixtures for ${teamName}:`, e);
+    }
+}
+
+// Ensure a topic exists (create a "Stub" if not)
+async function ensureStubTopic(id: string, title: string, type: 'club' | 'league', externalId: string) {
+    if (!title || !id) return;
+
+    // Force explicit check-then-insert to debug silent failure and ensure existence
+    const { data: existing } = await supabase.from('topics').select('id').eq('id', id).maybeSingle();
+    if (existing) return;
+
+    const slug = await generateSafeSlug(title, externalId, type);
+
+    // Minimal Stub Topic
+    const stub = {
+        id,
+        slug,
+        type,
+        title,
+        description: `Stub for ${title}`,
+        metadata: {
+            external: {
+                thesportsdb_id: externalId,
+                source: 'thesportsdb',
+                is_stub: true
+            },
+            badge_url: null // UI will show placeholder
+        },
+        is_active: true
+    };
+
+    // Insert stub
+    const { error } = await supabase.from('topics').insert(stub);
+
+    if (error) {
+        // Ignore 23505 (unique_violation) which means race condition won
+        if (error.code !== '23505') {
+            console.error(`Stub error for ${title}:`, error);
+        }
+    } else {
+        // console.log(`      ✨ Created Stub: ${title}`);
+    }
+}
