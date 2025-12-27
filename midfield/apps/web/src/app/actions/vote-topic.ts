@@ -15,7 +15,8 @@ export async function voteTopic(topicId: string, voteType: 'upvote' | 'downvote'
 
     try {
         // Upsert vote (insert or update if exists)
-        const { error: voteError } = await supabase
+        // Using 'as any' until topic_votes migration is applied and types are regenerated
+        const { error: voteError } = await (supabase as any)
             .from('topic_votes')
             .upsert({
                 topic_id: topicId,
@@ -32,13 +33,13 @@ export async function voteTopic(topicId: string, voteType: 'upvote' | 'downvote'
         }
 
         // Get updated vote counts
-        const { data: upvotes } = await supabase
+        const { data: upvotes } = await (supabase as any)
             .from('topic_votes')
             .select('id', { count: 'exact', head: true })
             .eq('topic_id', topicId)
             .eq('vote_type', 'upvote');
 
-        const { data: downvotes } = await supabase
+        const { data: downvotes } = await (supabase as any)
             .from('topic_votes')
             .select('id', { count: 'exact', head: true })
             .eq('topic_id', topicId)

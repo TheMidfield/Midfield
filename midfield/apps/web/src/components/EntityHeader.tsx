@@ -237,15 +237,21 @@ export function EntityHeader({
                 <Card className="relative overflow-hidden bg-white dark:bg-neutral-900">
                     {/* Background Watermark */}
                     {watermarkImage && (
-                        <div className="absolute right-2 sm:right-4 md:right-6 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12] pointer-events-none select-none overflow-hidden">
+                        <div className={`absolute pointer-events-none select-none ${isPlayer
+                                ? 'right-8 sm:right-12 md:right-16 top-3 sm:top-4 md:top-5 w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 opacity-[0.12]'
+                                : 'right-0 top-1/2 -translate-y-1/2 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 opacity-[0.08] rotate-12'
+                            }`}>
                             <NextImage
                                 src={watermarkImage}
                                 alt=""
                                 fill
-                                className="object-contain scale-[1.6]"
-                                style={{
+                                className={`object-contain ${isPlayer ? 'scale-[1.6]' : 'scale-[0.9]'}`}
+                                style={isPlayer ? {
                                     objectPosition: '50% 0%',
                                     transformOrigin: '50% 0%'
+                                } : {
+                                    objectPosition: 'center',
+                                    transformOrigin: 'center'
                                 }}
                             />
                         </div>
