@@ -12,6 +12,7 @@ import NextImage from "next/image";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
 import { ClubFixtures } from "@/components/ClubFixtures";
 import { LeagueTable } from "@/components/LeagueTable";
+import { TopicDescription } from "@/components/TopicDescription";
 
 interface TopicPageClientProps {
     topic: any;
@@ -406,18 +407,15 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
                                                 {/* About Section */}
                                                 {section.id === "about" && (
-                                                    <div className="pt-3 sm:pt-4">
-                                                        <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 leading-relaxed">
-                                                            {topic.description
-                                                                ? topic.description
-                                                                : isLeague
-                                                                    ? `${topic.title} is one of the top professional football leagues in ${metadata?.country || 'Europe'}.`
-                                                                    : isClub
-                                                                        ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
-                                                                        : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
-                                                            }
-                                                        </p>
-                                                    </div>
+                                                    <TopicDescription
+                                                        description={topic.description || (
+                                                            isLeague
+                                                                ? `${topic.title} is one of the top professional football leagues in ${metadata?.country || 'Europe'}.`
+                                                                : isClub
+                                                                    ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
+                                                                    : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
+                                                        )}
+                                                    />
                                                 )}
                                             </div>
                                         )}

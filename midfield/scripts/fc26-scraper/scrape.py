@@ -104,34 +104,47 @@ def main():
     teams_list = all_players['team'].unique()
     print(f"✅ Found {len(all_players)} players in {len(teams_list)} teams")
     
-    for team_name in teams_list:
-        print(f"\n⚽ Team: {team_name}")
+    import concurrent.futures
+
+    # We use a ThreadPool to fetch ratings in parallel
+    # Max workers = 5 to be polite but faster
+    MAX_WORKERS = 5
+
+    total_teams = len(teams_list)
+    for idx, team_name in enumerate(teams_list):
+        print(f"\n⚽ Team [{idx+1}/{total_teams}]: {team_name}")
         team_players = all_players[all_players['team'] == team_name]
         
         batch_data = []
         
-        for player_id, meta in team_players.iterrows():
+        # Define the fetch task
+        def fetch_player_ratings(player_row):
+            pid, meta = player_row
             try:
-                # Polite delay
-                time.sleep(0.5) 
-                
                 # Fetch ratings
-                rating_df = sofifa.read_player_ratings(player=player_id)
-                cleaned = clean_player_data(meta, rating_df, player_id)
-                
-                if cleaned:
-                    batch_data.append(cleaned)
-                    print(f"   • {cleaned['name']} ({cleaned['overall']})")
-                
+                rdf = sofifa.read_player_ratings(player=pid)
+                return clean_player_data(meta, rdf, pid)
             except Exception as e:
-                print(f"   ❌ Error fetching {meta['player']}: {e}")
-        
+                return None
+
+        # Execute in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+            # Create a list of (pid, meta) tuples for the executor
+            player_rows = [(pid, meta) for pid, meta in team_players.iterrows()]
+            results = list(executor.map(fetch_player_ratings, player_rows))
+
+        # Filter out None results
+        for res in results:
+            if res:
+                batch_data.append(res)
+                print(f"   • {res['name']} ({res['overall']})")
+
         # Push batch to Edge Function
         if batch_data:
             push_to_edge_function(team_name, batch_data)
             
-        # Larger delay between teams
-        time.sleep(2)
+        # Small delay between teams to save state
+        time.sleep(1)
 
 if __name__ == "__main__":
     main()

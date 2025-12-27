@@ -156,7 +156,7 @@ export function EntityHeader({
             <Card className="relative overflow-hidden">
                 {/* Background Watermark */}
                 {watermarkImage && (
-                    <div className="absolute right-4 sm:right-6 md:right-8 -bottom-2 sm:-bottom-3 md:-bottom-4 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 opacity-[0.04] grayscale pointer-events-none select-none">
+                    <div className="absolute right-4 sm:right-6 md:right-8 -bottom-2 sm:-bottom-3 md:-bottom-4 w-28 h-28 sm:w-40 sm:h-40 md:w-52 md:h-52 opacity-[0.08] grayscale pointer-events-none select-none">
                         <NextImage
                             src={watermarkImage}
                             alt=""
