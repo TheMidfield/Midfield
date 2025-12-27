@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/Card";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { useAuthModal } from "@/components/ui/useAuthModal";
+import { voteTopic } from "@/app/actions/vote-topic";
+import { useState, useTransition } from "react";
 
 interface EntityHeaderProps {
     title: string;
@@ -38,7 +40,11 @@ interface EntityHeaderProps {
         fc26?: { overall?: string | number };
     };
     backHref?: string;
-    userId?: string; // Add userId for auth check
+    userId?: string;
+    topicId?: string; // Topic ID for voting
+    upvoteCount?: number; // Initial upvote count
+    downvoteCount?: number; // Initial downvote count
+    userVote?: 'upvote' | 'downvote' | null; // User's current vote
 }
 
 export function EntityHeader({
@@ -51,10 +57,68 @@ export function EntityHeader({
     metadata,
     backHref = "/",
     userId,
+    topicId,
+    upvoteCount: initialUpvoteCount = 0,
+    downvoteCount: initialDownvoteCount = 0,
+    userVote: initialUserVote = null,
 }: EntityHeaderProps) {
     // Auth modal management
     const { isAuthModalOpen, authModalContext, requireAuth, closeAuthModal } = useAuthModal();
     const isAuthenticated = !!userId;
+
+    // Voting state
+    const [upvoteCount, setUpvoteCount] = useState(initialUpvoteCount);
+    const [downvoteCount, setDownvoteCount] = useState(initialDownvoteCount);
+    const [userVote, setUserVote] = useState(initialUserVote);
+    const [isPending, startTransition] = useTransition();
+
+    // Handle vote
+    const handleVote = async (voteType: 'upvote' | 'downvote') => {
+        if (!requireAuth(isAuthenticated, "default")) return;
+        if (!topicId) return;
+
+        // Optimistic update
+        const previousUserVote = userVote;
+        const previousUpvoteCount = upvoteCount;
+        const previousDownvoteCount = downvoteCount;
+
+        // Update UI optimistically
+        if (previousUserVote === voteType) {
+            // Remove vote
+            setUserVote(null);
+            if (voteType === 'upvote') {
+                setUpvoteCount(prev => Math.max(0, prev - 1));
+            } else {
+                setDownvoteCount(prev => Math.max(0, prev - 1));
+            }
+        } else {
+            // Add or change vote
+            setUserVote(voteType);
+            if (voteType === 'upvote') {
+                setUpvoteCount(prev => prev + 1);
+                if (previousUserVote === 'downvote') {
+                    setDownvoteCount(prev => Math.max(0, prev - 1));
+                }
+            } else {
+                setDownvoteCount(prev => prev + 1);
+                if (previousUserVote === 'upvote') {
+                    setUpvoteCount(prev => Math.max(0, prev - 1));
+                }
+            }
+        }
+
+        // Server update
+        startTransition(async () => {
+            const result = await voteTopic(topicId, voteType);
+            if (!result.success) {
+                // Revert on error
+                setUserVote(previousUserVote);
+                setUpvoteCount(previousUpvoteCount);
+                setDownvoteCount(previousDownvoteCount);
+                console.error('Vote failed:', result.error);
+            }
+        });
+    };
 
     const isPlayer = type === "player";
     const isClub = type === "club";
@@ -379,14 +443,19 @@ export function EntityHeader({
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    if (!requireAuth(isAuthenticated, "default")) return;
-                                    // TODO: Implement upvote logic
-                                    console.log('Upvote clicked');
+                                    handleVote('upvote');
                                 }}
-                                className="group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-neutral-900 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer"
+                                disabled={isPending}
+                                className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'upvote'
+                                    ? 'border-emerald-500 dark:border-emerald-500 bg-emerald-100 dark:bg-emerald-950/30'
+                                    : 'border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-neutral-900 hover:border-emerald-500 dark:hover:border-emerald-500'
+                                    } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
                             >
-                                <ThumbsUp className="w-4 h-4 text-emerald-600 dark:text-emerald-500 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 min-w-[2ch] text-center">0</span>
+                                <ThumbsUp className={`w-4 h-4 transition-transform ${userVote === 'upvote'
+                                    ? 'text-emerald-600 dark:text-emerald-500'
+                                    : 'text-emerald-600 dark:text-emerald-500 group-hover:scale-110'
+                                    }`} />
+                                <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 min-w-[2ch] text-center">{upvoteCount}</span>
                             </button>
 
                             {/* Downvote */}
@@ -395,14 +464,19 @@ export function EntityHeader({
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    if (!requireAuth(isAuthenticated, "default")) return;
-                                    // TODO: Implement downvote logic
-                                    console.log('Downvote clicked');
+                                    handleVote('downvote');
                                 }}
-                                className="group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500 transition-all cursor-pointer"
+                                disabled={isPending}
+                                className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'downvote'
+                                        ? 'border-red-500 dark:border-red-500 bg-red-100 dark:bg-red-950/30'
+                                        : 'border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500'
+                                    } ${isPending ? 'opacity-50 cursor-wait' : ''}`}
                             >
-                                <ThumbsDown className="w-4 h-4 text-red-600 dark:text-red-500 group-hover:scale-110 transition-transform" />
-                                <span className="text-xs font-bold text-red-700 dark:text-red-400 min-w-[2ch] text-center">0</span>
+                                <ThumbsDown className={`w-4 h-4 transition-transform ${userVote === 'downvote'
+                                        ? 'text-red-600 dark:text-red-500'
+                                        : 'text-red-600 dark:text-red-500 group-hover:scale-110'
+                                    }`} />
+                                <span className="text-xs font-bold text-red-700 dark:text-red-400 min-w-[2ch] text-center">{downvoteCount}</span>
                             </button>
 
                             {/* Share Button */}
