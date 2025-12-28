@@ -17,7 +17,7 @@ import { PlayerCard } from "@/components/ui/PlayerCard";
 import { ClubCard } from "@/components/ui/ClubCard";
 import { ModalShowcase } from "@/components/design-system/ModalShowcase";
 import { TrendingWidget } from "@/components/widgets/TrendingWidget";
-import { RelatedTopicsWidget } from "@/components/widgets/RelatedTopicsWidget";
+import { SimilarWidget } from "@/components/widgets/SimilarWidget";
 import {
     AlertCircle, Check, Terminal, User, ArrowRight, Zap, Search, Shield, Layout, MousePointer2,
     Download, Upload, Plus, Settings, Trash2, Edit, Heart, Share2, Star, TrendingUp, Users,
@@ -285,19 +285,19 @@ export default function DesignSystemPage() {
                         </div>
                     </div>
 
-                    {/* Related Topics (Arsenal Context) */}
+                    {/* Similar Topics (Arsenal Context) */}
                     <div className="space-y-3">
-                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Related Context (Arsenal)</span>
+                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Similar (Arsenal)</span>
                         <div className="max-w-sm">
-                            <RelatedTopicsWidget slug="arsenal" />
+                            <SimilarWidget slug="arsenal" />
                         </div>
                     </div>
 
-                    {/* Related Topics (Messi Context) */}
+                    {/* Similar Topics (Messi Context) */}
                     <div className="space-y-3 lg:col-span-2">
-                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Related Context (Messi - Takes Tab)</span>
+                        <span className="text-xs font-mono text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Similar (Messi)</span>
                         <div className="max-w-sm">
-                            <RelatedTopicsWidget slug="lionel-messi" />
+                            <SimilarWidget slug="lionel-messi" />
                         </div>
                     </div>
                 </div>

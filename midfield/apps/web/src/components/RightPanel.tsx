@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { TrendingWidget } from "./widgets/TrendingWidget";
-import { RelatedTopicsWidget } from "./widgets/RelatedTopicsWidget";
+import { SimilarWidget } from "./widgets/SimilarWidget";
 
 export function RightPanel() {
     const pathname = usePathname();
@@ -12,14 +12,10 @@ export function RightPanel() {
     const isTopicPage = pathname?.startsWith('/topic/');
     const slug = isTopicPage ? pathname.split('/topic/')[1] : undefined;
 
-    // User requested: "related before trending"
-
     return (
         <div className="w-full space-y-6">
-            {/* Search Widget could go here */}
-
-            {/* Context-Aware Related Content Widget (Priority) */}
-            <RelatedTopicsWidget slug={slug} />
+            {/* Smart Similar Recommendations (Priority) */}
+            <SimilarWidget slug={slug} />
 
             {/* Smart Trending Widget */}
             <TrendingWidget />

@@ -33,6 +33,21 @@ interface TopicPageClientProps {
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Manager"];
 
+// Position badge priority order for sorting within groups
+const positionBadgePriority: Record<string, number> = {
+    "GK": 1,
+    "CB": 2, "DEF": 3, "LB": 4, "RB": 5,
+    "CDM": 6, "CM": 7, "CAM": 8, "MID": 9,
+    "LW": 10, "RW": 11, "ST": 12, "FWD": 13,
+    "MGR": 99,
+};
+
+// Get position badge priority for sorting
+const getPositionPriority = (pos: string): number => {
+    const info = getPositionInfo(pos);
+    return positionBadgePriority[info.abbr] || 50;
+};
+
 // Position info with colors - matches FeaturedPlayers
 const getPositionInfo = (pos: string) => {
     const normalized = pos?.toLowerCase().trim() || "";
@@ -382,6 +397,13 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                 const players = groupedSquad[pos];
                                                                 if (!players || players.length === 0) return null;
 
+                                                                // Sort players within group by position badge priority
+                                                                const sortedPlayers = [...players].sort((a, b) => {
+                                                                    const priorityA = getPositionPriority(a.metadata?.position || '');
+                                                                    const priorityB = getPositionPriority(b.metadata?.position || '');
+                                                                    return priorityA - priorityB;
+                                                                });
+
                                                                 return (
                                                                     <div key={pos}>
                                                                         <div className="flex items-center justify-between mb-1.5 sm:mb-2">
@@ -389,11 +411,11 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                                 {pos}
                                                                             </span>
                                                                             <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
-                                                                                {players.length}
+                                                                                {sortedPlayers.length}
                                                                             </span>
                                                                         </div>
                                                                         <div className="space-y-1">
-                                                                            {players.map((player) => (
+                                                                            {sortedPlayers.map((player) => (
                                                                                 <PlayerMiniCard key={player.id} player={player} />
                                                                             ))}
                                                                         </div>
@@ -605,8 +627,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                     <>
                                                         <div className="pt-3 sm:pt-4 space-y-3">
                                                             {metadata?.founded && (
-                                                                <div className="flex items-start gap-3">
-                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
                                                                         <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                                                     </div>
                                                                     <div className="flex-1">
@@ -616,8 +638,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                 </div>
                                                             )}
                                                             {metadata?.stadium && (
-                                                                <div className="flex items-start gap-3">
-                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
                                                                         <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                                                     </div>
                                                                     <div className="flex-1">
@@ -627,8 +649,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                 </div>
                                                             )}
                                                             {metadata?.league && (
-                                                                <div className="flex items-start gap-3">
-                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 flex items-center justify-center rounded-md bg-emerald-100 dark:bg-emerald-950/30 shrink-0">
                                                                         <Trophy className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                                                     </div>
                                                                     <div className="flex-1">
