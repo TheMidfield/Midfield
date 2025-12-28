@@ -22,5 +22,8 @@
         "tsx": "^4.21.0",
         "turbo": "latest"
     },
-    "packageManager": "pnpm@10.25.0"
+    "packageManager": "pnpm@10.25.0",
+    "dependencies": {
+        "swr": "^2.3.8"
+    }
 }

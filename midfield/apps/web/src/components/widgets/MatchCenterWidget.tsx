@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { memo } from "react";
 import { Calendar, Shield } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
-import { getMatchCenterData, type MatchCenterFixture } from "@/app/actions/fetch-widget-data";
+import { useMatchCenter } from "@/lib/hooks/use-cached-data";
+import type { MatchCenterFixture } from "@/app/actions/fetch-widget-data";
 
 // Format date for display
 function formatMatchDate(dateStr: string): { dayMonth: string; time: string; isToday: boolean; isTomorrow: boolean } {
@@ -126,30 +127,12 @@ const FixtureRow = memo(({ fixture }: { fixture: MatchCenterFixture }) => {
 FixtureRow.displayName = 'FixtureRow';
 
 export function MatchCenterWidget() {
-    const [fixtures, setFixtures] = useState<MatchCenterFixture[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { data, isLoading: loading } = useMatchCenter(5);
 
-    useEffect(() => {
-        let mounted = true;
-
-        getMatchCenterData(5)
-            .then((data) => {
-                if (mounted) {
-                    // Sort by date ascending (earliest first)
-                    const sorted = [...data].sort((a, b) =>
-                        new Date(a.date).getTime() - new Date(b.date).getTime()
-                    );
-                    setFixtures(sorted);
-                    setLoading(false);
-                }
-            })
-            .catch(err => {
-                console.error("Failed to fetch match center:", err);
-                if (mounted) setLoading(false);
-            });
-
-        return () => { mounted = false; };
-    }, []);
+    // Sort by date ascending (earliest first)
+    const fixtures = data ? [...data].sort((a, b) =>
+        new Date(a.date).getTime() - new Date(b.date).getTime()
+    ) : [];
 
     return (
         <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-4 sm:p-5 shadow-sm">

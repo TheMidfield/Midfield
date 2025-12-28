@@ -130,16 +130,8 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
 
     const currentEntity = shuffledEntities[index];
 
-    // Loading state
-    if (!currentEntity) {
-        return (
-            <div style={{ maxWidth: '520px' }}>
-                <div className="h-10 w-72 bg-slate-100 dark:bg-neutral-800 rounded animate-pulse mb-3" />
-                <div className="h-5 w-56 bg-slate-100 dark:bg-neutral-800 rounded animate-pulse mb-6" />
-                <div className="h-12 w-64 bg-slate-100 dark:bg-neutral-800 rounded animate-pulse" />
-            </div>
-        );
-    }
+    // No loading state needed - data provided via SSR
+    if (!currentEntity) return null;
 
     return (
         <>

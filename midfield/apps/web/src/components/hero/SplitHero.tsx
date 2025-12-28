@@ -1,24 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { EntityCycler } from "./EntityCycler";
 import { LiveFeed } from "./LiveFeed";
-import { getHeroEntities, type HeroEntity } from "@/app/actions/hero-data";
+import type { HeroEntity } from "@/app/actions/hero-data";
 
 /**
  * Split Hero - Homepage hero section
+ * Now receives entities via SSR for instant loading
  */
-export function SplitHero() {
-    const [entities, setEntities] = useState<HeroEntity[]>([]);
-
-    useEffect(() => {
-        let mounted = true;
-        getHeroEntities()
-            .then((data) => { if (mounted) setEntities(data); })
-            .catch(console.error);
-        return () => { mounted = false; };
-    }, []);
-
+export function SplitHero({ entities }: { entities: HeroEntity[] }) {
     return (
         <section
             className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible"

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, memo } from "react";
+import { memo } from "react";
 import { TrendingUp, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
-import { getTrendingTopicsData, type TrendingTopic } from "@/app/actions/fetch-widget-data";
+import { useTrendingTopics } from "@/lib/hooks/use-cached-data";
+import type { TrendingTopic } from "@/app/actions/fetch-widget-data";
 import { Badge } from "@/components/ui/Badge";
 import { getPositionInfo, getRatingColor, PLAYER_IMAGE_STYLE } from "@/lib/entity-helpers";
 
@@ -102,26 +103,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
 TrendingItemRow.displayName = 'TrendingItemRow';
 
 export function HomeTrendingSection() {
-    const [trending, setTrending] = useState<TrendingTopic[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        let mounted = true;
-
-        getTrendingTopicsData()
-            .then((data) => {
-                if (mounted) {
-                    setTrending(data);
-                    setLoading(false);
-                }
-            })
-            .catch(err => {
-                console.error("Failed to fetch trending:", err);
-                if (mounted) setLoading(false);
-            });
-
-        return () => { mounted = false; };
-    }, []);
+    const { data: trending, isLoading: loading } = useTrendingTopics();
 
     return (
         <div className="w-full">
@@ -144,7 +126,7 @@ export function HomeTrendingSection() {
                         <SkeletonItem />
                         <SkeletonItem />
                     </>
-                ) : trending.length > 0 ? (
+                ) : trending && trending.length > 0 ? (
                     trending.map((item) => (
                         <TrendingItemRow key={item.id} item={item} />
                     ))

@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Flame, ArrowDownWideNarrow, Sparkles, Plus } from "lucide-react";
-import { getHeroTakes, type HeroTake } from "@/app/actions/hero-data";
+import { ArrowDownWideNarrow, Flame, Sparkles, Plus } from "lucide-react";
+import { useHeroTakes } from "@/lib/hooks/use-cached-data";
+import type { HeroTake } from "@/app/actions/hero-data";
 import Link from "next/link";
 import NextImage from "next/image";
-import { Card } from "@/components/ui/Card"; // Use standard Card
+import { Card } from "@/components/ui/Card";
 import { PLAYER_IMAGE_STYLE } from "@/lib/entity-helpers";
-import { Badge } from "@/components/ui/Badge";
+import { createClient } from "@/lib/supabase/client";
 
 // Format relative time
 function timeAgo(dateStr: string): string {
@@ -22,7 +23,7 @@ function timeAgo(dateStr: string): string {
     return `${Math.floor(seconds / 86400)}d`;
 }
 
-// Compact Take Card - Refined for consistency
+// Compact Take Card
 function TakeCard({ take }: { take: HeroTake }) {
     const isPlayer = take.topic.type === 'player';
     const isClub = take.topic.type === 'club';
@@ -30,7 +31,7 @@ function TakeCard({ take }: { take: HeroTake }) {
     return (
         <Link href={`/topic/${take.topic.slug}`} className="block group">
             <Card variant="interactive" className="p-3 sm:p-4 hover:border-emerald-500/30 transition-all bg-white dark:bg-neutral-900 flex flex-col gap-2.5 backdrop-blur-sm">
-                {/* Header: Entity (Main Focus) */}
+                {/* Header: Entity */}
                 <div className="flex items-center gap-1.5">
                     <ArrowDownWideNarrow className="w-3 h-3 text-slate-400 dark:text-neutral-500 shrink-0" />
                     <div className={`relative shrink-0 overflow-hidden ${isPlayer ? 'w-5 h-5 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800' : 'w-5 h-5'}`}>
@@ -59,7 +60,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                     {take.content}
                 </p>
 
-                {/* Footer: Author + Time (De-emphasized) */}
+                {/* Footer: Author + Time */}
                 <div className="flex items-center justify-between mt-auto pt-1">
                     <div className="flex items-center gap-1.5">
                         <div className="shrink-0 rounded-md bg-slate-100 dark:bg-neutral-800 overflow-hidden w-4 h-4 border border-slate-200 dark:border-neutral-700">
@@ -87,60 +88,119 @@ function TakeCard({ take }: { take: HeroTake }) {
 // Skeleton
 function SkeletonCard() {
     return (
-        <div className="bg-white dark:bg-neutral-900/80 border border-slate-200 dark:border-neutral-800 rounded-md animate-pulse" style={{ padding: '10px 12px' }}>
-            <div className="flex items-center" style={{ gap: '6px', marginBottom: '6px' }}>
-                <div className="rounded-full bg-slate-200 dark:bg-neutral-700" style={{ width: '16px', height: '16px' }} />
-                <div className="rounded bg-slate-200 dark:bg-neutral-700" style={{ width: '60px', height: '9px' }} />
+        <div className="bg-white dark:bg-neutral-900/80 border border-slate-200 dark:border-neutral-800 rounded-md animate-pulse p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+                <div className="rounded-full bg-slate-200 dark:bg-neutral-700 w-4 h-4" />
+                <div className="rounded bg-slate-200 dark:bg-neutral-700 w-16 h-3" />
             </div>
-            <div className="rounded bg-slate-200 dark:bg-neutral-700" style={{ width: '100%', height: '10px', marginBottom: '4px' }} />
-            <div className="rounded bg-slate-200 dark:bg-neutral-700" style={{ width: '70%', height: '10px', marginBottom: '6px' }} />
-            <div className="flex items-center" style={{ gap: '4px' }}>
-                <div className="rounded-md bg-slate-200 dark:bg-neutral-700" style={{ width: '14px', height: '14px' }} />
-                <div className="rounded bg-slate-200 dark:bg-neutral-700" style={{ width: '40px', height: '8px' }} />
+            <div className="rounded bg-slate-200 dark:bg-neutral-700 w-full h-3 mb-1" />
+            <div className="rounded bg-slate-200 dark:bg-neutral-700 w-3/4 h-3 mb-2" />
+            <div className="flex items-center gap-1">
+                <div className="rounded-md bg-slate-200 dark:bg-neutral-700 w-3.5 h-3.5" />
+                <div className="rounded bg-slate-200 dark:bg-neutral-700 w-10 h-2" />
             </div>
         </div>
     );
 }
 
-// Track which column each take belongs to (by id)
+// Track which column each take belongs to
 type TakeWithColumn = HeroTake & { column: 1 | 2 };
 
 /**
- * LiveFeed - Latest takes in a staggered dual-column layout
- * Features: smooth spawn animation, subtle parallax effect
+ * LiveFeed - Real-time takes feed with Supabase Realtime
+ * Features: SWR caching + 15s polling + Realtime subscriptions + staggered animation
  */
 export function LiveFeed() {
-    const [takes, setTakes] = useState<TakeWithColumn[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [nextColumn, setNextColumn] = useState<1 | 2>(1);
-    const [scrollY, setScrollY] = useState(0);
+    // SWR for initial load + fallback polling (15s)
+    const { data: swrTakes, mutate } = useHeroTakes(16);
 
+    const [takes, setTakes] = useState<TakeWithColumn[]>([]);
+    const [scrollY, setScrollY] = useState(0);
+    const [nextColumn, setNextColumn] = useState<1 | 2>(1);
+    const initialAnimationDone = useRef(false);
+    const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+    // Initialize Supabase client
     useEffect(() => {
-        let mounted = true;
-        getHeroTakes(16)
-            .then((data) => {
-                if (mounted) {
-                    const withColumns = data.map((take, i) => ({
-                        ...take,
-                        column: (i % 2 === 0 ? 1 : 2) as 1 | 2
-                    }));
-                    setTakes(withColumns);
-                    setLoading(false);
-                }
-            })
-            .catch((err) => { console.error(err); if (mounted) setLoading(false); });
-        return () => { mounted = false; };
+        supabaseRef.current = createClient();
     }, []);
 
-    // Simple parallax scroll listener
+    // Handle SWR data updates
     useEffect(() => {
-        const handleScroll = () => {
-            setScrollY(window.scrollY);
+        if (!swrTakes) return;
+
+        setTakes(prevTakes => {
+            // If first load and we want staggered animation
+            if (!initialAnimationDone.current && swrTakes.length >= 2) {
+                initialAnimationDone.current = true;
+
+                // Latest 2 takes get special treatment
+                const [latest, secondLatest, ...rest] = swrTakes;
+
+                // Assign columns: latest → column 1 (left), second → column 2 (right)
+                const staggered: TakeWithColumn[] = [
+                    { ...latest, column: 1 },
+                    { ...secondLatest, column: 2 },
+                    ...rest.map((take, i) => ({
+                        ...take,
+                        column: (i % 2 === 0 ? 1 : 2) as 1 | 2
+                    }))
+                ];
+
+                return staggered;
+            }
+
+            // Normal update - check for new takes
+            const existingIds = new Set(prevTakes.map(t => t.id));
+            const newTakes = swrTakes.filter(t => !existingIds.has(t.id));
+
+            if (newTakes.length === 0) return prevTakes;
+
+            // Add new takes to the top, alternating columns
+            const withColumns = newTakes.map((take, i) => ({
+                ...take,
+                column: ((i % 2) + 1) as 1 | 2
+            }));
+
+            return [...withColumns, ...prevTakes].slice(0, 16);
+        });
+    }, [swrTakes]);
+
+    // Supabase Realtime subscription for instant updates
+    useEffect(() => {
+        if (!supabaseRef.current) return;
+
+        const channel = supabaseRef.current
+            .channel('public:posts')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'posts',
+                    filter: 'is_deleted=eq.false'
+                },
+                async (payload) => {
+                    console.log('New take detected:', payload);
+                    // Trigger SWR revalidation to fetch the new take with full data
+                    mutate();
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabaseRef.current?.removeChannel(channel);
         };
+    }, [mutate]);
+
+    // Parallax scroll effect
+    useEffect(() => {
+        const handleScroll = () => setScrollY(window.scrollY);
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // DEV: Add test take
     const addTestTake = () => {
         const sampleTake: TakeWithColumn = {
             id: `test-${Date.now()}`,
@@ -163,12 +223,42 @@ export function LiveFeed() {
         setNextColumn(prev => prev === 1 ? 2 : 1);
     };
 
-    const col1 = takes.filter(t => t.column === 1);
-    const col2 = takes.filter(t => t.column === 2);
+    const col1Takes = takes.filter(t => t.column === 1);
+    const col2Takes = takes.filter(t => t.column === 2);
 
-    // Parallax transforms - clearly visible depth effect
-    const col1Transform = scrollY * 0.08;
-    const col2Transform = scrollY * 0.15;
+    // Loading state
+    if (!swrTakes) {
+        return (
+            <div>
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                        <span className="font-bold text-xs tracking-wider text-slate-600 dark:text-neutral-400 uppercase">
+                            Latest Takes
+                        </span>
+                    </div>
+                    <div className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-full">
+                        <span className="text-emerald-700 dark:text-emerald-400 font-bold text-[10px]">
+                            Live
+                        </span>
+                    </div>
+                </div>
+
+                {/* Skeleton */}
+                <div className="flex gap-3" style={{ height: '100%', overflow: 'hidden' }}>
+                    <div className="flex-1 flex flex-col gap-3">
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </div>
+                    <div className="flex-1 flex flex-col gap-3 pt-6">
+                        <SkeletonCard />
+                        <SkeletonCard />
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full">
@@ -200,72 +290,58 @@ export function LiveFeed() {
                 <div
                     className="flex-1 flex flex-col"
                     style={{
-                        transform: `translateY(${col1Transform}px)`,
+                        transform: `translateY(${scrollY * 0.08}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
-                    {loading ? (
-                        <div className="flex flex-col gap-3">
-                            <SkeletonCard />
-                            <SkeletonCard />
-                        </div>
-                    ) : (
-                        <AnimatePresence initial={false}>
-                            {col1.map((take, i) => (
-                                <motion.div
-                                    key={take.id}
-                                    layout="position"
-                                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    transition={{
-                                        opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
-                                        y: { type: 'spring', stiffness: 400, damping: 28 },
-                                        scale: { type: 'spring', stiffness: 450, damping: 25 },
-                                        layout: { type: 'spring', stiffness: 350, damping: 30 }
-                                    }}
-                                    style={{ marginBottom: '12px' }}
-                                >
-                                    <TakeCard take={take} />
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    )}
+                    <AnimatePresence initial={false}>
+                        {col1Takes.map((take) => (
+                            <motion.div
+                                key={take.id}
+                                layout="position"
+                                initial={{ opacity: 0, y: -20, scale: 0.96 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{
+                                    opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                    y: { type: 'spring', stiffness: 400, damping: 28 },
+                                    scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                    layout: { type: 'spring', stiffness: 350, damping: 30 }
+                                }}
+                                style={{ marginBottom: '12px' }}
+                            >
+                                <TakeCard take={take} />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
 
                 {/* Column 2 - Faster parallax + offset */}
                 <div
-                    className="flex-1 flex flex-col pt-4 sm:pt-6"
+                    className="flex-1 flex flex-col pt-8 sm:pt-12 pb-48"
                     style={{
-                        transform: `translateY(${col2Transform}px)`,
+                        transform: `translateY(${scrollY * 0.15}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
-                    {loading ? (
-                        <div className="flex flex-col gap-3">
-                            <SkeletonCard />
-                            <SkeletonCard />
-                        </div>
-                    ) : (
-                        <AnimatePresence initial={false}>
-                            {col2.map((take, i) => (
-                                <motion.div
-                                    key={take.id}
-                                    layout="position"
-                                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    transition={{
-                                        opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
-                                        y: { type: 'spring', stiffness: 400, damping: 28 },
-                                        scale: { type: 'spring', stiffness: 450, damping: 25 },
-                                        layout: { type: 'spring', stiffness: 350, damping: 30 }
-                                    }}
-                                    style={{ marginBottom: '12px' }}
-                                >
-                                    <TakeCard take={take} />
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    )}
+                    <AnimatePresence initial={false}>
+                        {col2Takes.map((take, index) => (
+                            <motion.div
+                                key={take.id}
+                                layout="position"
+                                initial={{ opacity: 0, y: -20, scale: 0.96 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                transition={{
+                                    opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                    y: { type: 'spring', stiffness: 400, damping: 28 },
+                                    scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                    layout: { type: 'spring', stiffness: 350, damping: 30 }
+                                }}
+                                style={{ marginBottom: '12px' }}
+                            >
+                                <TakeCard take={take} />
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>

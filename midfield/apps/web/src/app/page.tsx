@@ -55,6 +55,9 @@ type SafeLeague = {
 export default async function Home() {
     const supabase = await createClient();
 
+    // Fetch hero entities server-side (cached for 1 hour)
+    const heroEntities = await getHeroEntities();
+
     // Fetch curated clubs by slug
     const { data: clubsRaw } = await supabase
         .from('topics')
@@ -98,8 +101,8 @@ export default async function Home() {
 
     return (
         <div className="w-full">
-            {/* Split Hero */}
-            <SplitHero />
+            {/* Split Hero - SSR data, no loading state */}
+            <SplitHero entities={heroEntities} />
 
             {/* Trending + Match Center - Two Column Layout */}
             <section className="mb-12">
