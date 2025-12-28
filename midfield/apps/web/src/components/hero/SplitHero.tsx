@@ -21,12 +21,12 @@ export function SplitHero() {
 
     return (
         <section
-            className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8"
+            className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible"
             style={{ width: '100%' }}
         >
             {/* Fading grid background - uses radial mask to fade edges */}
             <div
-                className="absolute inset-0 pointer-events-none opacity-[0.02]"
+                className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
                 style={{
                     backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
                     backgroundSize: '24px 24px',

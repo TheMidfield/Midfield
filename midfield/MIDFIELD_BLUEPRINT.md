@@ -1,4 +1,13 @@
 # ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.3)
+
+<!--
+UPDATE LOG (Dec 28, 2025):
+- LiveFeed animation now uses fixed column assignment to prevent reshuffling on new takes (no more column-flip bug)
+- Tactical SVG (X/O/arrows) overlay removed from hero; defer tactical aesthetics until a future design pass
+- Design System Law reinforced: Any decorative/visual motif must be removable without breaking layout or performance
+- All hero/LiveFeed changes must be 100% responsive, mobile-native compatible, and desktop-perfect (see RESPONSIVE PERFECTION LAW)
+-->
+
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
 OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
 FORGE DATE: DEC 28, 2025 (Updated)
@@ -665,6 +674,8 @@ Completed (as of Dec 26, 2025):
   - Design system compliance enforced (square avatars, emoji reactions, no button shadows)
   - See: `docs/HOMEPAGE_HERO_CONTEXT.txt` for detailed handoff docs
   - **Entity Utils Centralization**: `src/lib/entity-helpers.ts` implemented to remove 5+ instances of duplicated logic.
+  - **Hero Animation Polish**: LiveFeed column-based animation with fixed column assignment (no reshuffling on new takes)
+  - **Tactical Aesthetics**: DEFERRED - X's/O's/arrows SVG overlay removed; to be revisited later with better design
 
 Next objectives (likely):
 - Responsiveness hardening for smaller viewports WITHOUT desktop regression

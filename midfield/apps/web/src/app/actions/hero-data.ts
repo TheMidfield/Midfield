@@ -44,7 +44,7 @@ const CURATED_ENTITY_SLUGS = [
     'cole-palmer-34192430',               // Palmer
     'arsenal',                   // Club
     'english-premier-league',    // League
-    'michael-olise-34172857',
+    'michael-olise-341728573',
     'harry-kane-34146220',
     'liverpool',
     'pep-guardiola-34164048',

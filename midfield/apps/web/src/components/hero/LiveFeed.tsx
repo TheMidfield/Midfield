@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Flame, MessageSquare, Sparkles,  } from "lucide-react";
+import { Flame, ArrowDownWideNarrow, Sparkles, Plus } from "lucide-react";
 import { getHeroTakes, type HeroTake } from "@/app/actions/hero-data";
 import Link from "next/link";
 import NextImage from "next/image";
@@ -32,7 +32,7 @@ function TakeCard({ take }: { take: HeroTake }) {
             <Card variant="interactive" className="p-3 sm:p-4 hover:border-emerald-500/30 transition-all bg-white dark:bg-neutral-900 flex flex-col gap-2.5 backdrop-blur-sm">
                 {/* Header: Entity (Main Focus) */}
                 <div className="flex items-center gap-1.5">
-                    <MessageSquare className="w-3 h-3 text-slate-400 dark:text-neutral-500 shrink-0" />
+                    <ArrowDownWideNarrow className="w-3 h-3 text-slate-400 dark:text-neutral-500 shrink-0" />
                     <div className={`relative shrink-0 overflow-hidden ${isPlayer ? 'w-5 h-5 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800' : 'w-5 h-5'}`}>
                         {take.topic.imageUrl ? (
                             <NextImage
@@ -102,25 +102,62 @@ function SkeletonCard() {
     );
 }
 
+// Track which column each take belongs to (by id)
+type TakeWithColumn = HeroTake & { column: 1 | 2 };
+
 /**
  * LiveFeed - Latest takes in a staggered dual-column layout
  */
 export function LiveFeed() {
-    const [takes, setTakes] = useState<HeroTake[]>([]);
+    const [takes, setTakes] = useState<TakeWithColumn[]>([]);
     const [loading, setLoading] = useState(true);
+    const [nextColumn, setNextColumn] = useState<1 | 2>(1); // Alternate which column gets next take
 
     useEffect(() => {
         let mounted = true;
         // Fetch more takes to fill two columns
         getHeroTakes(16)
-            .then((data) => { if (mounted) { setTakes(data); setLoading(false); } })
+            .then((data) => { 
+                if (mounted) { 
+                    // Assign columns to initial takes (alternating)
+                    const withColumns = data.map((take, i) => ({
+                        ...take,
+                        column: (i % 2 === 0 ? 1 : 2) as 1 | 2
+                    }));
+                    setTakes(withColumns); 
+                    setLoading(false); 
+                } 
+            })
             .catch((err) => { console.error(err); if (mounted) setLoading(false); });
         return () => { mounted = false; };
     }, []);
 
-    // Split into two columns
-    const col1 = takes.filter((_, i) => i % 2 === 0);
-    const col2 = takes.filter((_, i) => i % 2 === 1);
+    // DEV: Simulate adding a new take
+    const addTestTake = () => {
+        const sampleTake: TakeWithColumn = {
+            id: `test-${Date.now()}`,
+            content: "This is a test take to see the animation! 🔥",
+            createdAt: new Date().toISOString(),
+            author: {
+                username: "testuser",
+                avatarUrl: undefined
+            },
+            topic: {
+                title: "Test Player",
+                slug: "test-player",
+                type: "player",
+                imageUrl: undefined
+            },
+            reactionCount: 0,
+            column: nextColumn
+        };
+        setTakes(prev => [sampleTake, ...prev]);
+        setNextColumn(prev => prev === 1 ? 2 : 1); // Alternate for next time
+    };
+
+    // Split into two columns based on assigned column property
+    const col1 = takes.filter(t => t.column === 1);
+    const col2 = takes.filter(t => t.column === 2);
 
     return (
         <div className="w-full">
@@ -128,9 +165,17 @@ export function LiveFeed() {
             <div className="flex items-center justify-between gap-2 mb-4 pl-1">
                 <div className="flex items-center gap-2">
                     <Flame className="text-emerald-500 w-4 h-4 fill-emerald-500/20" />
-                    <span className="font-extrabold text-slate-300 dark:text-neutral-200 text-xs uppercase tracking-widest">
+                    <span className="font-extrabold text-slate-500 dark:text-neutral-200 text-xs uppercase tracking-widest">
                         Latest Takes
                     </span>
+                    {/* DEV: Test button */}
+                    <button
+                        onClick={addTestTake}
+                        className="ml-2 p-1 rounded bg-amber-500/20 hover:bg-amber-500/40 text-amber-500 transition-colors"
+                        title="DEV: Add test take"
+                    >
+                        <Plus className="w-3 h-3" />
+                    </button>
                 </div>
                 <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50">
                     <Sparkles className="w-3 h-3" />
@@ -141,35 +186,60 @@ export function LiveFeed() {
             {/* Staggered Grid */}
             <div className="flex gap-8">
                 {/* Column 1 */}
-                <div className="flex-1 flex flex-col gap-4">
+                <div className="flex-1 flex flex-col">
                     {loading ? (
-                        <>
-                            <SkeletonCard />
-                            <SkeletonCard />
-                        </>
-                    ) : (
-                        // No stagger on load, just clean fade
                         <div className="flex flex-col gap-3">
-                            {col1.map((take) => (
-                                <TakeCard key={`col1-${take.id}`} take={take} />
-                            ))}
+                            <SkeletonCard />
+                            <SkeletonCard />
                         </div>
+                    ) : (
+                        <AnimatePresence initial={false}>
+                            {col1.map((take, i) => (
+                                <motion.div
+                                    key={take.id}
+                                    layout="position"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{
+                                        opacity: { duration: 0.25, ease: 'easeOut' },
+                                        scale: { type: 'spring', stiffness: 500, damping: 30 },
+                                        layout: { type: 'spring', stiffness: 400, damping: 35 }
+                                    }}
+                                    style={{ marginBottom: '12px' }}
+                                >
+                                    <TakeCard take={take} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     )}
                 </div>
 
                 {/* Column 2 - Offset/Staggered */}
-                <div className="flex-1 flex flex-col gap-3 pt-8 sm:pt-12">
+                <div className="flex-1 flex flex-col pt-8 sm:pt-12">
                     {loading ? (
-                        <>
-                            <SkeletonCard />
-                            <SkeletonCard />
-                        </>
-                    ) : (
                         <div className="flex flex-col gap-3">
-                            {col2.map((take) => (
-                                <TakeCard key={`col2-${take.id}`} take={take} />
-                            ))}
+                            <SkeletonCard />
+                            <SkeletonCard />
                         </div>
+                    ) : (
+                        <AnimatePresence initial={false}>
+                            {col2.map((take, i) => (
+                                <motion.div
+                                    key={take.id}
+                                    layout="position"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{
+                                        opacity: { duration: 0.25, ease: 'easeOut' },
+                                        scale: { type: 'spring', stiffness: 500, damping: 30 },
+                                        layout: { type: 'spring', stiffness: 400, damping: 35 }
+                                    }}
+                                    style={{ marginBottom: '12px' }}
+                                >
+                                    <TakeCard take={take} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     )}
                 </div>
             </div>

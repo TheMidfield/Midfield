@@ -156,7 +156,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
 
                 {/* "What's your take on" + cycling card */}
                 <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-16">
-                <span className="text-slate-500 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
+                <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
                     What's your take on...
                 </span>
 
@@ -195,7 +195,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
             </button>
 
             {/* Discrete subtitle */}
-            <p className="text-slate-400 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
+            <p className="text-slate-500 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
                 Discuss players, clubs, and leagues with fans worldwide.
             </p>
             </div>
