@@ -40,29 +40,130 @@ export type SimilarEntity = {
 
 export async function getTrendingTopicsData() {
     const supabase = await createClient();
+    const now = Date.now();
+    const hours24 = new Date(now - 24 * 60 * 60 * 1000).toISOString();
+    const hours72 = new Date(now - 72 * 60 * 60 * 1000).toISOString(); // 3 days for fallback
 
-    // Fetch top topics by post_count
-    const { data, error } = await supabase
-        .from('topics')
-        .select('*')
-        .eq('is_active', true)
-        .order('post_count', { ascending: false })
-        .limit(5);
+    // Aggregate activity from multiple sources in parallel
+    const [postsResult, votesResult, reactionsResult] = await Promise.all([
+        // Recent posts by topic (3 days)
+        supabase
+            .from('posts')
+            .select('topic_id, created_at')
+            .gte('created_at', hours72)
+            .eq('is_deleted', false),
+        // Recent topic votes (3 days)
+        supabase
+            .from('topic_votes')
+            .select('topic_id, created_at')
+            .gte('created_at', hours72),
+        // Recent reactions through posts (3 days)
+        supabase
+            .from('reactions')
+            .select('created_at, posts!inner(topic_id)')
+            .gte('created_at', hours72)
+    ]);
 
-    if (error) {
-        console.error("Error fetching trending:", error);
-        return [];
+    // Time decay function: recent activity worth more
+    // Last 24h = 1.0x, 24-48h = 0.5x, 48-72h = 0.25x
+    const getTimeWeight = (createdAt: string) => {
+        const age = now - new Date(createdAt).getTime();
+        const hoursAgo = age / (1000 * 60 * 60);
+        if (hoursAgo <= 24) return 1.0;
+        if (hoursAgo <= 48) return 0.5;
+        return 0.25;
+    };
+
+    // Count activity per topic with time decay
+    const activityMap = new Map<string, number>();
+
+    // Posts (weight: 3)
+    (postsResult.data || []).forEach(p => {
+        if (p.topic_id) {
+            const weight = 3 * getTimeWeight(p.created_at);
+            activityMap.set(p.topic_id, (activityMap.get(p.topic_id) || 0) + weight);
+        }
+    });
+
+    // Votes (weight: 2)
+    (votesResult.data || []).forEach(v => {
+        if (v.topic_id) {
+            const weight = 2 * getTimeWeight(v.created_at);
+            activityMap.set(v.topic_id, (activityMap.get(v.topic_id) || 0) + weight);
+        }
+    });
+
+    // Reactions (weight: 1)
+    (reactionsResult.data || []).forEach(r => {
+        const topicId = (r.posts as any)?.topic_id;
+        if (topicId) {
+            const weight = 1 * getTimeWeight(r.created_at);
+            activityMap.set(topicId, (activityMap.get(topicId) || 0) + weight);
+        }
+    });
+
+    // Sort by activity score
+    const sortedTopicIds = [...activityMap.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([id]) => id);
+
+    // If not enough activity, fall back to high-rated players with FC26 data
+    if (sortedTopicIds.length < 4) {
+        const { data: fallbackTopics } = await supabase
+            .from('topics')
+            .select('id')
+            .eq('is_active', true)
+            .eq('type', 'player')
+            .not('fc26_data', 'is', null)
+            .order('follower_count', { ascending: false })
+            .limit(6);
+
+        const existingIds = new Set(sortedTopicIds);
+        (fallbackTopics || []).forEach(t => {
+            if (!existingIds.has(t.id) && sortedTopicIds.length < 6) {
+                sortedTopicIds.push(t.id);
+            }
+        });
     }
 
-    return data.map((topic, index) => ({
-        id: topic.id,
-        rank: index + 1,
-        tag: topic.title,
-        slug: topic.slug,
-        posts: topic.post_count + " posts", // format number nicely if needed
-        isRising: index < 2 // Simple logic for now
-    }));
+    if (sortedTopicIds.length === 0) return [];
+
+    // Fetch topic details
+    const { data: topics } = await supabase
+        .from('topics')
+        .select('id, title, slug, type, metadata, fc26_data')
+        .in('id', sortedTopicIds);
+
+    // Preserve order by activity
+    const topicsMap = new Map((topics || []).map(t => [t.id, t]));
+    
+    return sortedTopicIds
+        .map((id, index) => {
+            const topic = topicsMap.get(id);
+            if (!topic) return null;
+            return {
+                id: topic.id,
+                rank: index + 1,
+                title: topic.title,
+                slug: topic.slug,
+                type: topic.type,
+                imageUrl: (topic.metadata as any)?.photo_url || (topic.metadata as any)?.badge_url,
+                activity: activityMap.get(id) || 0
+            };
+        })
+        .filter(Boolean) as TrendingTopic[];
 }
+
+export type TrendingTopic = {
+    id: string;
+    rank: number;
+    title: string;
+    slug: string;
+    type: string;
+    imageUrl?: string;
+    activity: number;
+};
 
 export async function getRelatedTopicsData(slug?: string) {
     if (!slug) return { entities: [], takes: [] };
@@ -428,4 +529,329 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
     return results
         .sort((a, b) => b.score - a.score)
         .slice(0, 6);
+}
+
+// ==================== MATCH CENTER DATA ====================
+
+// UEFA Club Rankings (Top 25) - used for scoring fixture importance
+const UEFA_CLUB_RANKINGS: Record<string, number> = {
+    'real-madrid': 1,
+    'bayern-munich': 2,
+    'bayern-munchen': 2,
+    'inter-milan': 3,
+    'internazionale': 3,
+    'inter': 3,
+    'manchester-city': 4,
+    'liverpool': 5,
+    'paris-saint-germain': 6,
+    'psg': 6,
+    'borussia-dortmund': 7,
+    'bayer-leverkusen': 8,
+    'barcelona': 9,
+    'fc-barcelona': 9,
+    'arsenal': 10,
+    'atletico-madrid': 11,
+    'chelsea': 12,
+    'as-roma': 13,
+    'roma': 13,
+    'benfica': 14,
+    'sl-benfica': 14,
+    'eintracht-frankfurt': 15,
+    'atalanta': 16,
+    'manchester-united': 17,
+    'psv-eindhoven': 18,
+    'psv': 18,
+    'feyenoord': 19,
+    'club-brugge': 20,
+    'sporting-cp': 21,
+    'sporting-lisbon': 21,
+    'tottenham-hotspur': 22,
+    'tottenham': 22,
+    'spurs': 22,
+    'fiorentina': 23,
+    'west-ham-united': 24,
+    'west-ham': 24,
+    'juventus': 25,
+};
+
+// League prestige rankings
+const LEAGUE_PRESTIGE: Record<string, number> = {
+    'english-premier-league': 5,
+    'premier-league': 5,
+    'la-liga': 4,
+    'spanish-la-liga': 4,
+    'serie-a': 4,
+    'italian-serie-a': 4,
+    'bundesliga': 3,
+    'german-bundesliga': 3,
+    'ligue-1': 3,
+    'french-ligue-1': 3,
+    'champions-league': 6,
+    'uefa-champions-league': 6,
+    'europa-league': 4,
+    'uefa-europa-league': 4,
+};
+
+export type MatchCenterFixture = {
+    id: number;
+    date: string;
+    homeTeam: {
+        id: string;
+        title: string;
+        slug: string;
+        badgeUrl?: string;
+    };
+    awayTeam: {
+        id: string;
+        title: string;
+        slug: string;
+        badgeUrl?: string;
+    };
+    competition: {
+        id: string;
+        title: string;
+        slug: string;
+        logoUrl?: string;
+    };
+    venue?: string;
+    importance: number; // 0-100 score
+    isTopMatch: boolean; // Featured/big match indicator
+};
+
+/**
+ * Get top fixtures for the Match Center widget
+ * Scoring factors:
+ * - UEFA rankings of both teams
+ * - League prestige
+ * - League standings proximity (close positions = more exciting)
+ * - Derby/rivalry bonus
+ */
+export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[]> {
+    const supabase = await createClient();
+    const now = new Date();
+    const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    // Fetch upcoming fixtures with team and competition data
+    const { data: fixtures, error } = await supabase
+        .from('fixtures')
+        .select(`
+            id,
+            date,
+            venue,
+            home_team_id,
+            away_team_id,
+            competition_id,
+            homeTeam:topics!fixtures_home_team_id_fkey(id, title, slug, metadata),
+            awayTeam:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
+            competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
+        `)
+        .gte('date', now.toISOString())
+        .lte('date', weekAhead.toISOString())
+        .is('home_score', null) // Not yet played
+        .order('date', { ascending: true })
+        .limit(100); // Get more to filter/score
+
+    if (error || !fixtures?.length) {
+        return [];
+    }
+
+    // Get league standings for position-based scoring
+    const { data: standings } = await supabase
+        .from('league_standings')
+        .select('team_id, rank, league_id');
+
+    const standingsMap = new Map<string, { rank: number; leagueId: string }>();
+    (standings || []).forEach(s => {
+        standingsMap.set(s.team_id, { rank: s.rank, leagueId: s.league_id });
+    });
+
+    // Score and transform fixtures
+    const scoredFixtures = fixtures.map((f: any) => {
+        const homeTeam = f.homeTeam;
+        const awayTeam = f.awayTeam;
+        const competition = f.competition;
+
+        if (!homeTeam || !awayTeam || !competition) return null;
+
+        let importance = 0;
+
+        // 1. UEFA Rankings factor (0-40 points)
+        // Lower rank = higher score, max 40 points if both teams are top 10
+        const homeUefa = UEFA_CLUB_RANKINGS[homeTeam.slug] || 50;
+        const awayUefa = UEFA_CLUB_RANKINGS[awayTeam.slug] || 50;
+        const avgUefa = (homeUefa + awayUefa) / 2;
+        // Top teams (avg rank < 15) get 40 points, rank 15-25 gets 20-30, others get 0-15
+        if (avgUefa <= 15) {
+            importance += Math.max(0, 40 - avgUefa);
+        } else if (avgUefa <= 30) {
+            importance += Math.max(0, 25 - (avgUefa - 15));
+        } else {
+            importance += Math.max(0, 10 - (avgUefa - 30) / 2);
+        }
+
+        // 2. League prestige (0-25 points)
+        const leaguePrestige = LEAGUE_PRESTIGE[competition.slug] || 1;
+        importance += leaguePrestige * 5;
+
+        // 3. League standings proximity (0-20 points)
+        // Teams close in the table = more competitive match
+        const homeStanding = standingsMap.get(homeTeam.id);
+        const awayStanding = standingsMap.get(awayTeam.id);
+        if (homeStanding && awayStanding && homeStanding.leagueId === awayStanding.leagueId) {
+            const posDiff = Math.abs(homeStanding.rank - awayStanding.rank);
+            // Same position diff = more exciting (e.g., 1st vs 2nd)
+            importance += Math.max(0, 20 - posDiff * 2);
+            
+            // Title race bonus: both teams in top 4
+            if (homeStanding.rank <= 4 && awayStanding.rank <= 4) {
+                importance += 10;
+            }
+        }
+
+        // 4. Big match bonus: two top 10 UEFA teams
+        const isBigMatch = homeUefa <= 10 && awayUefa <= 10;
+        if (isBigMatch) {
+            importance += 15;
+        }
+
+        // 5. Time factor: matches sooner are slightly more relevant
+        const hoursUntil = (new Date(f.date).getTime() - now.getTime()) / (1000 * 60 * 60);
+        if (hoursUntil <= 48) {
+            importance += 5;
+        }
+
+        return {
+            id: f.id,
+            date: f.date,
+            homeTeam: {
+                id: homeTeam.id,
+                title: homeTeam.title,
+                slug: homeTeam.slug,
+                badgeUrl: (homeTeam.metadata as any)?.badge_url,
+            },
+            awayTeam: {
+                id: awayTeam.id,
+                title: awayTeam.title,
+                slug: awayTeam.slug,
+                badgeUrl: (awayTeam.metadata as any)?.badge_url,
+            },
+            competition: {
+                id: competition.id,
+                title: competition.title,
+                slug: competition.slug,
+                logoUrl: (competition.metadata as any)?.logo_url,
+            },
+            venue: f.venue,
+            importance,
+            isTopMatch: importance >= 60,
+        };
+    }).filter(Boolean) as MatchCenterFixture[];
+
+    // Sort by importance and return top fixtures
+    return scoredFixtures
+        .sort((a, b) => b.importance - a.importance)
+        .slice(0, limit);
+}
+
+// ==================== HERO LIVE FEED DATA ====================
+
+export type HeroTake = {
+    id: string;
+    content: string;
+    createdAt: string;
+    author: {
+        username: string;
+        avatarUrl?: string;
+    };
+    topic: {
+        id: string;
+        title: string;
+        slug: string;
+        type: string;
+        imageUrl?: string;
+    };
+    reactionCount: number;
+    replyCount: number;
+};
+
+/**
+ * Fetch recent takes for the hero live feed
+ * Prioritizes recent, engaging content with topic variety
+ */
+export async function getHeroLiveFeed(limit = 20): Promise<HeroTake[]> {
+    const supabase = await createClient();
+    const hours72 = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
+
+    // Fetch recent posts with topic and author data
+    const { data: posts, error } = await supabase
+        .from('posts')
+        .select(`
+            id,
+            content,
+            created_at,
+            reaction_count,
+            reply_count,
+            author:users!posts_author_id_fkey(username, avatar_url),
+            topic:topics!posts_topic_id_fkey(id, title, slug, type, metadata)
+        `)
+        .is('parent_post_id', null) // Only root posts (takes), not replies
+        .eq('is_deleted', false)
+        .gte('created_at', hours72)
+        .order('created_at', { ascending: false })
+        .limit(50); // Fetch more to filter/diversify
+
+    if (error || !posts?.length) {
+        // Fallback: get any recent takes
+        const { data: fallbackPosts } = await supabase
+            .from('posts')
+            .select(`
+                id,
+                content,
+                created_at,
+                reaction_count,
+                reply_count,
+                author:users!posts_author_id_fkey(username, avatar_url),
+                topic:topics!posts_topic_id_fkey(id, title, slug, type, metadata)
+            `)
+            .is('parent_post_id', null)
+            .eq('is_deleted', false)
+            .order('created_at', { ascending: false })
+            .limit(limit);
+
+        return transformPosts(fallbackPosts || []);
+    }
+
+    // Diversify: ensure variety of topics (max 2 per topic)
+    const topicCounts = new Map<string, number>();
+    const diversified = posts.filter((p: any) => {
+        const topicId = p.topic?.id;
+        if (!topicId) return false;
+        const count = topicCounts.get(topicId) || 0;
+        if (count >= 2) return false;
+        topicCounts.set(topicId, count + 1);
+        return true;
+    });
+
+    return transformPosts(diversified.slice(0, limit));
+}
+
+function transformPosts(posts: any[]): HeroTake[] {
+    return posts.map((p: any) => ({
+        id: p.id,
+        content: p.content,
+        createdAt: p.created_at,
+        author: {
+            username: p.author?.username || 'Anonymous',
+            avatarUrl: p.author?.avatar_url,
+        },
+        topic: {
+            id: p.topic?.id || '',
+            title: p.topic?.title || 'Unknown',
+            slug: p.topic?.slug || '',
+            type: p.topic?.type || 'topic',
+            imageUrl: (p.topic?.metadata as any)?.photo_url || (p.topic?.metadata as any)?.badge_url,
+        },
+        reactionCount: p.reaction_count || 0,
+        replyCount: p.reply_count || 0,
+    })).filter((t: HeroTake) => t.topic.id && t.content);
 }

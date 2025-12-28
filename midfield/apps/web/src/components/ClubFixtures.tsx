@@ -18,9 +18,10 @@ interface ClubFixturesProps {
         drawn: number;
         lost: number;
     } | null;
+    showFormOnly?: boolean; // For manager pages - only show form/standing info
 }
 
-export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesProps) {
+export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = false }: ClubFixturesProps) {
     if ((!fixtures || fixtures.length === 0) && !clubStanding) {
         return (
             <div className="text-center py-6 text-slate-500 dark:text-neutral-500 text-sm">
@@ -143,11 +144,11 @@ export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesPro
     return (
         <div 
             className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 overflow-y-auto"
-            style={{ maxHeight: '400px' }}
+            style={{ maxHeight: showFormOnly ? '220px' : '400px' }}
         >
             {/* Season Performance Card */}
             {clubStanding && (
-                <div className="mb-4">
+                <div className={showFormOnly ? "" : "mb-4"}>
                     <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-800 dark:to-neutral-800/50 rounded-md p-3 sm:p-4 border border-slate-200 dark:border-neutral-700">
                         {/* Position & Points Row */}
                         <div className="flex items-center justify-between mb-2.5">
@@ -195,38 +196,43 @@ export function ClubFixtures({ clubId, fixtures, clubStanding }: ClubFixturesPro
                 </div>
             )}
 
-            {/* Recent Results */}
-            {results.length > 0 && (
-                <div className="mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
-                            Results
-                        </span>
-                        <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
-                            {results.length}
-                        </span>
-                    </div>
-                    <div className="space-y-1.5">
-                        {results.map(f => <FixtureRow key={f.id} fixture={f} />)}
-                    </div>
-                </div>
-            )}
+            {/* Show fixtures only if not showFormOnly */}
+            {!showFormOnly && (
+                <>
+                    {/* Recent Results */}
+                    {results.length > 0 && (
+                        <div className="mb-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+                                    Results
+                                </span>
+                                <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
+                                    {results.length}
+                                </span>
+                            </div>
+                            <div className="space-y-1.5">
+                                {results.map(f => <FixtureRow key={f.id} fixture={f} />)}
+                            </div>
+                        </div>
+                    )}
 
-            {/* Upcoming Fixtures */}
-            {upcoming.length > 0 && (
-                <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
-                            Upcoming
-                        </span>
-                        <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
-                            {upcoming.length}
-                        </span>
-                    </div>
-                    <div className="space-y-1.5">
-                        {upcoming.map(f => <FixtureRow key={f.id} fixture={f} />)}
-                    </div>
-                </div>
+                    {/* Upcoming Fixtures */}
+                    {upcoming.length > 0 && (
+                        <div>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
+                                    Upcoming
+                                </span>
+                                <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
+                                    {upcoming.length}
+                                </span>
+                            </div>
+                            <div className="space-y-1.5">
+                                {upcoming.map(f => <FixtureRow key={f.id} fixture={f} />)}
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

@@ -93,8 +93,14 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
     const metadata = topic.metadata as any;
-    // Clubs section always open for leagues, Players for clubs
-    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isLeague ? ["clubs"] : isClub ? ["players"] : ["ratings"]));
+    
+    // Check if this is a manager/coach (stored as player type but with manager position)
+    const isManager = isPlayer && (metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach'));
+    
+    // Clubs section always open for leagues, Players for clubs, Team Form for managers, Ratings for players
+    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(
+        isLeague ? ["clubs"] : isClub ? ["players"] : isManager ? ["team-form"] : ["ratings"]
+    ));
 
     // Ref to add posts to TakeFeed
     const addPostRef = useRef<((post: any) => void) | null>(null);
@@ -142,11 +148,20 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                 { id: "fixtures", title: "Fixtures", icon: Calendar, count: fixtures.length > 0 ? fixtures.filter(f => new Date(f.date) >= new Date()).length : undefined },
                 { id: "about", title: "About", icon: Info },
             ]
-            : [
-                { id: "ratings", title: "FC26 Ratings", icon: Star },
-                { id: "stats", title: "Statistics", icon: BarChart3 },
-                { id: "about", title: "About", icon: Info },
-            ];
+            : isManager
+                ? [
+                    // Manager-specific sections - no FC26 ratings
+                    { id: "team-form", title: "Team Form", icon: Activity },
+                    { id: "fixtures", title: "Fixtures", icon: Calendar },
+                    { id: "standings", title: "Standings", icon: BarChart3 },
+                    { id: "about", title: "About", icon: Info },
+                ]
+                : [
+                    // Regular player sections
+                    { id: "ratings", title: "FC26 Ratings", icon: Star },
+                    { id: "stats", title: "Statistics", icon: BarChart3 },
+                    { id: "about", title: "About", icon: Info },
+                ];
 
     // Build club metadata from playerClub relationship
     const clubData = playerClub ? {
@@ -571,6 +586,33 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                     </div>
                                                 )}
 
+                                                {/* Team Form Section (Managers) */}
+                                                {section.id === "team-form" && isManager && playerClub && (
+                                                    <ClubFixtures
+                                                        clubId={playerClub.id}
+                                                        fixtures={fixtures}
+                                                        clubStanding={clubStanding}
+                                                        showFormOnly
+                                                    />
+                                                )}
+
+                                                {/* Fixtures Section (Managers) */}
+                                                {section.id === "fixtures" && isManager && playerClub && (
+                                                    <ClubFixtures
+                                                        clubId={playerClub.id}
+                                                        fixtures={fixtures}
+                                                        clubStanding={clubStanding}
+                                                    />
+                                                )}
+
+                                                {/* Standings Section (Managers) */}
+                                                {section.id === "standings" && isManager && playerClub && (
+                                                    <LeagueTable
+                                                        standings={standings}
+                                                        highlightTeamId={playerClub.id}
+                                                    />
+                                                )}
+
                                                 {/* Fixtures Section (Clubs) */}
                                                 {section.id === "fixtures" && isClub && (
                                                     <ClubFixtures
@@ -680,15 +722,30 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                             }
                                                             if (isPlayer) {
                                                                 const parts = [`${topic.title}`];
-                                                                if (metadata?.nationality) parts.push(`is a ${metadata.nationality} professional footballer`);
-                                                                else parts.push('is a professional footballer');
+                                                                
+                                                                // Handle managers differently
+                                                                if (isManager) {
+                                                                    if (metadata?.nationality) parts.push(`is a ${metadata.nationality} football manager`);
+                                                                    else parts.push('is a football manager');
+                                                                    
+                                                                    if (playerClub) parts.push(`currently managing ${playerClub.title}`);
+                                                                    
+                                                                    if (metadata?.birth_date) {
+                                                                        const year = new Date(metadata.birth_date).getFullYear();
+                                                                        parts.push(`(born ${year})`);
+                                                                    }
+                                                                } else {
+                                                                    // Regular player
+                                                                    if (metadata?.nationality) parts.push(`is a ${metadata.nationality} professional footballer`);
+                                                                    else parts.push('is a professional footballer');
 
-                                                                if (metadata?.position) parts.push(`who plays as a ${metadata.position.toLowerCase()}`);
-                                                                if (playerClub) parts.push(`for ${playerClub.title}`);
+                                                                    if (metadata?.position) parts.push(`who plays as a ${metadata.position.toLowerCase()}`);
+                                                                    if (playerClub) parts.push(`for ${playerClub.title}`);
 
-                                                                if (metadata?.birth_date) {
-                                                                    const year = new Date(metadata.birth_date).getFullYear();
-                                                                    parts.push(`(born ${year})`);
+                                                                    if (metadata?.birth_date) {
+                                                                        const year = new Date(metadata.birth_date).getFullYear();
+                                                                        parts.push(`(born ${year})`);
+                                                                    }
                                                                 }
                                                                 return parts.join(' ') + '.';
                                                             }
