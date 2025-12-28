@@ -10,7 +10,10 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
     const noSidebarPages = ['/profile', '/auth', '/design-system', '/settings'];
     const hideSidebar = noSidebarPages.some(path => pathname.startsWith(path));
 
-    if (hideSidebar) {
+    // Homepage gets full width layout
+    const isHomepage = pathname === '/';
+
+    if (hideSidebar || isHomepage) {
         return (
             <main className="w-full">
                 {children}

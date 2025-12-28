@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 interface LeagueTableProps {
     standings: any[];
+    highlightTeamId?: string;
 }
 
 export function LeagueTable({ standings }: LeagueTableProps) {
@@ -20,7 +21,7 @@ export function LeagueTable({ standings }: LeagueTableProps) {
     }
 
     return (
-        <div 
+        <div
             className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 overflow-y-auto"
             style={{ maxHeight: '420px' }}
         >

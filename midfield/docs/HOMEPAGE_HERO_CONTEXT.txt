@@ -1,0 +1,278 @@
+================================================================================
+MIDFIELD HOMEPAGE HERO - COMPLETE CONTEXT HANDOFF
+================================================================================
+Created: December 28, 2025
+Purpose: Context transfer for AI coding assistant continuity
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+Midfield is a football (soccer) discussion platform where fans share "takes" 
+(opinions) on players, clubs, leagues, and managers. Think Twitter meets Reddit, 
+but exclusively for football discourse.
+
+Tech Stack:
+- Next.js 16.x with App Router
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- Supabase (PostgreSQL + Auth)
+- Turborepo monorepo structure
+
+Key Packages:
+- apps/web - Main Next.js application
+- packages/ui - Shared UI components
+- packages/logic - Business logic
+- packages/types - TypeScript types
+
+================================================================================
+2. DESIGN SYSTEM - CRITICAL RULES
+================================================================================
+
+COLORS:
+- Primary accent: emerald (emerald-500, emerald-600)
+- Text: slate (light mode), neutral (dark mode)
+- Borders: slate-200 (light), neutral-800 (dark)
+
+TYPOGRAPHY:
+- Fonts: DM Sans (--font-dm-sans), Onest (--font-onest)
+- Bold headlines, clean body text
+
+COMPONENTS - STRICT RULES:
+1. USER AVATARS ARE ALWAYS SQUARE (rounded-md), NEVER circular (rounded-full)
+   - Only exception: Player headshots use rounded-full with special styling
+   
+2. BUTTONS NEVER HAVE SHADOWS
+   - No shadow-*, no drop-shadow
+   - Clean, flat design
+   
+3. REACTIONS USE EMOJIS, NOT HEARTS
+   - 🔥 fire - "hot take"
+   - 🤔 hmm - "makes you think"
+   - 🤝 fair - "fair point"
+   - 💀 dead - "brutal/funny"
+   - NEVER use Heart icon or "likes"
+
+4. CARDS USE:
+   - bg-white dark:bg-neutral-900
+   - border border-slate-200 dark:border-neutral-800
+   - rounded-xl (large cards) or rounded-md (small elements)
+   - NO shadows on cards
+
+TAILWIND V4 WIDTH COLLAPSE BUG - CRITICAL:
+- Tailwind v4 has a bug where width classes (w-full, max-w-*, mx-auto) can collapse
+- SOLUTION: Use inline styles for critical layout properties:
+  - style={{ width: '100%' }} instead of className="w-full"
+  - style={{ maxWidth: '640px' }} instead of className="max-w-2xl"
+  - style={{ margin: '0 auto' }} instead of className="mx-auto"
+- Safe to use Tailwind for: colors, typography, borders, flex alignment, padding
+- See: .agent/workflows/prevent-layout-bugs.md
+
+================================================================================
+3. WHAT WAS BUILT - HOMEPAGE HERO SYSTEM
+================================================================================
+
+The homepage was redesigned from a static hero to a "live experiential" hero
+that showcases real user takes in an animated, engaging way.
+
+FILES CREATED/MODIFIED:
+
+A) apps/web/src/components/LiveHero.tsx (NEW)
+   - Main hero component with live feed of takes
+   - Features:
+     * LIVE badge with pulse animation
+     * Animated floating particles (emerald bubbles rising)
+     * Grid pattern texture (more visible now)
+     * 6-card grid that cycles every 8 seconds
+     * Staggered card entry animations
+     * "Write Your Take" CTA button
+     * AuthModal integration for signup prompt
+   - Design:
+     * NO container "prison" - floats freely
+     * Gradient backgrounds that fade naturally
+     * Large decorative blur orbs extending beyond edges
+     * Bottom fade blending into content below
+
+B) apps/web/src/components/HeroWidgets.tsx (NEW)
+   - Side-by-side widget display below hero
+   - Shows Match Center + Trending widgets
+   - Responsive: stack on mobile, side-by-side on desktop
+
+C) apps/web/src/app/actions/fetch-widget-data.ts (MODIFIED)
+   - Added getHeroLiveFeed() server action
+   - Fetches recent takes with topic/author data
+   - Diversifies by topic (max 2 per topic)
+   - Returns: id, content, topic info, author info, reaction/reply counts
+
+D) apps/web/src/app/(main)/page.tsx (MODIFIED)
+   - Homepage now uses LiveHero instead of old Hero component
+   - Imports HeroWidgets for the widget row
+
+E) apps/web/src/components/LayoutContent.tsx (MODIFIED)
+   - Added isHomepage check: const isHomepage = pathname === '/'
+   - Homepage gets full-width layout (no sidebar constraint)
+
+================================================================================
+4. HERO TAKE CARD (HeroTakeCard) COMPONENT
+================================================================================
+
+Located inside LiveHero.tsx, this is a mini version of the main TakeCard.
+
+Structure:
+- Topic badge with image (top)
+- Take content (3 lines max)
+- Footer: author avatar + username | reactions + replies
+
+Key Design Decisions:
+- Square avatars (rounded-md) for users
+- Player topic images use PLAYER_IMAGE_STYLE (circular with special styling)
+- Club/League topic images are logos (object-contain)
+- Reactions show random emoji from pool + count
+- Featured variant has subtle emerald border
+
+================================================================================
+5. ANIMATION SYSTEM
+================================================================================
+
+Card Cycling:
+- 6 cards displayed at once
+- Every 8 seconds, fetch next batch of 6 from pool of 20
+- cycleKey state forces re-render for fresh animations
+- Each card has staggered animationDelay (index * 100ms)
+
+Card Entry Animation:
+- Starts: opacity-0, translate-y-4, scale-95
+- After delay: opacity-100, translate-y-0, scale-100
+- Duration: 500ms ease-out
+
+Floating Particles:
+- 6 particles at different horizontal positions
+- Rise from bottom to top over 15-22 seconds
+- Fade in at 10%, fade out at 90%
+- Custom @keyframes float animation in style jsx
+
+================================================================================
+6. KNOWN ISSUES & SOLUTIONS
+================================================================================
+
+ISSUE: Tailwind gradient class warnings
+- Classes like bg-gradient-to-b show warnings suggesting bg-linear-to-b
+- These are STYLE SUGGESTIONS, not errors - code works fine
+- Can ignore or update to new syntax if desired
+
+ISSUE: Width collapse on flex containers
+- SOLVED: Using inline styles for width/maxWidth/margin
+
+ISSUE: Cards looked "imprisoned" in container
+- SOLVED: Removed rounded border container, now floats with faded backgrounds
+
+================================================================================
+7. DATA FLOW
+================================================================================
+
+1. LiveHero mounts
+2. useEffect calls getHeroLiveFeed(20) server action
+3. Server action queries Supabase for recent posts with topics
+4. Returns typed HeroTake[] array
+5. Component displays first 6, stores all 20
+6. setInterval cycles through batches every 8 seconds
+7. On CTA click, AuthModal opens for signup
+
+HeroTake Type:
+{
+  id: string
+  content: string
+  topic: { slug, title, type, imageUrl }
+  author: { username, avatarUrl }
+  reactionCount: number
+  replyCount: number
+}
+
+================================================================================
+8. CURRENT STATE & NEXT STEPS
+================================================================================
+
+COMPLETED:
+✅ LiveHero component with all animations
+✅ HeroWidgets component (Match Center + Trending)
+✅ Server action for hero feed data
+✅ Homepage full-width layout
+✅ Design system compliance (square avatars, no shadows, emoji reactions)
+✅ Tailwind v4 layout bug prevention (inline styles)
+✅ Grid pattern more visible
+✅ No container "prison" - airy, powerful feel
+
+POTENTIAL IMPROVEMENTS:
+- Real-time updates via Supabase realtime subscriptions
+- "New takes" indicator when fresh content arrives
+- Personalized feed based on user's followed topics
+- A/B test different CTA copy
+- Performance: Consider virtualization if card count increases
+- Skeleton loading states could be more polished
+
+================================================================================
+9. KEY FILE LOCATIONS
+================================================================================
+
+Homepage:
+  apps/web/src/app/(main)/page.tsx
+
+Hero Components:
+  apps/web/src/components/LiveHero.tsx
+  apps/web/src/components/HeroWidgets.tsx
+
+Data Fetching:
+  apps/web/src/app/actions/fetch-widget-data.ts
+
+Layout:
+  apps/web/src/components/LayoutContent.tsx
+  apps/web/src/app/(main)/layout.tsx
+
+Design System Reference:
+  apps/web/src/components/TakeCard.tsx (main card design)
+  apps/web/src/components/ui/Button.tsx (button variants)
+  apps/web/src/components/ReactionBar.tsx (reaction system)
+
+Bug Prevention Guide:
+  .agent/workflows/prevent-layout-bugs.md
+
+================================================================================
+10. QUICK REFERENCE - DESIGN PATTERNS
+================================================================================
+
+Card:
+```tsx
+<div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-xl p-4">
+```
+
+User Avatar (SQUARE):
+```tsx
+<div className="w-8 h-8 rounded-md bg-slate-200 dark:bg-neutral-700 overflow-hidden">
+  <img className="object-cover" />
+</div>
+```
+
+Button (NO SHADOW):
+```tsx
+<Button size="lg" className="px-8 font-semibold">
+  CTA Text
+</Button>
+```
+
+Inline Styles for Layout (Tailwind v4 bug fix):
+```tsx
+<div style={{ width: '100%', maxWidth: '640px', margin: '0 auto' }}>
+```
+
+Reaction Display:
+```tsx
+<span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-neutral-800">
+  <span>🔥</span>
+  <span className="font-medium">12</span>
+</span>
+```
+
+================================================================================
+END OF CONTEXT HANDOFF
+================================================================================

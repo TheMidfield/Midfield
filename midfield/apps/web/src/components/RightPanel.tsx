@@ -14,9 +14,18 @@ export function RightPanel() {
     const isHomepage = pathname === '/';
     const slug = isTopicPage ? pathname.split('/topic/')[1] : undefined;
 
+    // On homepage, widgets are shown in HeroWidgets component, not here
+    if (isHomepage) {
+        return (
+            <div className="w-full space-y-6">
+                <SimilarWidget slug={undefined} />
+            </div>
+        );
+    }
+
     return (
         <div className="w-full space-y-6">
-            {/* Match Center - show on homepage and non-topic pages */}
+            {/* Match Center - show on non-topic, non-homepage pages */}
             {!isTopicPage && <MatchCenterWidget />}
 
             {/* Smart Similar Recommendations (Priority on topic pages) */}

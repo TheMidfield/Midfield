@@ -443,6 +443,19 @@ D) COMPONENT ARCHETYPES (CANONICAL)
      - mask-size: 130% (headshot zoom)
    - Note: next/image fill requires a relative parent container.
 
+1b) **USER AVATARS (CRITICAL RULE)**:
+   - **ALWAYS SQUARE** - use `rounded-md`, NEVER `rounded-full`
+   - Only player headshots are circular (they use special PLAYER_IMAGE_STYLE)
+   - Pattern: `<div className="w-8 h-8 rounded-md bg-slate-200 dark:bg-neutral-700 overflow-hidden">`
+   - This applies to: TakeCard, LiveHero cards, reply avatars, navbar, everywhere
+
+1c) **REACTION SYSTEM (NO HEARTS)**:
+   - Midfield uses EMOJI reactions, not likes/hearts
+   - The 4 reactions: 🔥 (fire/hot), 🤔 (hmm/think), 🤝 (fair), 💀 (dead/brutal)
+   - NEVER use Heart icon or "likes" terminology
+   - Display pattern: emoji + count in rounded-md pill
+   - Reference: `ReactionBar.tsx` for canonical implementation
+
 2) Topic cards:
    - Premium, sharp, clean.
    - Watermark badges allowed at extremely low opacity (0.04–0.08).
@@ -514,6 +527,33 @@ D) COMPONENT ARCHETYPES (CANONICAL)
    - **Sticky Behavior**: Must use `self-start` on sticky containers to prevent full-height stretching bugs.
    - **Collapsibles**: "About" sections should be clean text (no nested cards). Use "Read More" gradients for long text.
    - **Squad Lists**: Managers/Staff must appear at the top. Order: Manager -> GK -> Def -> Mid -> Fwd.
+
+9) **HOMEPAGE SPLIT HERO** (`SplitHero.tsx`):
+   - **Concept**: Split-layout hero inviting users into active football conversation
+   - **Architecture**: Client component fetching data client-side to AVOID RSC SERIALIZATION ISSUES
+   - **Left Column**: `EntityCycler.tsx`
+     - Title: "The Home of Football Discussion"
+     - One-liner prompt: "What's your take on [Entity]?" with inline mini-badge
+     - Entity cycles every 3.5s with smooth y-axis animation
+     - Mini-badge shows: avatar (circular for players) + name + "?"
+     - CTA: "Join the conversation" (emerald button, no shadows)
+   - **Right Column**: `LiveFeed.tsx`
+     - Header: Clock icon + "Latest Takes" (uppercase, tracking-wider)
+     - Shows 6 proper mini-TakeCards (not table rows)
+     - Each card: topic badge (with image), content (2-line clamp), author row
+     - Author avatars: SQUARE (rounded-md) per design system
+     - Time: relative (just now, 5m ago, 2h ago)
+     - Skeleton loading state
+   - **Data**: `getHeroEntities()` + `getHeroTakes()` in `hero-data.ts`
+   - **Background**: Subtle tactical grid pattern (40x40, opacity 0.025)
+   - **CRITICAL LESSON**: Never pass Supabase JSONB `metadata` through RSC
+     - Causes "Maximum call stack size exceeded" during serialization
+     - Solution: Fetch data client-side OR use JSON.parse(JSON.stringify()) deep clone
+
+10) **BUTTONS - NO SHADOWS**:
+   - Primary buttons NEVER have shadow-* classes
+   - Clean, flat design is the Midfield aesthetic
+   - Hover states use color transitions, not shadow changes
 
 F) ICON CONSISTENCY LAW
 - Reply actions: ALWAYS use CornerDownLeft icon (main post + nested replies)
@@ -607,6 +647,13 @@ Completed (as of Dec 26, 2025):
   - Managers added to squad lists
   - FC26 badges refined (emerald tiers w/o text labels)
   - About section redesigned (text-only + gradient)
+- **Homepage Hero Redesign (Dec 28)**:
+  - `LiveHero.tsx`: Live feed of animated take cards
+  - `HeroWidgets.tsx`: Match Center + Trending side-by-side
+  - `getHeroLiveFeed()`: Server action for hero data
+  - Homepage full-width layout (no sidebar constraint)
+  - Design system compliance enforced (square avatars, emoji reactions, no button shadows)
+  - See: `docs/HOMEPAGE_HERO_CONTEXT.txt` for detailed handoff docs
 
 Next objectives (likely):
 - Responsiveness hardening for smaller viewports WITHOUT desktop regression

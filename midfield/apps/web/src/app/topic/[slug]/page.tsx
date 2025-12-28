@@ -53,21 +53,25 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     if (isPlayer) {
         // Fetch the player's club
         playerClub = await getPlayerClub(topic.id);
-        
+
         // For managers/coaches, also fetch their club's fixtures, standings
         const position = topic.metadata?.position?.toLowerCase() || '';
         if (position.includes('manager') || position.includes('coach')) {
             if (playerClub) {
                 fixtures = await getClubFixtures(playerClub.id);
                 clubStanding = await getClubStanding(playerClub.id);
-                
+
                 // Get league standings for the manager's club league
                 const leagueName = playerClub.metadata?.league;
                 if (leagueName) {
                     // Find the league topic to get standings
-                    const { getTopicsByType } = await import("@midfield/logic/src/topics");
-                    const leagues = await getTopicsByType('league');
-                    const leagueTopic = leagues.find(l => l.title === leagueName || l.metadata?.league === leagueName);
+                    const { supabase } = await import("@midfield/logic/src/supabase");
+                    const { data: leagues } = await supabase
+                        .from('topics')
+                        .select('*')
+                        .eq('type', 'league')
+                        .eq('is_active', true);
+                    const leagueTopic = leagues?.find(l => l.title === leagueName || l.metadata?.league === leagueName);
                     if (leagueTopic) {
                         standings = await getLeagueTable(leagueTopic.id);
                     }
