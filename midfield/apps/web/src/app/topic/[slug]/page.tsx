@@ -29,10 +29,14 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         // Group players by position
         groupedSquad = squad.reduce((acc, player) => {
             let pos = player.metadata?.position || "Other";
-            if (pos.includes("Goalkeeper")) pos = "Goalkeepers";
-            else if (pos.includes("Back") || pos.includes("Defender")) pos = "Defenders";
-            else if (pos.includes("Midfield")) pos = "Midfielders";
-            else if (pos.includes("Forward") || pos.includes("Wing") || pos.includes("Striker")) pos = "Forwards";
+            const normalized = pos.toLowerCase();
+
+            if (normalized.includes("manager") || normalized.includes("coach")) pos = "Manager";
+            else if (normalized.includes("goalkeeper")) pos = "Goalkeepers";
+            else if (normalized.includes("back") || normalized.includes("defender")) pos = "Defenders";
+            else if (normalized.includes("midfield")) pos = "Midfielders";
+            else if (normalized.includes("forward") || normalized.includes("wing") || normalized.includes("striker")) pos = "Forwards";
+            else pos = "Other";
 
             if (!acc[pos]) acc[pos] = [];
             acc[pos].push(player);

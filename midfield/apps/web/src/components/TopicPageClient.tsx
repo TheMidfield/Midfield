@@ -31,7 +31,7 @@ interface TopicPageClientProps {
     };
 }
 
-const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
+const positionOrder = ["Manager", "Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
 
 // Position info with colors - matches FeaturedPlayers
 const getPositionInfo = (pos: string) => {
@@ -131,7 +131,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                 alt={player.title}
                                 fill
                                 sizes="40px"
-                                {...PLAYER_IMAGE_STYLE}
+                                className="object-cover object-top"
                             />
                         ) : (
                             <div
@@ -162,14 +162,13 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                             {/* FC26 Rating */}
                             {rating && (() => {
                                 const numRating = typeof rating === 'number' ? rating : parseInt(String(rating), 10);
-                                const colorClass = numRating >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
-                                    numRating >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
+                                const colorClass = numRating >= 80 ? 'text-emerald-500 dark:text-emerald-400' :
+                                    numRating >= 70 ? 'text-emerald-700/80 dark:text-emerald-600' :
                                         numRating >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
                                             numRating >= 50 ? 'text-orange-500 dark:text-orange-400' :
                                                 'text-red-600 dark:text-red-500';
                                 return (
                                     <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
-                                        <span className="text-[7px] font-bold italic opacity-70">FC26</span>
                                         <span className={`font-black ${colorClass}`}>{rating}</span>
                                     </Badge>
                                 );
@@ -261,7 +260,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
             <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6">
                 {/* Sidebar - appears FIRST on mobile, left side on desktop */}
                 <aside className="w-full xl:shrink-0 xl:w-full xl:max-w-[340px] order-1">
-                    <div className="xl:sticky xl:top-24">
+                    <div className="xl:sticky xl:top-24 self-start">
                         {/* Section Title */}
                         <h3 className="text-xs sm:text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2 sm:mb-3 px-1">
                             {isClub ? "Club Info" : "Player Info"}
@@ -603,13 +602,33 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                 {/* About Section */}
                                                 {section.id === "about" && (
                                                     <TopicDescription
-                                                        description={topic.description || (
-                                                            isLeague
-                                                                ? `${topic.title} is one of the top professional football leagues in ${metadata?.country || 'Europe'}.`
-                                                                : isClub
-                                                                    ? `${topic.title} is a professional football club competing in ${metadata?.league || 'top-flight football'}.`
-                                                                    : `${topic.title} is a professional footballer currently playing as a ${metadata?.position || 'player'}${playerClub ? ` for ${playerClub.title}` : ''}.`
-                                                        )}
+                                                        description={topic.description || (() => {
+                                                            if (isLeague) {
+                                                                return `${topic.title} is a professional football league${metadata?.country ? ` based in ${metadata.country}` : ''}. It features top clubs competing for the championship title.`;
+                                                            }
+                                                            if (isClub) {
+                                                                const parts = [`${topic.title} is a professional football club`];
+                                                                if (metadata?.stadium) parts.push(`based at ${metadata.stadium}`);
+                                                                if (metadata?.league) parts.push(`competing in the ${metadata.league}`);
+                                                                if (metadata?.founded) parts.push(`founded in ${metadata.founded}`);
+                                                                return parts.join(', ') + '.';
+                                                            }
+                                                            if (isPlayer) {
+                                                                const parts = [`${topic.title}`];
+                                                                if (metadata?.nationality) parts.push(`is a ${metadata.nationality} professional footballer`);
+                                                                else parts.push('is a professional footballer');
+
+                                                                if (metadata?.position) parts.push(`who plays as a ${metadata.position.toLowerCase()}`);
+                                                                if (playerClub) parts.push(`for ${playerClub.title}`);
+
+                                                                if (metadata?.birth_date) {
+                                                                    const year = new Date(metadata.birth_date).getFullYear();
+                                                                    parts.push(`(born ${year})`);
+                                                                }
+                                                                return parts.join(' ') + '.';
+                                                            }
+                                                            return `${topic.title} on Midfield.`;
+                                                        })()}
                                                     />
                                                 )}
                                             </div>

@@ -367,9 +367,11 @@ export function EntityHeader({
                                         </Badge>
                                     )}
                                     {isClub && metadata?.league && (
-                                        <Badge variant="secondary" className="text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1">
-                                            {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
-                                        </Badge>
+                                        <Link href={`/leagues/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`}>
+                                            <Badge variant="secondary" className="text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-colors">
+                                                {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
+                                            </Badge>
+                                        </Link>
                                     )}
 
                                 </div>
@@ -413,10 +415,10 @@ export function EntityHeader({
                                                     <span className="whitespace-nowrap font-medium">{metadata.nationality}</span>
                                                 </div>
                                             )}
-                                            {metadata?.jersey_number && (
+                                            {metadata?.kitNumber && (
                                                 <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                                     <Hash className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">#{metadata.jersey_number}</span>
+                                                    <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
                                                 </div>
                                             )}
                                         </>

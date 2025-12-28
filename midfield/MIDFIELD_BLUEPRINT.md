@@ -1,7 +1,7 @@
 # ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.3)
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
 OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
-FORGE DATE: DEC 27, 2025 (Updated)
+FORGE DATE: DEC 28, 2025 (Updated)
 OWNER: Developer is the master of this repo. Standards are non-negotiable.
 
 This file is designed to enable "fresh context window" resets at any time.
@@ -238,36 +238,34 @@ L) SYNC INFRASTRUCTURE ("THE TICKET SYSTEM")
 - Security: `sync_jobs` table protected by RLS (Service Role Only).
 - Resilience: Scheduler automatically resets "Zombie" jobs (stuck in 'processing' > 1h) to 'pending' before queuing new work.
 
-M) PLAYER METADATA ENRICHMENT ("LAZY SMART FETCH")
-- Problem: V2 API list/players endpoint lacks height, nationality, kit number, weight.
-- Solution: Hybrid V1/V2 strategy:
-  - V2 for bulk imports (fast, unlimited)
-  - V1 lookupplayer.php for detailed metadata (on-demand)
-- Implementation:
-  - New job type: `enrich_player`
-  - Batch enrichment: Nightly job finds players with missing metadata
-  - Priority: Popular players first (by follower_count)
-  - Fields enriched: height, weight, nationality, jersey_number, render_url (full body PNG)
-  - Rate limiting: 1 request / 2.5s (respects SoFIFA)
+M) HYBRID SYNC STRATEGY ("STATIC VS DYNAMIC")
+- **Problem**: Metadata (height, founded date) rarely changes, but dynamic data (scores, ratings) changes daily.
+- **Solution**: Split sync schedules to save API costs and reduce noise.
+- **1. Static Metadata (Weekly via GitHub Actions)**:
+  - **Script**: `scripts/sync-static-metadata.ts`
+  - **Schedule**: Every Sunday at 03:00 UTC
+  - **Method**: "Team-Based V1 Lookup"
+    - Fetches *all* clubs, then calls `lookup_all_players.php?id={teamId}` (V1 API)
+    - Why: V1 team lookup returns FULL player metadata (kit, height, etc.); V2 list does not.
+    - Reliability: 100% success rate on test; zero errors.
+- **2. Dynamic Data (Daily via Edge Functions)**:
+  - **Fixtures/Scores**: Scalable V2 API (Edge Functions + Cron)
+  - **FC26 Ratings**: On-demand scraper
 
-N) FC26 RATINGS SYNC (MANUAL/ON-DEMAND)
-- **CRITICAL**: FC26 data stored in `topics.fc26_data` column (NOT `metadata`)
-- **Why**: Prevents overwrite conflicts with TheSportsDB sync
-- **Scraper**: `scripts/fc26-scraper/scrape.py`
-  - Run: `cd scripts/fc26-scraper && ../../venv311/bin/python3 scrape.py`
-  - Duration: ~15-30 minutes for Top 5 Leagues
-- **Edge Function**: `supabase/functions/sync-ratings/index.ts`
-  - Writes to `fc26_data` column
-  - Smart matching: ID → DOB+name → fuzzy name (Jaro-Winkler)
-- **UI**: Components read from `topic.fc26_data?.overall` (not `metadata`)
-- **Pattern**: Separate columns for separate external data sources
-- **Status**: Manual/on-demand (not scheduled)
-- Data Storage:
-  - `metadata.render_url`: Full body render for premium watermarks
-  - `metadata.trophy_url`: League trophy images
-  - All stored in topics.metadata JSONB
-- Script: `scripts/enrich-players.ts` - Scans DB, enqueues missing
-- Worker: Enhanced sync-worker handles enrichment jobs
+N) FC26 RATINGS INTEGRATION
+- **Data Source**: SoFIFA (via custom scraper)
+- **Storage**: `topics.fc26_data` JSONB column (Isolated from `metadata`)
+- **Pipeline**:
+  1. `scripts/fc26-scraper/scrape.py`: Python scraper (Dockerized) bypasses 403s
+  2. `supabase/functions/sync-ratings`: Edge function receives JSON payload
+  3. **Smart Matching**: Matches by ID -> DOB+Name -> Fuzzy Name
+- **UI Policy**:
+  - **Badge Colors**:
+    - 80+ (Elite): Emerald (`text-emerald-500`)
+    - 70-79 (Good): Dark Emerald (`text-emerald-700/80`)
+    - 60-69 (Average): Yellow
+    - <60: Orange/Red
+  - **Data Noir**: No "FC26" text label on badges; numbers speak for themselves.
 
 N) ONBOARDING WIZARD ("ZERO FRICTION")
 - Trigger: New users without `username` or `onboarding_completed = false`
@@ -512,6 +510,11 @@ D) COMPONENT ARCHETYPES (CANONICAL)
    - Club count: "X clubs" with Shield icon in rounded-md container
    - Background gradient accent on hover for depth
 
+8) **SIDEBAR LAYOUTS**:
+   - **Sticky Behavior**: Must use `self-start` on sticky containers to prevent full-height stretching bugs.
+   - **Collapsibles**: "About" sections should be clean text (no nested cards). Use "Read More" gradients for long text.
+   - **Squad Lists**: Managers/Staff must appear at the top. Order: Manager -> GK -> Def -> Mid -> Fwd.
+
 F) ICON CONSISTENCY LAW
 - Reply actions: ALWAYS use CornerDownLeft icon (main post + nested replies)
 - Do not mix MessageCircle for replies - that's for chat/DM contexts
@@ -597,6 +600,13 @@ Completed (as of Dec 26, 2025):
 - **Auth page polish**: Better copy, Google-first layout, proper divider backgrounds
 - **Flag image migration**: All emoji flags replaced with actual images from Supabase Storage
 - **Homepage section ordering**: Featured Clubs before Leagues for better UX flow
+- **Static Metadata Automation**: GitHub Action (`weekly-metadata-sync.yml`) runs Sundays to sync kit numbers/heights/descriptions.
+- **Frontend Polish (Dec 28)**:
+  - Sticky sidebars (`self-start`)
+  - Clickable league badges on club pages
+  - Managers added to squad lists
+  - FC26 badges refined (emerald tiers w/o text labels)
+  - About section redesigned (text-only + gradient)
 
 Next objectives (likely):
 - Responsiveness hardening for smaller viewports WITHOUT desktop regression

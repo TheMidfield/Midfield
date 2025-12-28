@@ -1,43 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Info } from "lucide-react";
-import { Button } from "./ui/Button";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 export function TopicDescription({ description }: { description: string }) {
     const [isExpanded, setIsExpanded] = useState(false);
 
+    if (!description) return null;
+
     // If text is short, just show it.
-    if (!description || description.length < 200) {
-        return <p className="text-slate-600 dark:text-neutral-400 leading-relaxed text-lg">{description}</p>;
+    if (description.length < 250) {
+        return <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400 leading-relaxed">{description}</p>;
     }
 
     return (
-        <div className="bg-slate-50 dark:bg-neutral-800 border-2 border-slate-300 dark:border-neutral-700 rounded-xl p-6 transition-all">
-            <div className="flex items-center gap-2 mb-3 text-slate-900 dark:text-neutral-100 font-bold text-sm uppercase tracking-wide">
-                <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                About
-            </div>
-
-            <div className={`relative overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-[1000px]' : 'max-h-24'}`}>
-                <p className="text-slate-600 dark:text-neutral-400 leading-relaxed text-sm lg:text-base">
+        <div className="relative">
+            <div className={`relative overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-full' : 'max-h-[120px]'}`}>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400 leading-relaxed whitespace-pre-wrap">
                     {description}
                 </p>
                 {!isExpanded && (
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50 dark:from-neutral-800 to-transparent" />
+                    <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-white dark:from-neutral-900 via-white/80 dark:via-neutral-900/80 to-transparent" />
                 )}
             </div>
 
-            <Button
-                variant="link"
-                size="sm"
+            <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                icon={isExpanded ? ChevronUp : ChevronDown}
-                iconPosition="right"
-                className="mt-2 -ml-2"
+                className="mt-2 flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors uppercase tracking-wide"
             >
-                {isExpanded ? "Show Less" : "Read More"}
-            </Button>
+                {isExpanded ? (
+                    <>Show Less <ChevronUp className="w-3 h-3" /></>
+                ) : (
+                    <>Read More <ChevronDown className="w-3 h-3" /></>
+                )}
+            </button>
         </div>
     );
 }
