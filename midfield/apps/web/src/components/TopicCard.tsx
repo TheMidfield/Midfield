@@ -3,34 +3,7 @@ import NextImage from "next/image";
 import { ArrowRight, Activity, Shield, MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
-
-// FIFA-style Position Standardization (duplicated for component independence)
-const POSITION_MAPPING: Record<string, { abbr: string; color: string }> = {
-    "goalkeeper": { abbr: "GK", color: "bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400" },
-    "centre-back": { abbr: "CB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400" },
-    "center-back": { abbr: "CB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400" },
-    "defender": { abbr: "CB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400" },
-    "left-back": { abbr: "LB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400" },
-    "right-back": { abbr: "RB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400" },
-    "defensive midfield": { abbr: "CDM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400" },
-    "central midfield": { abbr: "CM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400" },
-    "midfielder": { abbr: "CM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400" },
-    "attacking midfield": { abbr: "CAM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400" },
-    "left winger": { abbr: "LW", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400" },
-    "right winger": { abbr: "RW", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400" },
-    "striker": { abbr: "ST", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400" },
-    "forward": { abbr: "ST", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400" },
-    "centre-forward": { abbr: "CF", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400" },
-};
-
-const getPositionInfo = (pos: string) => {
-    const normalized = pos?.toLowerCase().trim() || "";
-    return POSITION_MAPPING[normalized] || {
-        abbr: pos?.substring(0, 3).toUpperCase() || "DEF",
-        color: "bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-neutral-400"
-    };
-};
+import { getPositionInfo, getRatingColor, PLAYER_IMAGE_STYLE } from "@/lib/entity-helpers";
 
 export function TopicCard({ topic }: { topic: any }) {
     const isClub = topic.type === 'club';
@@ -91,17 +64,10 @@ export function TopicCard({ topic }: { topic: any }) {
                             </div>
 
                             {!isClub && rating && (() => {
-                                const numRating = typeof rating === 'number' ? rating : parseInt(String(rating), 10);
-                                const colorClass = numRating >= 80 ? 'text-emerald-600 dark:text-emerald-500' :
-                                    numRating >= 70 ? 'text-emerald-500 dark:text-emerald-400' :
-                                        numRating >= 60 ? 'text-yellow-600 dark:text-yellow-500' :
-                                            numRating >= 50 ? 'text-orange-500 dark:text-orange-400' :
-                                                'text-red-600 dark:text-red-500';
                                 return (
                                     <div className="absolute -bottom-1 -right-1">
                                         <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center shadow-sm">
-                                            <span className="text-[7px] font-bold italic opacity-70">FC26</span>
-                                            <span className={`font-black ${colorClass}`}>{rating}</span>
+                                            <span className={`font-black ${getRatingColor(rating)}`}>{rating}</span>
                                         </Badge>
                                     </div>
                                 );

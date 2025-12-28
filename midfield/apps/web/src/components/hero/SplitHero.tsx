@@ -34,18 +34,23 @@ export function SplitHero() {
             />
 
             <div
-                className="relative z-10 flex flex-col lg:flex-row lg:items-start"
-                style={{ gap: '24px' }}
+                className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between"
+                style={{ gap: '80px', maxWidth: '1280px', margin: '0 auto' }}
             >
-                {/* Left Column - tighter layout */}
-                <div className="flex-1" style={{ maxWidth: '480px' }}>
+                {/* Left Column - Centered vertically */}
+                <div className="flex-1 flex flex-col justify-center" style={{ maxWidth: '480px' }}>
                     <EntityCycler entities={entities} />
                 </div>
 
-                {/* Right Column - compact */}
+                {/* Right Column - Limited height with fade */}
                 <div
-                    className="hidden lg:block flex-shrink-0"
-                    style={{ width: '340px' }}
+                    className="hidden lg:block flex-1 min-w-0 relative"
+                    style={{
+                        height: '500px',
+                        overflow: 'hidden',
+                        maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
+                    }}
                 >
                     <LiveFeed />
                 </div>

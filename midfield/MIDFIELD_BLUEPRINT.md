@@ -350,6 +350,17 @@ This section allows a future agent to rebuild or debug the data ingestion engine
   - If jobs fail with "Database Error", check the `stubCache` logic in `import-thesportsdb-v2.ts`.
 
 
+S) ENTITY HELPER UNIFICATION (`src/lib/entity-helpers.ts`)
+- **Single Source of Truth**: Document created to centralize dispersed logic.
+- **Components**: `FeaturedPlayers`, `TopicCard`, `SimilarWidget`, `EntityHeader`, `TopicPageClient`, `EntityCycler`.
+- **Exports**:
+  - `POSITION_MAPPING`: Standardized FIFA/Standard positions to Abbr/Colors.
+  - `getPositionInfo(pos)`: Returns `{ abbr, full, color }` with consistent styling.
+  - `getRatingColor(rating)`: Returns Emerald/Yellow/Red classes based on 80/60/50 thresholds.
+  - `PLAYER_IMAGE_STYLE`: Canonical image styling (scale, filter, position).
+- **Rule**: NEVER hardcode position colors or rating thresholds in components. Import from helper.
+
+
 R) RECENT TECHNICAL CONTEXT (DEC 2025 TRANSITION LOG)
 **CRITICAL READ FOR NEXT AGENT**: The system is in active transition to full automation.
 
@@ -429,11 +440,10 @@ C) UI PHYSICS / MICRO-RULES (DETAILS MATTER)
 - Keep visual hierarchy strong:
   - primary info must remain primary at all breakpoints
 - No random shadows; borders are the language.
-- Corner radius standard: rounded-md (8px) for ALL components
-  - Cards, buttons, inputs, modals, badges, avatars, etc.
-  - Icon containers in hero banners: rounded-md (not rounded-xl)
-  - Consistent radius creates visual harmony
-  - Exceptions only when explicitly justified
+- Corner radius standard: rounded-md (6px) for interactive elements
+  - Buttons, inputs, badges, small cards.
+  - Consistent radius creates visual harmony.
+  - **LiveFeed/Hero Cards**: Strictly rounded-md.
 
 D) COMPONENT ARCHETYPES (CANONICAL)
 1) Player / Entity avatars (fallback silhouette):
@@ -654,6 +664,7 @@ Completed (as of Dec 26, 2025):
   - Homepage full-width layout (no sidebar constraint)
   - Design system compliance enforced (square avatars, emoji reactions, no button shadows)
   - See: `docs/HOMEPAGE_HERO_CONTEXT.txt` for detailed handoff docs
+  - **Entity Utils Centralization**: `src/lib/entity-helpers.ts` implemented to remove 5+ instances of duplicated logic.
 
 Next objectives (likely):
 - Responsiveness hardening for smaller viewports WITHOUT desktop regression

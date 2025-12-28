@@ -5,7 +5,7 @@ import { TrendingUp, Shield, Trophy, User } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { getTrendingTopicsData, type TrendingTopic } from "@/app/actions/fetch-widget-data";
-import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
+import { PLAYER_IMAGE_STYLE } from "@/lib/entity-helpers";
 
 // Skeleton for loading state
 const SkeletonItem = memo(({ index }: { index: number }) => (
@@ -42,20 +42,18 @@ const TrendingItem = memo(({ item }: { item: TrendingTopic }) => {
         <Link href={`/topic/${item.slug}`} className="block group">
             <div className="flex items-center gap-3 py-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 -mx-2 px-2">
                 {/* Rank number - centered with fixed width */}
-                <span className={`text-sm font-bold w-5 tabular-nums text-center transition-colors ${
-                    item.rank <= 3 
-                        ? 'text-emerald-600 dark:text-emerald-400' 
+                <span className={`text-sm font-bold w-5 tabular-nums text-center transition-colors ${item.rank <= 3
+                        ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-slate-400 dark:text-neutral-500'
-                }`}>
+                    }`}>
                     {item.rank}
                 </span>
 
                 {/* Avatar - consistent styling for all entity types */}
-                <div className={`relative w-8 h-8 shrink-0 flex items-center justify-center ${
-                    isPlayer 
-                        ? 'bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border border-slate-200 dark:border-neutral-700' 
+                <div className={`relative w-8 h-8 shrink-0 flex items-center justify-center ${isPlayer
+                        ? 'bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border border-slate-200 dark:border-neutral-700'
                         : ''
-                }`}>
+                    }`}>
                     {item.imageUrl ? (
                         <NextImage
                             src={item.imageUrl}
@@ -86,7 +84,7 @@ export function TrendingWidget() {
 
     useEffect(() => {
         let mounted = true;
-        
+
         getTrendingTopicsData()
             .then((data) => {
                 if (mounted) {

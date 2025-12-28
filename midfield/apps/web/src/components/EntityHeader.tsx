@@ -6,30 +6,13 @@ import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Shirt, Trophy, Mes
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
-import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
+import { getPositionInfo } from "@/lib/entity-helpers";
 import { AuthModal } from "@/components/ui/AuthModal";
 import { useAuthModal } from "@/components/ui/useAuthModal";
 import { voteTopic } from "@/app/actions/vote-topic";
 import { useState } from "react";
 
-// Position color helper - same as TopicPageClient for consistency
-const getPositionColor = (pos: string): string => {
-    const normalized = pos?.toLowerCase().trim() || "";
-    // Goalkeepers - Orange
-    if (normalized.includes("goalkeeper") || normalized.includes("goal keeper") || normalized === "gk")
-        return "bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400";
-    // Defenders - Yellow
-    if (normalized.includes("back") || normalized.includes("defender"))
-        return "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400";
-    // Midfielders - Emerald
-    if (normalized.includes("midfield"))
-        return "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400";
-    // Forwards/Wingers - Blue
-    if (normalized.includes("wing") || normalized.includes("forward") || normalized.includes("striker"))
-        return "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400";
-    // Default - Slate
-    return "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400";
-};
+
 
 interface EntityHeaderProps {
     title: string;
@@ -381,7 +364,7 @@ export function EntityHeader({
                                         </Badge>
                                     )}
                                     {isPlayer && metadata?.position && !(metadata.position.toLowerCase().includes('manager') || metadata.position.toLowerCase().includes('coach')) && (
-                                        <Badge variant="secondary" className={`text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 ${getPositionColor(metadata.position)}`}>
+                                        <Badge variant="secondary" className={`text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 ${getPositionInfo(metadata.position).color}`}>
                                             {metadata.position}
                                         </Badge>
                                     )}

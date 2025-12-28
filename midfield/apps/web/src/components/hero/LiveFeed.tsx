@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock } from "lucide-react";
+import { Flame } from "lucide-react";
 import { getHeroTakes, type HeroTake } from "@/app/actions/hero-data";
 import Link from "next/link";
 
@@ -18,92 +18,62 @@ function timeAgo(dateStr: string): string {
     return `${Math.floor(seconds / 86400)}d`;
 }
 
-// Get topic color
-function getTopicStyle(type: string) {
-    switch (type) {
-        case 'player': return 'text-emerald-600 dark:text-emerald-400';
-        case 'club': return 'text-blue-600 dark:text-blue-400';
-        case 'league': return 'text-purple-600 dark:text-purple-400';
-        default: return 'text-emerald-600 dark:text-emerald-400';
-    }
-}
-
-// Compact Take Card
+// Compact Take Card - Refined for consistency
 function TakeCard({ take }: { take: HeroTake }) {
-    const topicColor = getTopicStyle(take.topic.type);
     const isPlayer = take.topic.type === 'player';
 
     return (
         <Link href={`/topic/${take.topic.slug}`} className="block group">
             <article
-                className="bg-white dark:bg-neutral-900/80 border border-slate-200 dark:border-neutral-800 rounded-md hover:border-slate-300 dark:hover:border-neutral-700 transition-colors"
-                style={{ padding: '10px 12px' }}
+                className="bg-neutral-900/50 border border-neutral-800 rounded-md hover:border-emerald-500/30 transition-all p-4 hover:bg-neutral-900/80 group-hover:-translate-y-0.5"
             >
-                {/* Header: Topic + Time */}
-                <div className="flex items-center justify-between" style={{ marginBottom: '6px' }}>
-                    <div className="flex items-center" style={{ gap: '6px', minWidth: 0, flex: 1 }}>
-                        {/* Topic image */}
+                {/* Header: Topic Context */}
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 bg-neutral-800/50 rounded-md px-2 py-1 border border-neutral-800 transition-colors group-hover:border-neutral-700">
                         {take.topic.imageUrl && (
-                            <div
-                                className={`shrink-0 overflow-hidden ${isPlayer ? 'rounded-full' : ''}`}
-                                style={{ width: '16px', height: '16px' }}
-                            >
-                                <img
-                                    src={take.topic.imageUrl}
-                                    alt=""
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: isPlayer ? 'cover' : 'contain',
-                                        objectPosition: isPlayer ? 'top' : 'center'
-                                    }}
-                                />
-                            </div>
+                            <img
+                                src={take.topic.imageUrl}
+                                alt=""
+                                className={`w-4 h-4 ${isPlayer ? 'object-cover object-top' : 'object-contain'}`}
+                            />
                         )}
-                        <span
-                            className={`font-bold uppercase tracking-wide truncate ${topicColor}`}
-                            style={{ fontSize: '9px' }}
-                        >
+                        <span className="text-white text-xs font-bold">
                             {take.topic.title}
                         </span>
                     </div>
-                    <span className="text-slate-400 dark:text-neutral-500 shrink-0" style={{ fontSize: '9px' }}>
+                    <span className="text-neutral-500 text-[10px] font-mono">
                         {timeAgo(take.createdAt)}
                     </span>
                 </div>
 
                 {/* Content */}
-                <p
-                    className="text-slate-700 dark:text-neutral-300 line-clamp-2"
-                    style={{ fontSize: '12px', lineHeight: 1.4, marginBottom: '6px' }}
-                >
+                <p className="text-neutral-300 text-sm leading-relaxed mb-4 line-clamp-3 font-medium">
                     {take.content}
                 </p>
 
-                {/* Footer: Author */}
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center" style={{ gap: '4px' }}>
-                        {/* Square avatar per blueprint */}
-                        <div
-                            className="shrink-0 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden"
-                            style={{ width: '14px', height: '14px' }}
-                        >
+                {/* Footer: Author & Reactions */}
+                <div className="flex items-center justify-between pt-2 border-t border-neutral-800/50">
+                    <div className="flex items-center gap-2">
+                        {/* Avatar - Rounded MD (Square-ish) */}
+                        <div className="shrink-0 rounded-md bg-neutral-800 overflow-hidden w-6 h-6 border border-neutral-700">
                             {take.author.avatarUrl ? (
-                                <img src={take.author.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={take.author.avatarUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
-                                <span className="font-bold text-slate-400" style={{ fontSize: '6px' }}>
-                                    {take.author.username.slice(0, 2).toUpperCase()}
-                                </span>
+                                <div className="w-full h-full flex items-center justify-center bg-neutral-800 text-neutral-500 font-bold text-[8px]">
+                                    {take.author.username.slice(0, 1).toUpperCase()}
+                                </div>
                             )}
                         </div>
-                        <span className="text-slate-400 dark:text-neutral-500" style={{ fontSize: '10px' }}>
+                        <span className="text-neutral-400 font-semibold text-xs group-hover:text-emerald-400 transition-colors">
                             @{take.author.username}
                         </span>
                     </div>
+
                     {take.reactionCount > 0 && (
-                        <span className="text-slate-400" style={{ fontSize: '9px' }}>
-                            🔥 {take.reactionCount}
-                        </span>
+                        <div className="flex items-center gap-1.5 text-neutral-500 bg-neutral-800/30 px-1.5 py-0.5 rounded text-[10px]">
+                            <span>❤️</span>
+                            <span className="font-mono">{take.reactionCount}</span>
+                        </div>
                     )}
                 </div>
             </article>
@@ -130,7 +100,7 @@ function SkeletonCard() {
 }
 
 /**
- * LiveFeed - Latest takes as compact cards
+ * LiveFeed - Latest takes in a staggered dual-column layout
  */
 export function LiveFeed() {
     const [takes, setTakes] = useState<HeroTake[]>([]);
@@ -138,49 +108,74 @@ export function LiveFeed() {
 
     useEffect(() => {
         let mounted = true;
-        getHeroTakes(5)
+        // Fetch more takes to fill two columns
+        getHeroTakes(8)
             .then((data) => { if (mounted) { setTakes(data); setLoading(false); } })
             .catch((err) => { console.error(err); if (mounted) setLoading(false); });
         return () => { mounted = false; };
     }, []);
 
+    // Split into two columns
+    const col1 = takes.filter((_, i) => i % 2 === 0);
+    const col2 = takes.filter((_, i) => i % 2 === 1);
+
     return (
-        <div style={{ width: '100%' }}>
+        <div className="w-full">
             {/* Header */}
-            <div className="flex items-center" style={{ gap: '5px', marginBottom: '10px' }}>
-                <Clock className="text-slate-400 dark:text-neutral-500 shrink-0" style={{ width: '11px', height: '11px' }} />
-                <span className="font-bold text-slate-500 dark:text-neutral-400 uppercase tracking-wider" style={{ fontSize: '9px' }}>
+            <div className="flex items-center gap-2 mb-4 pl-1">
+                <Flame className="text-emerald-500 w-4 h-4 fill-emerald-500/20" />
+                <span className="font-extrabold text-slate-300 dark:text-neutral-200 text-xs uppercase tracking-widest">
                     Latest Takes
                 </span>
             </div>
 
-            {/* Cards */}
-            <div className="flex flex-col" style={{ gap: '6px' }}>
-                {loading ? (
-                    <>
-                        <SkeletonCard />
-                        <SkeletonCard />
-                        <SkeletonCard />
-                        <SkeletonCard />
-                    </>
-                ) : takes.length === 0 ? (
-                    <div className="text-slate-400 dark:text-neutral-500 text-center" style={{ padding: '24px 0', fontSize: '11px' }}>
-                        No takes yet. Be the first!
-                    </div>
-                ) : (
-                    <AnimatePresence initial={false}>
-                        {takes.map((take) => (
-                            <motion.div
-                                key={take.id}
-                                initial={{ opacity: 0, y: 4 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <TakeCard take={take} />
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-                )}
+            {/* Staggered Grid */}
+            <div className="flex gap-8">
+                {/* Column 1 */}
+                <div className="flex-1 flex flex-col gap-4">
+                    {loading ? (
+                        <>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                        </>
+                    ) : (
+                        <AnimatePresence initial={false}>
+                            {col1.map((take) => (
+                                <motion.div
+                                    key={take.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                >
+                                    <TakeCard take={take} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    )}
+                </div>
+
+                {/* Column 2 - Offset/Staggered */}
+                <div className="flex-1 flex flex-col gap-4 pt-16">
+                    {loading ? (
+                        <>
+                            <SkeletonCard />
+                            <SkeletonCard />
+                        </>
+                    ) : (
+                        <AnimatePresence initial={false}>
+                            {col2.map((take) => (
+                                <motion.div
+                                    key={take.id}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.3, delay: 0.1 }}
+                                >
+                                    <TakeCard take={take} />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    )}
+                </div>
             </div>
         </div>
     );

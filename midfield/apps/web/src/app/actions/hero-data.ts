@@ -14,6 +14,8 @@ export type HeroEntity = {
     displayName: string;
     imageUrl?: string;
     position?: string;
+    rating?: number;
+    subtitle?: string;
 };
 
 export type HeroTake = {
@@ -34,25 +36,31 @@ export type HeroTake = {
 };
 
 // Curated high-profile slugs - verified to exist in database
+// Curated high-profile slugs - verified to exist in database
 const CURATED_ENTITY_SLUGS = [
-    'kylian-mbapp',              // Mbappé
-    'erling-haaland-34169116',   // Haaland
+    'lamine-yamal',              // Yamal
+    'jude-bellingham',           // Bellingham
     'real-madrid',               // Club
+    'cole-palmer',               // Palmer
     'arsenal',                   // Club
-    'manchester-city',           // Club
     'english-premier-league',    // League
-    'manchester-united',         // Club
+    'vinicius-junior',           // Vini
+    'liverpool',                 // Club
+    'spanish-la-liga',           // League
 ];
 
 // High-profile topics for takes (show interesting discussions)
 const HIGH_PROFILE_TOPIC_SLUGS = [
-    'kylian-mbapp',
-    'erling-haaland-34169116',
+    'lamine-yamal',
+    'jude-bellingham',
     'real-madrid',
     'manchester-city',
     'arsenal',
     'manchester-united',
     'barcelona',
+    'liverpool',
+    'chelsea',
+    'english-premier-league'
 ];
 
 /**
@@ -90,7 +98,9 @@ export async function getHeroEntities(): Promise<HeroEntity[]> {
             imageUrl: t.type === 'player'
                 ? t.metadata?.photo_url
                 : t.metadata?.badge_url || t.metadata?.logo_url,
-            position: t.metadata?.position
+            position: t.metadata?.position,
+            rating: t.metadata?.rating ? Number(t.metadata.rating) : undefined,
+            subtitle: t.type === 'club' ? t.metadata?.league_name : undefined
         }));
 
     } catch (err) {
@@ -115,84 +125,25 @@ function getDisplayName(title: string, type: string): string {
 }
 
 /**
- * Fetch recent takes from high-profile topics
+ * Fetch recent takes globally (no topic restriction)
  */
 export async function getHeroTakes(limit = 6): Promise<HeroTake[]> {
     try {
         const supabase = await createClient();
-
-        // First, get IDs of high-profile topics
-        const { data: topicData } = await supabase
-            .from('topics')
-            .select('id, title, slug, type, metadata')
-            .in('slug', HIGH_PROFILE_TOPIC_SLUGS)
-            .eq('is_active', true);
-
-        const topicIds = topicData?.map(t => t.id) || [];
-
-        if (topicIds.length === 0) {
-            // Fallback: get any recent takes
-            return await getAnyRecentTakes(supabase, limit);
-        }
-
-        // Get takes from high-profile topics
-        const { data: posts, error } = await supabase
-            .from('posts')
-            .select('id, content, created_at, reaction_count, author_id, topic_id')
-            .in('topic_id', topicIds)
-            .order('created_at', { ascending: false })
-            .limit(limit);
-
-        if (error || !posts?.length) {
-            return await getAnyRecentTakes(supabase, limit);
-        }
-
-        // Get authors
-        const authorIds = [...new Set(posts.map(p => p.author_id).filter(Boolean))];
-        const { data: authors } = await supabase
-            .from('users')
-            .select('id, username, avatar_url')
-            .in('id', authorIds);
-
-        // Build maps
-        const topicMap = new Map((topicData || []).map((t: any) => [t.id, t]));
-        const authorMap = new Map((authors || []).map((a: any) => [a.id, a]));
-
-        // Deep clone
-        const plainPosts = JSON.parse(JSON.stringify(posts));
-
-        return plainPosts
-            .filter((p: any) => p.content && p.content.length > 3) // Filter out test content
-            .map((p: any) => {
-                const author = authorMap.get(p.author_id);
-                const topic = topicMap.get(p.topic_id);
-                if (!topic) return null;
-
-                return {
-                    id: String(p.id),
-                    content: String(p.content),
-                    createdAt: String(p.created_at),
-                    reactionCount: Number(p.reaction_count) || 0,
-                    author: {
-                        username: String(author?.username || 'fan'),
-                        avatarUrl: author?.avatar_url || undefined
-                    },
-                    topic: {
-                        title: String(topic.title),
-                        slug: String(topic.slug),
-                        type: String(topic.type),
-                        imageUrl: topic.metadata?.photo_url || topic.metadata?.badge_url
-                    }
-                };
-            })
-            .filter(Boolean) as HeroTake[];
-
+        return await getAnyRecentTakes(supabase, limit);
     } catch (err) {
         console.error('getHeroTakes error:', err);
         return [];
     }
 }
 
+/* 
+ * Deprecated: specific high profile fetching logic removed to ensure content freshness
+ */
+// async function getHighProfileTakes(...) { ... }
+
+
+// Helper for fallback fetching
 async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake[]> {
     const { data: posts } = await supabase
         .from('posts')
