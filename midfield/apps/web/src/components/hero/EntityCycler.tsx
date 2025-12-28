@@ -5,6 +5,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
+import { useRouter } from "next/navigation";
+import { useAuthModal } from "@/components/ui/useAuthModal";
+import { AuthModal } from "@/components/ui/AuthModal";
+import { createClient } from "@/lib/supabase/client";
 import type { HeroEntity } from "@/app/actions/hero-data";
 import { Badge } from "../ui/Badge";
 import { Card } from "../ui/Card";
@@ -17,7 +21,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
     const posInfo = isPlayer && entity.position ? getPositionInfo(entity.position) : null;
 
     return (
-        <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all min-w-[240px]">
+        <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all min-w-[240px]" style={{ width: '100%' }}>
             {/* Avatar */}
             {isPlayer ? (
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
@@ -81,21 +85,49 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
     );
 }
 
+// Fisher-Yates shuffle
+function shuffleArray<T>(arr: T[]): T[] {
+    const shuffled = [...arr];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
 /**
  * EntityCycler - Animated hero invitation
  */
 export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
+    const [shuffledEntities, setShuffledEntities] = useState<HeroEntity[]>([]);
     const [index, setIndex] = useState(0);
+    const { isAuthModalOpen, authModalContext, openAuthModal, closeAuthModal } = useAuthModal();
+    const router = useRouter();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+    // Shuffle entities once on mount
+    useEffect(() => {
+        if (entities.length > 0) {
+            setShuffledEntities(shuffleArray(entities));
+        }
+    }, [entities]);
 
     useEffect(() => {
-        if (entities.length <= 1) return;
+        const supabase = createClient();
+        supabase.auth.getSession().then(({ data }) => {
+            setIsAuthenticated(!!data.session);
+        });
+    }, []);
+
+    useEffect(() => {
+        if (shuffledEntities.length <= 1) return;
         const interval = setInterval(() => {
-            setIndex((prev) => (prev + 1) % entities.length);
+            setIndex((prev) => (prev + 1) % shuffledEntities.length);
         }, 3000);
         return () => clearInterval(interval);
-    }, [entities.length]);
+    }, [shuffledEntities.length]);
 
-    const currentEntity = entities[index];
+    const currentEntity = shuffledEntities[index];
 
     // Loading state
     if (!currentEntity) {
@@ -109,25 +141,26 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
     }
 
     return (
-        <div style={{ maxWidth: '520px' }}>
-            {/* Title - Larger & Bolder */}
-            <h1 className="font-extrabold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-4 leading-[1.1]">
-                The Home of <br />
-                <span className="text-emerald-600 dark:text-emerald-500">Football Discussion</span>
-            </h1>
+        <>
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={closeAuthModal}
+                context={authModalContext}
+            />
+            <div style={{ maxWidth: '520px' }}>
+                {/* Title - Larger & Bolder */}
+                <h1 className="font-extrabold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-8 leading-[1.1]">
+                    Everyone has a <br />
+                    <span className="text-emerald-600 dark:text-emerald-500">football take.</span>
+                </h1>
 
-            {/* Subtitle */}
-            <p className="text-slate-500 dark:text-neutral-400 font-medium text-base mb-8 max-w-[400px] leading-relaxed">
-                Share your take on any player, club, or league. Join thousands of fans debating globally.
-            </p>
-
-            {/* "What's your take on" + cycling card */}
-            <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-8">
+                {/* "What's your take on" + cycling card */}
+                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-10">
                 <span className="text-slate-500 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
                     What's your take on
                 </span>
 
-                <div className="relative h-14 min-w-[240px]">
+                <div className="relative h-14" style={{ minWidth: '240px' }}>
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentEntity.id}
@@ -136,6 +169,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                             exit={{ y: -20, opacity: 0 }}
                             transition={{ duration: 0.3, ease: "easeOut" }}
                             className="absolute left-0 top-1/2 -translate-y-1/2 w-full"
+                            style={{ width: '100%' }}
                         >
                             <Link href={`/topic/${currentEntity.slug}`} className="block w-full">
                                 <MiniEntityCard entity={currentEntity} />
@@ -148,13 +182,25 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
             </div>
 
             {/* CTA - Updated Style */}
-            <Link
-                href={`/topic/${currentEntity.slug}`}
-                className="group inline-flex items-center justify-center font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all px-8 h-12 text-base shadow-none"
+            <button
+                onClick={() => {
+                    if (isAuthenticated) {
+                        router.push(`/topic/${currentEntity.slug}`);
+                    } else {
+                        openAuthModal("default");
+                    }
+                }}
+                className="group inline-flex items-center justify-center font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all px-8 h-12 text-base shadow-none cursor-pointer"
             >
                 Join the conversation
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-            </Link>
-        </div>
+            </button>
+
+            {/* Discrete subtitle */}
+            <p className="text-slate-400 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
+                Discuss players, clubs, and leagues with fans worldwide.
+            </p>
+            </div>
+        </>
     );
 }

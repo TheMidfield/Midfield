@@ -24,12 +24,14 @@ export function SplitHero() {
             className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8"
             style={{ width: '100%' }}
         >
-            {/* Very subtle grid */}
+            {/* Fading grid background - uses radial mask to fade edges */}
             <div
-                className="absolute inset-0 pointer-events-none opacity-[0.015]"
+                className="absolute inset-0 pointer-events-none opacity-[0.02]"
                 style={{
                     backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
-                    backgroundSize: '24px 24px'
+                    backgroundSize: '24px 24px',
+                    maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)'
                 }}
             />
 

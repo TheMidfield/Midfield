@@ -38,15 +38,22 @@ export type HeroTake = {
 // Curated high-profile slugs - verified to exist in database
 // Curated high-profile slugs - verified to exist in database
 const CURATED_ENTITY_SLUGS = [
-    'lamine-yamal',              // Yamal
+    'lamine-yamal-34219490',              // Yamal
     'jude-bellingham',           // Bellingham
     'real-madrid',               // Club
-    'cole-palmer',               // Palmer
+    'cole-palmer-34192430',               // Palmer
     'arsenal',                   // Club
     'english-premier-league',    // League
-    'vinicius-junior',           // Vini
-    'liverpool',                 // Club
-    'spanish-la-liga',           // League
+    'michael-olise-34172857',
+    'harry-kane-34146220',
+    'liverpool',
+    'pep-guardiola-34164048',
+    'julin-lvarez',
+    'nico-paz-34222648',
+    'antoine-semenyo-34163719',
+    'xabi-alonso',
+    'dsir-dou-34200291',
+    'spanish-la-liga-4335',           // League
 ];
 
 // High-profile topics for takes (show interesting discussions)

@@ -1,0 +1,41 @@
+# MIDFIELD PROJECT: BATON PASS SUMMARY
+Target Agent: Advanced Coding AI (Zero Context)
+Date: Dec 28, 2025
+
+## 1. CRITICAL DOCTRINE
+*   **READ THIS FIRST**: The single source of truth is `MIDFIELD_BLUEPRINT.md` in the root. You usually must read this file immediately to understand the project architecture, design system, and "Data Noir" aesthetic.
+*   **Tech Stack**: Next.js 15 (App Router), Supabase (Auth/DB), TypeScript, Tailwind CSS.
+
+## 2. IMMEDIATE CONTEXT: HERO SECTION REFINEMENT
+We have just completed a rigorous polish of the Homepage Hero Section (`apps/web/src/components/hero/...`). The goal was to fix layout bugs, improve visual consistency, and refine user interactions.
+
+### Accomplishments in this session:
+1.  **SplitHero Layout (`SplitHero.tsx`)**: 
+    - Re-implemented a `maskImage` gradient (`black 50% -> transparent 100%`) on the `LiveFeed` container. This creates a "progressive blur" effect where the feed fades out into the page background at the bottom.
+2.  **TakeCard Visuals (`LiveFeed.tsx`)**:
+    - **Design**: Made cards completely opaque (`bg-white dark:bg-neutral-900`) and removed previous semi-transparent effects.
+    - **Header**: Simplified to display Author (Avatar + Username) on the left and Time on the right. Removed the "re:" prefix.
+    - **Footer**:  Moved the "Topic" (Entity being discussed) to the **bottom right**.
+    - **Topic Styling**: It is now a pill that is **right-justified** and **untruncated** (`whitespace-nowrap`). Player images are styled as circles; Club images are strictly contained.
+3.  **EntityCycler Logic (`EntityCycler.tsx`)**:
+    - **Interaction**: The "Join the Conversation" button now integrates with `useAuthModal`.
+    - **Behavior**: 
+      - If **Logged Out**: Opens the Sign-up/Auth Modal.
+      - If **Logged In**: Navigates directly to the entity's topic page.
+    - **Data Source**: The list of entities shown is determined by `CURATED_ENTITY_SLUGS` in `apps/web/src/app/actions/hero-data.ts`.
+4.  **Data Fetching**:
+    - Increased `LiveFeed` fetch limit to `16` items to ensure the dual columns are fully populated down to the blurred area, preventing any visual gaps.
+
+## 3. KEY FILES RECENTLY MODIFIED
+*   `apps/web/src/components/hero/LiveFeed.tsx` (Card design, fetch limit)
+*   `apps/web/src/components/hero/EntityCycler.tsx` (Auth button logic, imports)
+*   `apps/web/src/components/hero/SplitHero.tsx` (Mask styling)
+*   `apps/web/src/app/actions/hero-data.ts` (Curated slugs list)
+*   `apps/web/src/components/ui/useAuthModal.ts` (Reference for auth logic)
+
+## 4. NEXT STEPS & RECOMMENDATIONS
+*   **Verify Responsiveness**: We aggressively optimized the desktop Hero. Ensure mobile views (managed via `hidden lg:block` in SplitHero parts) are still performing well.
+*   **Widget Consistency**: Check `TrendingWidget` and `SimilarWidget`. Ensure they align with the new "entity in footer" card style if they share similar UI patterns.
+*   **Maintain "Data Noir"**: Any new UI must adhere to the defined color palette (Emerald accents, Slate/Neutral greys) and density principles defined in the Blueprint.
+
+*Pass the baton. Execute.*
