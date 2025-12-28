@@ -149,15 +149,15 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
             />
             <div style={{ maxWidth: '520px' }}>
                 {/* Title - Larger & Bolder */}
-                <h1 className="font-extrabold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-8 leading-[1.1]">
+                <h1 className="font-extrabold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-12 leading-[1.1]">
                     Everyone has a <br />
                     <span className="text-emerald-600 dark:text-emerald-500">football take.</span>
                 </h1>
 
                 {/* "What's your take on" + cycling card */}
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-10">
+                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-16">
                 <span className="text-slate-500 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
-                    What's your take on
+                    What's your take on...
                 </span>
 
                 <div className="relative h-14" style={{ minWidth: '240px' }}>
@@ -177,11 +177,9 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                         </motion.div>
                     </AnimatePresence>
                 </div>
-
-                <span className="text-emerald-600 dark:text-emerald-500 font-bold text-3xl ml-2 hidden sm:inline-block">?</span>
             </div>
 
-            {/* CTA - Updated Style */}
+            {/* CTA - Compact Style */}
             <button
                 onClick={() => {
                     if (isAuthenticated) {
@@ -190,10 +188,10 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                         openAuthModal("default");
                     }
                 }}
-                className="group inline-flex items-center justify-center font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all px-8 h-12 text-base shadow-none cursor-pointer"
+                className="group inline-flex items-center justify-center font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all px-5 h-9 text-sm shadow-none cursor-pointer"
             >
                 Join the conversation
-                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-0.5" />
             </button>
 
             {/* Discrete subtitle */}

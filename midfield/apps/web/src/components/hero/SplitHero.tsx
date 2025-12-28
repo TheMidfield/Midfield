@@ -44,14 +44,16 @@ export function SplitHero() {
                     <EntityCycler entities={entities} />
                 </div>
 
-                {/* Right Column - Limited height with fade */}
+                {/* Right Column - Limited height with smooth fade */}
                 <div
                     className="hidden lg:block flex-1 min-w-0 relative"
                     style={{
                         height: '500px',
                         overflow: 'hidden',
-                        maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
-                        WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)'
+                        // Simple clean fade - stays solid for 75%, then fades quickly
+                        // The key is to fade FULLY before card borders become visible artifacts
+                        maskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 95%)',
+                        WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 95%)'
                     }}
                 >
                     <LiveFeed />
