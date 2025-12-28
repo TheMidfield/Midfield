@@ -52,4 +52,3 @@ export function useHeroTakes(limit: number = 6) {
             dedupingInterval: 5000,        // Dedupe requests within 5s
         }
     );
-}

@@ -346,4 +346,3 @@ export function LiveFeed() {
             </div>
         </div>
     );
-}
