@@ -65,7 +65,7 @@ export async function processSyncJobs(
                         },
                         badge_url: t.strBadge || t.strTeamBadge,
                         stadium: t.strStadium,
-                        founded: t.intFormedYear ? parseInt(t.intFormedYear) : null,
+                        founded: t.intFormedYear ? parseInt(String(t.intFormedYear)) : null,
                         league: t.strLeague,
                         capacity: t.intStadiumCapacity ? parseInt(t.intStadiumCapacity) : null,
                         socials: {

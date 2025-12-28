@@ -413,10 +413,10 @@ export function EntityHeader({
                                                     <span className="whitespace-nowrap font-medium">{metadata.nationality}</span>
                                                 </div>
                                             )}
-                                            {metadata?.kitNumber && (
+                                            {metadata?.jersey_number && (
                                                 <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                                     <Hash className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
+                                                    <span className="whitespace-nowrap font-medium">#{metadata.jersey_number}</span>
                                                 </div>
                                             )}
                                         </>

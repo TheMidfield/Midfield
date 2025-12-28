@@ -57,7 +57,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
     const isLeague = topic.type === 'league';
     const metadata = topic.metadata as any;
     // Clubs section always open for leagues, Players for clubs
-    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isLeague ? ["clubs"] : isClub ? ["players"] : ["stats"]));
+    const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(isLeague ? ["clubs"] : isClub ? ["players"] : ["ratings"]));
 
     // Ref to add posts to TakeFeed
     const addPostRef = useRef<((post: any) => void) | null>(null);

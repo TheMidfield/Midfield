@@ -16,20 +16,17 @@ export async function smartUpsertTopic(
     type: string,
     thesportsdbId: string
 ) {
-    // 1. Check existence by composite key (type, thesportsdb_id)
+    // 1. Check existence by JSONB query (metadata->external->thesportsdb_id)
     const { data: existing } = await supabase
         .from('topics')
         .select('id, slug')
         .eq('type', type)
-        .eq('thesportsdb_id', thesportsdbId)
+        .filter('metadata->external->>thesportsdb_id', 'eq', thesportsdbId)
         .maybeSingle();
 
     if (existing) {
         // UPDATE: Exclude slug and id from update
         const { slug, id, ...updatePayload } = topic;
-
-        // Safety check: ensure we aren't accidentally clearing critical fields
-        if (!updatePayload.title) delete updatePayload.title;
 
         return await supabase
             .from('topics')
