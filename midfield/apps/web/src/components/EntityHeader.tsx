@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
-import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Hash, Activity, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Shirt, Trophy, MessageSquare, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -366,13 +366,6 @@ export function EntityHeader({
                                             {metadata.position}
                                         </Badge>
                                     )}
-                                    {isClub && metadata?.league && (
-                                        <Link href={`/leagues/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`}>
-                                            <Badge variant="secondary" className="text-[10px] sm:text-xs h-[22px] sm:h-auto px-2.5 sm:px-2.5 py-0.5 sm:py-1 hover:bg-slate-200 dark:hover:bg-neutral-800 transition-colors">
-                                                {metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
-                                            </Badge>
-                                        </Link>
-                                    )}
 
                                 </div>
 
@@ -417,14 +410,22 @@ export function EntityHeader({
                                             )}
                                             {metadata?.kitNumber && (
                                                 <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                    <Hash className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
+                                                    <Shirt className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">{metadata.kitNumber}</span>
                                                 </div>
                                             )}
                                         </>
                                     )}
                                     {isClub && (
                                         <>
+                                            {metadata?.league && (
+                                                <Link href={`/leagues/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                    <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+                                                        <Trophy className="w-3.5 sm:w-4 md:w-4 h-3.5 sm:h-4 md:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                        <span className="whitespace-nowrap">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>
+                                                    </Button>
+                                                </Link>
+                                            )}
                                             {metadata?.stadium && (
                                                 <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                                     <MapPin className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />

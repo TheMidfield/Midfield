@@ -26,7 +26,7 @@ export function LayoutContent({ children }: { children: React.ReactNode }) {
             </main>
 
             {/* Right Widgets - Desktop ONLY (1280px+) */}
-            <aside className="hidden xl:block w-[320px] shrink-0 sticky top-24">
+            <aside className="hidden xl:block w-[320px] shrink-0 sticky top-24 self-start">
                 <RightPanel />
             </aside>
         </div>

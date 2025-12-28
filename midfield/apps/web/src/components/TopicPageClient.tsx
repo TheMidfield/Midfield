@@ -6,7 +6,7 @@ import { TakeFeed } from "@/components/TakeFeed";
 import { EntityHeader } from "@/components/EntityHeader";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Users, Trophy, Calendar, BarChart3, Minus, Plus, Activity, Star, Info, FileQuestion, MapPin, Hash } from "lucide-react";
+import { Users, Trophy, Calendar, BarChart3, Minus, Plus, Activity, Star, Info, FileQuestion, MapPin } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { PLAYER_IMAGE_STYLE } from "@/components/FeaturedPlayers";
@@ -31,24 +31,46 @@ interface TopicPageClientProps {
     };
 }
 
-const positionOrder = ["Manager", "Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other"];
+const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Manager"];
 
 // Position info with colors - matches FeaturedPlayers
 const getPositionInfo = (pos: string) => {
     const normalized = pos?.toLowerCase().trim() || "";
+    // Managers/Coaches - Purple
+    if (normalized.includes("manager") || normalized.includes("coach"))
+        return { abbr: "MGR", color: "bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-900" };
     // Goalkeepers - Orange
-    if (normalized.includes("goalkeeper") || normalized === "gk")
+    if (normalized.includes("goalkeeper") || normalized.includes("goal keeper") || normalized === "gk")
         return { abbr: "GK", color: "bg-orange-100 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900" };
-    // Defenders - Yellow
-    if (normalized.includes("back") || normalized.includes("defender") || normalized === "cb" || normalized === "lb" || normalized === "rb")
-        return { abbr: normalized.includes("left") ? "LB" : normalized.includes("right") ? "RB" : "CB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900" };
-    // Midfielders - Green
-    if (normalized.includes("midfield") || normalized === "cm" || normalized === "cdm" || normalized === "cam")
-        return { abbr: normalized.includes("defensive") ? "CDM" : normalized.includes("attacking") ? "CAM" : "CM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" };
-    // Attackers - Blue
-    if (normalized.includes("wing") || normalized.includes("forward") || normalized.includes("striker") || normalized === "st" || normalized === "lw" || normalized === "rw")
-        return { abbr: normalized.includes("left") ? "LW" : normalized.includes("right") ? "RW" : "ST", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900" };
-    return { abbr: pos?.substring(0, 3).toUpperCase() || "MID", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
+    // Defenders - Yellow (check specific positions first)
+    if (normalized.includes("centre-back") || normalized.includes("center-back") || normalized.includes("centre back") || normalized.includes("center back") || normalized === "cb")
+        return { abbr: "CB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900" };
+    if (normalized.includes("left-back") || normalized.includes("left back") || normalized === "lb")
+        return { abbr: "LB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900" };
+    if (normalized.includes("right-back") || normalized.includes("right back") || normalized === "rb")
+        return { abbr: "RB", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900" };
+    if (normalized.includes("back") || normalized.includes("defender"))
+        return { abbr: "DEF", color: "bg-yellow-100 dark:bg-yellow-950/50 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900" };
+    // Midfielders - Green (check specific positions first)
+    if (normalized.includes("defensive midfield") || normalized.includes("holding midfield") || normalized === "cdm" || normalized === "dm")
+        return { abbr: "CDM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" };
+    if (normalized.includes("attacking midfield") || normalized === "cam" || normalized === "am")
+        return { abbr: "CAM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" };
+    if (normalized.includes("central midfield") || normalized.includes("centre midfield") || normalized === "cm")
+        return { abbr: "CM", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" };
+    if (normalized.includes("midfield"))
+        return { abbr: "MID", color: "bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900" };
+    // Wingers/Attackers - Blue (check specific positions first)
+    if (normalized.includes("left wing") || normalized.includes("left-wing") || normalized === "lw")
+        return { abbr: "LW", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900" };
+    if (normalized.includes("right wing") || normalized.includes("right-wing") || normalized === "rw")
+        return { abbr: "RW", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900" };
+    if (normalized.includes("striker") || normalized.includes("centre-forward") || normalized.includes("center-forward") || normalized === "st" || normalized === "cf")
+        return { abbr: "ST", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900" };
+    if (normalized.includes("wing") || normalized.includes("forward") || normalized.includes("winger"))
+        return { abbr: "FWD", color: "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900" };
+    // Fallback - show first 3 chars of original position
+    return { abbr: pos?.substring(0, 3).toUpperCase() || "?", color: "bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400" };
 };
 
 export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser }: TopicPageClientProps) {
@@ -61,14 +83,30 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
     // Ref to add posts to TakeFeed
     const addPostRef = useRef<((post: any) => void) | null>(null);
+    // Refs for collapsible sections to handle scroll behavior
+    const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-    const toggleSection = (section: string) => {
+    const toggleSection = (section: string, event?: React.MouseEvent) => {
+        const isExpanding = !expandedSections.has(section);
+        const sectionEl = sectionRefs.current[section];
+        
         setExpandedSections(prev => {
             const next = new Set(prev);
             if (next.has(section)) next.delete(section);
             else next.add(section);
             return next;
         });
+
+        // When expanding, scroll to keep the section header in view after a short delay
+        if (isExpanding && sectionEl) {
+            setTimeout(() => {
+                const rect = sectionEl.getBoundingClientRect();
+                // Only scroll if the section header would be above the viewport
+                if (rect.top < 96) { // 96px = top-24 (6rem)
+                    sectionEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 50);
+        }
     };
 
     // Handle new post - add to top of feed via ref
@@ -131,7 +169,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                 alt={player.title}
                                 fill
                                 sizes="40px"
-                                className="object-cover object-top"
+                                {...PLAYER_IMAGE_STYLE}
                             />
                         ) : (
                             <div
@@ -257,13 +295,13 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
             />
 
             {/* Main Content */}
-            <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6">
+            <div className="flex flex-col xl:flex-row gap-4 sm:gap-5 xl:gap-6 items-start">
                 {/* Sidebar - appears FIRST on mobile, left side on desktop */}
-                <aside className="w-full xl:shrink-0 xl:w-full xl:max-w-[340px] order-1">
-                    <div className="xl:sticky xl:top-24 self-start">
+                <aside className="w-full xl:shrink-0 xl:w-full xl:max-w-[340px] order-1 xl:sticky xl:top-24 self-start">
+                    <div>
                         {/* Section Title */}
                         <h3 className="text-xs sm:text-sm font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider mb-2 sm:mb-3 px-1">
-                            {isClub ? "Club Info" : "Player Info"}
+                            {isClub ? "Club Info" : isLeague ? "League Info" : "Player Info"}
                         </h3>
 
                         <div className="space-y-2 sm:space-y-3">
@@ -272,19 +310,24 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                 const isExpanded = expandedSections.has(section.id);
 
                                 return (
-                                    <Card key={section.id} className="overflow-hidden">
-                                        {/* Section Header */}
-                                        <button
-                                            onClick={() => toggleSection(section.id)}
-                                            className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
-                                        >
-                                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                                                <Icon className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                                <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100 truncate">
-                                                    {section.title}
-                                                </span>
-                                                {section.count !== undefined && (
-                                                    <Badge variant="secondary" className="text-[9px] sm:text-[10px] shrink-0">{section.count}</Badge>
+                                    <div 
+                                        key={section.id} 
+                                        ref={(el) => { sectionRefs.current[section.id] = el; }}
+                                        className="scroll-mt-24"
+                                    >
+                                        <Card className="overflow-hidden">
+                                            {/* Section Header */}
+                                            <button
+                                                onClick={() => toggleSection(section.id)}
+                                                className="w-full flex items-center justify-between p-3 sm:p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
+                                            >
+                                                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                                    <Icon className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                    <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-neutral-100 truncate">
+                                                        {section.title}
+                                                    </span>
+                                                    {section.count !== undefined && (
+                                                        <Badge variant="secondary" className="text-[9px] sm:text-[10px] shrink-0">{section.count}</Badge>
                                                 )}
 
                                                 {/* FC26 Rating Preview */}
@@ -634,7 +677,8 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                             </div>
                                         )
                                         }
-                                    </Card>
+                                        </Card>
+                                    </div>
                                 );
                             })}
                         </div>
