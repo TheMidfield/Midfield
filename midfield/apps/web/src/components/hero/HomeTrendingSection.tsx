@@ -138,3 +138,4 @@ export function HomeTrendingSection() {
             </div>
         </div>
     );
+}

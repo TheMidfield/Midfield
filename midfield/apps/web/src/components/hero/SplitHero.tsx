@@ -52,3 +52,4 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
             </div>
         </section>
     );
+}

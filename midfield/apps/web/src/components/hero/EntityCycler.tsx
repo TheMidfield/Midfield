@@ -203,3 +203,4 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
             </div>
         </>
     );
+}
