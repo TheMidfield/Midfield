@@ -129,27 +129,47 @@ export async function getTrendingTopicsData() {
 
     if (sortedTopicIds.length === 0) return [];
 
-    // Fetch topic details
-    const { data: topics } = await supabase
-        .from('topics')
-        .select('id, title, slug, type, metadata, fc26_data')
-        .in('id', sortedTopicIds);
+    // Fetch topic details AND take counts
+    const [topicsRes, takeCountsRes] = await Promise.all([
+        supabase
+            .from('topics')
+            .select('id, title, slug, type, metadata, fc26_data')
+            .in('id', sortedTopicIds),
+        supabase
+            .from('posts')
+            .select('topic_id')
+            .in('topic_id', sortedTopicIds)
+            .eq('is_deleted', false)
+    ]);
+
+    // Count takes per topic
+    const takeCountMap = new Map<string, number>();
+    (takeCountsRes.data || []).forEach(post => {
+        const count = takeCountMap.get(post.topic_id) || 0;
+        takeCountMap.set(post.topic_id, count + 1);
+    });
 
     // Preserve order by activity
-    const topicsMap = new Map((topics || []).map(t => [t.id, t]));
-    
+    const topicsMap = new Map((topicsRes.data || []).map(t => [t.id, t]));
+
     return sortedTopicIds
         .map((id, index) => {
             const topic = topicsMap.get(id);
             if (!topic) return null;
+            const metadata = topic.metadata as any;
             return {
                 id: topic.id,
                 rank: index + 1,
                 title: topic.title,
                 slug: topic.slug,
                 type: topic.type,
-                imageUrl: (topic.metadata as any)?.photo_url || (topic.metadata as any)?.badge_url,
-                activity: activityMap.get(id) || 0
+                imageUrl: metadata?.photo_url || metadata?.badge_url || metadata?.logo_url,
+                activity: activityMap.get(id) || 0,
+                takeCount: takeCountMap.get(id) || 0,
+                // Metadata for badges
+                position: metadata?.position,
+                league: metadata?.league,
+                rating: (topic.fc26_data as any)?.overall
             };
         })
         .filter(Boolean) as TrendingTopic[];
@@ -163,6 +183,10 @@ export type TrendingTopic = {
     type: string;
     imageUrl?: string;
     activity: number;
+    takeCount: number;
+    position?: string;
+    league?: string;
+    rating?: number;
 };
 
 export async function getRelatedTopicsData(slug?: string) {
@@ -339,8 +363,8 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
                     if (addedIds.has(p.id)) return false;
                     const pPos = normalizePosition((p.metadata as any)?.position);
                     if (!pPos) return false;
-                    return pPos === normalizedPosition || 
-                        pPos.includes(normalizedPosition) || 
+                    return pPos === normalizedPosition ||
+                        pPos.includes(normalizedPosition) ||
                         normalizedPosition.includes(pPos);
                 });
 
@@ -394,7 +418,7 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
                     const r = (p.fc26_data as any)?.overall;
                     return r && Math.abs(r - rating) <= 5;
                 });
-            
+
             shuffleArray(ratingMatches).slice(0, 2).forEach(p => {
                 addResult({
                     id: p.id,
@@ -658,11 +682,11 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
     // Get league standings for position-based scoring
     const { data: standings } = await supabase
         .from('league_standings')
-        .select('team_id, rank, league_id');
+        .select('team_id, position, league_id');
 
     const standingsMap = new Map<string, { rank: number; leagueId: string }>();
     (standings || []).forEach(s => {
-        standingsMap.set(s.team_id, { rank: s.rank, leagueId: s.league_id });
+        standingsMap.set(s.team_id, { rank: s.position, leagueId: s.league_id });
     });
 
     // Score and transform fixtures
@@ -701,7 +725,7 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
             const posDiff = Math.abs(homeStanding.rank - awayStanding.rank);
             // Same position diff = more exciting (e.g., 1st vs 2nd)
             importance += Math.max(0, 20 - posDiff * 2);
-            
+
             // Title race bonus: both teams in top 4
             if (homeStanding.rank <= 4 && awayStanding.rank <= 4) {
                 importance += 10;

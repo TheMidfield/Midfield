@@ -36,22 +36,23 @@ export function SplitHero() {
             />
 
             <div
-                className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between"
+                className="relative z-10 flex flex-col lg:flex-row justify-between"
                 style={{ gap: '80px', maxWidth: '1280px', margin: '0 auto' }}
             >
-                {/* Left Column - Centered vertically */}
+                {/* Left Column - Determines section height */}
                 <div className="flex-1 flex flex-col justify-center" style={{ maxWidth: '480px' }}>
                     <EntityCycler entities={entities} />
                 </div>
 
-                {/* Right Column - Limited height with smooth fade */}
+                {/* Right Column - Absolutely positioned, extends slightly beyond left */}
                 <div
-                    className="hidden lg:block flex-1 min-w-0 relative"
+                    className="hidden lg:block absolute right-0 top-0"
                     style={{
-                        height: '500px',
+                        width: 'calc(50% - 40px)', // Half width minus half gap
+                        maxWidth: '600px',
+                        height: '480px',
                         overflow: 'hidden',
                         // Simple clean fade - stays solid for 75%, then fades quickly
-                        // The key is to fade FULLY before card borders become visible artifacts
                         maskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 95%)',
                         WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 95%)'
                     }}

@@ -4,11 +4,18 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { SplitHero } from "@/components/hero/SplitHero";
+import { HomeTrendingSection } from "@/components/hero/HomeTrendingSection";
+import { MatchCenterWidget } from "@/components/widgets/MatchCenterWidget";
 import { createClient } from "@/lib/supabase/server";
+import { getHeroEntities } from "@/app/actions/hero-data";
 
 // =============================================================================
 // HOMEPAGE - Using deep clones to avoid RSC serialization issues
+// Cache hero data for 1 hour since it's curated static content
 // =============================================================================
+
+// Add cache revalidation
+export const revalidate = 3600; // 1 hour
 
 const COUNTRY_FLAG_IMAGES: Record<string, string> = {
     "England": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/england.png",
@@ -93,6 +100,16 @@ export default async function Home() {
         <div className="w-full">
             {/* Split Hero */}
             <SplitHero />
+
+            {/* Trending + Match Center - Two Column Layout */}
+            <section className="mb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                    <HomeTrendingSection />
+                    <div style={{ maxWidth: '512px', margin: '0 auto', width: '100%', paddingTop: '100px' }}>
+                        <MatchCenterWidget />
+                    </div>
+                </div>
+            </section>
 
             {/* Featured Clubs */}
             <section className="mb-12">

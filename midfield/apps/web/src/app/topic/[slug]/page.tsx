@@ -28,7 +28,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
 
         // Group players by position
         groupedSquad = squad.reduce((acc, player) => {
-            let pos = player.metadata?.position || "Other";
+            let pos = (player.metadata as any)?.position || "Other";
             const normalized = pos.toLowerCase();
 
             if (normalized.includes("manager") || normalized.includes("coach")) pos = "Manager";
@@ -55,14 +55,14 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         playerClub = await getPlayerClub(topic.id);
 
         // For managers/coaches, also fetch their club's fixtures, standings
-        const position = topic.metadata?.position?.toLowerCase() || '';
+        const position = (topic.metadata as any)?.position?.toLowerCase() || '';
         if (position.includes('manager') || position.includes('coach')) {
             if (playerClub) {
                 fixtures = await getClubFixtures(playerClub.id);
                 clubStanding = await getClubStanding(playerClub.id);
 
                 // Get league standings for the manager's club league
-                const leagueName = playerClub.metadata?.league;
+                const leagueName = (playerClub.metadata as any)?.league;
                 if (leagueName) {
                     // Find the league topic to get standings
                     const { supabase } = await import("@midfield/logic/src/supabase");
@@ -71,7 +71,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                         .select('*')
                         .eq('type', 'league')
                         .eq('is_active', true);
-                    const leagueTopic = leagues?.find(l => l.title === leagueName || l.metadata?.league === leagueName);
+                    const leagueTopic = leagues?.find(l => l.title === leagueName || (l.metadata as any)?.league === leagueName);
                     if (leagueTopic) {
                         standings = await getLeagueTable(leagueTopic.id);
                     }

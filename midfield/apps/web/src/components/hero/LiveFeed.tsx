@@ -107,32 +107,40 @@ type TakeWithColumn = HeroTake & { column: 1 | 2 };
 
 /**
  * LiveFeed - Latest takes in a staggered dual-column layout
+ * Features: smooth spawn animation, subtle parallax effect
  */
 export function LiveFeed() {
     const [takes, setTakes] = useState<TakeWithColumn[]>([]);
     const [loading, setLoading] = useState(true);
-    const [nextColumn, setNextColumn] = useState<1 | 2>(1); // Alternate which column gets next take
+    const [nextColumn, setNextColumn] = useState<1 | 2>(1);
+    const [scrollY, setScrollY] = useState(0);
 
     useEffect(() => {
         let mounted = true;
-        // Fetch more takes to fill two columns
         getHeroTakes(16)
-            .then((data) => { 
-                if (mounted) { 
-                    // Assign columns to initial takes (alternating)
+            .then((data) => {
+                if (mounted) {
                     const withColumns = data.map((take, i) => ({
                         ...take,
                         column: (i % 2 === 0 ? 1 : 2) as 1 | 2
                     }));
-                    setTakes(withColumns); 
-                    setLoading(false); 
-                } 
+                    setTakes(withColumns);
+                    setLoading(false);
+                }
             })
             .catch((err) => { console.error(err); if (mounted) setLoading(false); });
         return () => { mounted = false; };
     }, []);
 
-    // DEV: Simulate adding a new take
+    // Simple parallax scroll listener
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrollY(window.scrollY);
+        };
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     const addTestTake = () => {
         const sampleTake: TakeWithColumn = {
             id: `test-${Date.now()}`,
@@ -152,12 +160,15 @@ export function LiveFeed() {
             column: nextColumn
         };
         setTakes(prev => [sampleTake, ...prev]);
-        setNextColumn(prev => prev === 1 ? 2 : 1); // Alternate for next time
+        setNextColumn(prev => prev === 1 ? 2 : 1);
     };
 
-    // Split into two columns based on assigned column property
     const col1 = takes.filter(t => t.column === 1);
     const col2 = takes.filter(t => t.column === 2);
+
+    // Parallax transforms - clearly visible depth effect
+    const col1Transform = scrollY * 0.08;
+    const col2Transform = scrollY * 0.15;
 
     return (
         <div className="w-full">
@@ -183,10 +194,16 @@ export function LiveFeed() {
                 </span>
             </div>
 
-            {/* Staggered Grid */}
+            {/* Staggered Grid with Parallax */}
             <div className="flex gap-8">
-                {/* Column 1 */}
-                <div className="flex-1 flex flex-col">
+                {/* Column 1 - Slower parallax */}
+                <div
+                    className="flex-1 flex flex-col"
+                    style={{
+                        transform: `translateY(${col1Transform}px)`,
+                        transition: 'transform 0.1s ease-out'
+                    }}
+                >
                     {loading ? (
                         <div className="flex flex-col gap-3">
                             <SkeletonCard />
@@ -198,12 +215,13 @@ export function LiveFeed() {
                                 <motion.div
                                     key={take.id}
                                     layout="position"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
+                                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
                                     transition={{
-                                        opacity: { duration: 0.25, ease: 'easeOut' },
-                                        scale: { type: 'spring', stiffness: 500, damping: 30 },
-                                        layout: { type: 'spring', stiffness: 400, damping: 35 }
+                                        opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                        y: { type: 'spring', stiffness: 400, damping: 28 },
+                                        scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                        layout: { type: 'spring', stiffness: 350, damping: 30 }
                                     }}
                                     style={{ marginBottom: '12px' }}
                                 >
@@ -214,8 +232,14 @@ export function LiveFeed() {
                     )}
                 </div>
 
-                {/* Column 2 - Offset/Staggered */}
-                <div className="flex-1 flex flex-col pt-8 sm:pt-12">
+                {/* Column 2 - Faster parallax + offset */}
+                <div
+                    className="flex-1 flex flex-col pt-4 sm:pt-6"
+                    style={{
+                        transform: `translateY(${col2Transform}px)`,
+                        transition: 'transform 0.1s ease-out'
+                    }}
+                >
                     {loading ? (
                         <div className="flex flex-col gap-3">
                             <SkeletonCard />
@@ -227,12 +251,13 @@ export function LiveFeed() {
                                 <motion.div
                                     key={take.id}
                                     layout="position"
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
+                                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
                                     transition={{
-                                        opacity: { duration: 0.25, ease: 'easeOut' },
-                                        scale: { type: 'spring', stiffness: 500, damping: 30 },
-                                        layout: { type: 'spring', stiffness: 400, damping: 35 }
+                                        opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                        y: { type: 'spring', stiffness: 400, damping: 28 },
+                                        scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                        layout: { type: 'spring', stiffness: 350, damping: 30 }
                                     }}
                                     style={{ marginBottom: '12px' }}
                                 >

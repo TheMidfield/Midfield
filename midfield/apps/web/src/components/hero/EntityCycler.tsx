@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { HeroEntity } from "@/app/actions/hero-data";
 import { Badge } from "../ui/Badge";
 import { Card } from "../ui/Card";
+import { Button } from "../ui/Button";
 import { getPositionInfo, getRatingColor, PLAYER_IMAGE_STYLE } from "@/lib/entity-helpers";
 
 // Sleek entity card EXACTLY matching SimilarWidget style
@@ -156,48 +157,57 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
 
                 {/* "What's your take on" + cycling card */}
                 <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-16">
-                <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
-                    What's your take on...
-                </span>
+                    <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
+                        What's your take on...
+                    </span>
 
-                <div className="relative h-14" style={{ minWidth: '240px' }}>
-                    <AnimatePresence mode="wait">
-                        <motion.div
-                            key={currentEntity.id}
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -20, opacity: 0 }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="absolute left-0 top-1/2 -translate-y-1/2 w-full"
-                            style={{ width: '100%' }}
-                        >
-                            <Link href={`/topic/${currentEntity.slug}`} className="block w-full">
-                                <MiniEntityCard entity={currentEntity} />
-                            </Link>
-                        </motion.div>
-                    </AnimatePresence>
+                    <div className="relative h-14" style={{ minWidth: '240px' }}>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={currentEntity.id}
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: -20, opacity: 0 }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-full"
+                                style={{ width: '100%' }}
+                            >
+                                <Link href={`/topic/${currentEntity.slug}`} className="block w-full">
+                                    <MiniEntityCard entity={currentEntity} />
+                                </Link>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
                 </div>
-            </div>
 
-            {/* CTA - Compact Style */}
-            <button
-                onClick={() => {
-                    if (isAuthenticated) {
-                        router.push(`/topic/${currentEntity.slug}`);
-                    } else {
-                        openAuthModal("default");
-                    }
-                }}
-                className="group inline-flex items-center justify-center font-semibold bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-all px-5 h-9 text-sm shadow-none cursor-pointer"
-            >
-                Join the conversation
-                <ArrowRight className="w-3.5 h-3.5 ml-1.5 transition-transform group-hover:translate-x-0.5" />
-            </button>
+                {/* CTA - Matches navbar style */}
+                <Button
+                    variant="default"
+                    size="sm"
+                    className="group"
+                    onClick={() => {
+                        if (isAuthenticated) {
+                            router.push(`/topic/${currentEntity.slug}`);
+                        } else {
+                            openAuthModal("default");
+                        }
+                    }}
+                >
+                    <span>Join the conversation</span>
+                    <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                </Button>
 
-            {/* Discrete subtitle */}
-            <p className="text-slate-500 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
-                Discuss players, clubs, and leagues with fans worldwide.
-            </p>
+                {/* Discrete subtitle */}
+                <p className="text-slate-500 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
+                    Discuss players, clubs, and leagues with fans worldwide.
+                </p>
             </div>
         </>
     );
