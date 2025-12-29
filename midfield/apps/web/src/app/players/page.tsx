@@ -35,18 +35,24 @@ export default async function PlayersPage() {
         <div className="w-full">
             {/* Hero Banner - Inline, naturally delimited by grid */}
             <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
-                {/* Fading grid background - guaranteed smooth vignette */}
+                {/* Grid Background with visible border */}
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03] rounded-md"
+                    className="absolute inset-0 pointer-events-none rounded-md border border-slate-200/50 dark:border-neutral-800/50"
                     style={{
-                        backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
-                        backgroundSize: '24px 24px',
-                        maskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)'
+                        zIndex: 0
                     }}
-                />
-
-                {/* Green-tinted grid accent (soft spotlights with heavy fade) */}
+                >
+                    <div
+                        className="absolute inset-0 opacity-[0.06] dark:opacity-[0.03] rounded-md"
+                        style={{
+                            backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
+                            backgroundSize: '24px 24px',
+                            // Linear gradient mask to just slightly soften bottom but keep straight lines
+                            maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)'
+                        }}
+                    />
+                </div>{/* Green-tinted grid accent (soft spotlights with heavy fade) */}
                 <div
                     className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.3] rounded-md"
                     style={{

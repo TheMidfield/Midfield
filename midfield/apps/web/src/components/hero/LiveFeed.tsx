@@ -133,6 +133,9 @@ export function LiveFeed() {
         supabaseRef.current = createClient();
     }, []);
 
+    // Track if the initial "intro" sequence has completed
+    const hasInitialAnimationRun = useRef(false);
+
     // Handle SWR data updates
     useEffect(() => {
         if (!swrTakes || swrTakes.length < 2) return;
@@ -151,24 +154,34 @@ export function LiveFeed() {
 
         setTakes(staggered);
 
-        // Reset and trigger staggered animation on every data load
-        setShowFirstTake(false);
-        setShowSecondTake(false);
+        // Logic to handling the intro animation vs live updates:
+        // If the intro animation hasn't run yet, we trigger the delayed sequence.
+        // If it HAS run, we ensure visibility is ON so new items animate in naturally via AnimatePresence.
+        if (!hasInitialAnimationRun.current) {
+            // Reset and trigger staggered animation
+            setShowFirstTake(false);
+            setShowSecondTake(false);
 
-        // Show first take after 1.5 seconds
-        const timer1 = setTimeout(() => {
+            // Show first take after 1.5 seconds
+            const timer1 = setTimeout(() => {
+                setShowFirstTake(true);
+            }, 1500);
+
+            // Show second take after 3 seconds
+            const timer2 = setTimeout(() => {
+                setShowSecondTake(true);
+                hasInitialAnimationRun.current = true; // Mark intro as complete
+            }, 3000);
+
+            return () => {
+                clearTimeout(timer1);
+                clearTimeout(timer2);
+            };
+        } else {
+            // Intro already done, ensure visibility allows immediate rendering
             setShowFirstTake(true);
-        }, 1500);
-
-        // Show second take after 3 seconds
-        const timer2 = setTimeout(() => {
             setShowSecondTake(true);
-        }, 3000);
-
-        return () => {
-            clearTimeout(timer1);
-            clearTimeout(timer2);
-        };
+        }
     }, [swrTakes]);
 
     // Supabase Realtime subscription for instant updates

@@ -68,19 +68,19 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
 
             {/* Centered: Home Badge + VS + Away Badge */}
             <div className={`flex items-center gap-1 shrink-0 ${hideClubNames ? 'flex-1 justify-center' : ''}`}>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 group/home">
                     {/* Home Abbr (Compact only) */}
                     {hideClubNames && (
                         <Link href={`/topic/${fixture.homeTeam.slug}`} className="group/abbr">
-                            <span className="text-[9px] font-bold text-slate-500 dark:text-neutral-400 w-[20px] text-right block group-hover/abbr:text-emerald-600 dark:group-hover/abbr:text-emerald-400 transition-colors">
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 w-[22px] text-right block group-hover/home:text-emerald-600 dark:group-hover/home:text-emerald-400 transition-colors">
                                 {fixture.homeTeam.abbreviation || fixture.homeTeam.title.slice(0, 3).toUpperCase()}
                             </span>
                         </Link>
                     )}
 
-                    <Link href={`/topic/${fixture.homeTeam.slug}`} className="group relative">
+                    <Link href={`/topic/${fixture.homeTeam.slug}`} className="relative">
                         {/* Hover ring effect to link logo interaction to text */}
-                        <div className="relative w-6 h-6 shrink-0 transition-transform group-hover:scale-110">
+                        <div className="relative w-6 h-6 shrink-0 transition-transform group-hover/home:scale-110">
                             {fixture.homeTeam.badgeUrl ? (
                                 <NextImage
                                     src={fixture.homeTeam.badgeUrl}
@@ -100,9 +100,9 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
 
                 <span className="text-[10px] font-bold text-slate-300 dark:text-neutral-600 px-0.5">vs</span>
 
-                <div className="flex items-center gap-1">
-                    <Link href={`/topic/${fixture.awayTeam.slug}`} className="group relative">
-                        <div className="relative w-6 h-6 shrink-0 transition-transform group-hover:scale-110">
+                <div className="flex items-center gap-1.5 group/away">
+                    <Link href={`/topic/${fixture.awayTeam.slug}`} className="relative">
+                        <div className="relative w-6 h-6 shrink-0 transition-transform group-hover/away:scale-110">
                             {fixture.awayTeam.badgeUrl ? (
                                 <NextImage
                                     src={fixture.awayTeam.badgeUrl}
@@ -122,7 +122,7 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
                     {/* Away Abbr (Compact only) */}
                     {hideClubNames && (
                         <Link href={`/topic/${fixture.awayTeam.slug}`} className="group/abbr">
-                            <span className="text-[9px] font-bold text-slate-500 dark:text-neutral-400 w-[20px] text-left block group-hover/abbr:text-emerald-600 dark:group-hover/abbr:text-emerald-400 transition-colors">
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 w-[22px] text-left block group-hover/away:text-emerald-600 dark:group-hover/away:text-emerald-400 transition-colors">
                                 {fixture.awayTeam.abbreviation || fixture.awayTeam.title.slice(0, 3).toUpperCase()}
                             </span>
                         </Link>
