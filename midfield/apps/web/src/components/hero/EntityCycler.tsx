@@ -32,6 +32,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
                             alt={entity.title}
                             fill
                             sizes="40px"
+                            priority={true}
                             {...PLAYER_IMAGE_STYLE}
                         />
                     ) : (
@@ -46,6 +47,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
                             alt={entity.title}
                             fill
                             sizes="36px"
+                            priority={true}
                             className="object-contain"
                         />
                     ) : (

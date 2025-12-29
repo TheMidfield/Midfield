@@ -156,11 +156,16 @@ export function LiveFeed() {
 
             if (newTakes.length === 0) return prevTakes;
 
-            // Add new takes to the top, alternating columns
-            const withColumns = newTakes.map((take, i) => ({
-                ...take,
-                column: ((i % 2) + 1) as 1 | 2
-            }));
+            // Add new takes to the top, alternating columns starting from nextColumn
+            let currentCol = nextColumn;
+            const withColumns = newTakes.map((take) => {
+                const takeWithCol = { ...take, column: currentCol };
+                currentCol = currentCol === 1 ? 2 : 1;
+                return takeWithCol;
+            });
+
+            // Update nextColumn for future takes
+            setNextColumn(currentCol);
 
             return [...withColumns, ...prevTakes].slice(0, 16);
         });
@@ -239,20 +244,31 @@ export function LiveFeed() {
                         </span>
                     </div>
                     <div className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-full">
-                        <span className="text-emerald-700 dark:text-emerald-400 font-bold text-[10px]">
-                            Live
+                        <span className="text-emerald-700 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            Loading...
                         </span>
                     </div>
                 </div>
 
                 {/* Skeleton */}
-                <div className="flex gap-3" style={{ height: '100%', overflow: 'hidden' }}>
-                    <div className="flex-1 flex flex-col gap-3">
+                <div className="flex gap-8">
+                    <div className="flex-1 flex flex-col">
                         <SkeletonCard />
+                        <div style={{ marginBottom: '12px' }} />
+                        <SkeletonCard />
+                        <div style={{ marginBottom: '12px' }} />
+                        <SkeletonCard />
+                        <div style={{ marginBottom: '12px' }} />
                         <SkeletonCard />
                     </div>
-                    <div className="flex-1 flex flex-col gap-3 pt-6">
+                    <div className="flex-1 flex flex-col pt-8 sm:pt-12">
                         <SkeletonCard />
+                        <div style={{ marginBottom: '12px' }} />
+                        <SkeletonCard />
+                        <div style={{ marginBottom: '12px' }} />
+                        <SkeletonCard />
+                        <div style={{ marginBottom: '12px' }} />
                         <SkeletonCard />
                     </div>
                 </div>
