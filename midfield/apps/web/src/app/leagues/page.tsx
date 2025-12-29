@@ -37,9 +37,9 @@ export default async function LeaguesPage() {
     <div className="w-full">
       {/* Hero Banner - Inline, naturally delimited by grid */}
       <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
-        {/* Grid Background with visible border */}
+        {/* Grid Background with visible discrete border */}
         <div
-          className="absolute inset-0 pointer-events-none rounded-md border border-slate-200/50 dark:border-neutral-800/50"
+          className="absolute inset-0 pointer-events-none rounded-md border border-slate-200 dark:border-neutral-800"
           style={{
             zIndex: 0
           }}
@@ -49,20 +49,19 @@ export default async function LeaguesPage() {
             style={{
               backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
               backgroundSize: '24px 24px',
-              // Linear gradient mask to just slightly soften bottom but keep straight lines
-              maskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 90%, transparent 100%)'
+              maskImage: 'linear-gradient(to bottom, black 95%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 95%, transparent 100%)'
             }}
           />
-        </div>{/* Green-tinted grid accent (soft spotlights with heavy fade) */}
+        </div>
+        {/* Green-tinted grid accent (soft spotlights with heavy fade) */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.3] rounded-md"
+          className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.3] rounded-md overflow-hidden"
           style={{
             backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
             maskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
             WebkitMaskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
-            borderRadius: '0.375rem' // rounded-md equivalent
           }}
         />
         <div className="relative z-10 px-6 py-10 sm:px-8 sm:py-12 max-w-7xl mx-auto">

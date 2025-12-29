@@ -200,8 +200,11 @@ export function LiveFeed() {
                 },
                 async (payload) => {
                     console.log('New take detected:', payload);
-                    // Trigger SWR revalidation to fetch the new take with full data
-                    mutate();
+                    // Introduce a delay to ensure DB propagation and avoid race conditions
+                    // Also acts as a simple debounce
+                    setTimeout(() => {
+                        mutate();
+                    }, 2000);
                 }
             )
             .subscribe();
@@ -286,10 +289,12 @@ export function LiveFeed() {
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
-                    <AnimatePresence initial={false}>
+                    <AnimatePresence mode="popLayout" initial={false}>
                         {col1Takes.map((take, index) => {
-                            // First take (index 0) waits for showFirstTake
-                            if (index === 0 && !showFirstTake) return null;
+                            // Only apply the "wait" logic if this is the very first render sequence
+                            // AND we are actually waiting.
+                            // If hasInitialAnimationRun is true, we never hide anything.
+                            if (!hasInitialAnimationRun.current && index === 0 && !showFirstTake) return null;
 
                             return (
                                 <motion.div
@@ -297,6 +302,7 @@ export function LiveFeed() {
                                     layout="position"
                                     initial={{ opacity: 0, y: -20, scale: 0.96 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                                     transition={{
                                         opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
                                         y: { type: 'spring', stiffness: 400, damping: 28 },
@@ -320,10 +326,11 @@ export function LiveFeed() {
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
-                    <AnimatePresence initial={false}>
+                    <AnimatePresence mode="popLayout" initial={false}>
                         {col2Takes.map((take, index) => {
-                            // First take in col2 (index 0) waits for showSecondTake
-                            if (index === 0 && !showSecondTake) return null;
+                            // Only apply the "wait" logic if this is the very first render sequence
+                            // AND we are actually waiting.
+                            if (!hasInitialAnimationRun.current && index === 0 && !showSecondTake) return null;
 
                             return (
                                 <motion.div
@@ -331,6 +338,7 @@ export function LiveFeed() {
                                     layout="position"
                                     initial={{ opacity: 0, y: -20, scale: 0.96 }}
                                     animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
                                     transition={{
                                         opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
                                         y: { type: 'spring', stiffness: 400, damping: 28 },

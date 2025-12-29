@@ -199,10 +199,13 @@ function getDisplayName(title: string, type: string): string {
     return title;
 }
 
+import { unstable_noStore as noStore } from 'next/cache';
+
 /**
  * Fetch recent takes globally (no topic restriction)
  */
 export async function getHeroTakes(limit = 6): Promise<HeroTake[]> {
+    noStore(); // Opt out of static caching to ensure fresh data
     try {
         const supabase = await createClient();
         return await getAnyRecentTakes(supabase, limit);

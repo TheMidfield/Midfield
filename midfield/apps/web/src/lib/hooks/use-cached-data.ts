@@ -49,7 +49,7 @@ export function useHeroTakes(limit: number = 6) {
             revalidateOnFocus: true,      // Refresh when tab focused
             revalidateOnReconnect: true,   // Refresh on network reconnect
             refreshInterval: 0,            // No polling - Realtime handles updates
-            dedupingInterval: 500,         // Allow rapid updates (500ms)
+            dedupingInterval: 2000,        // 2s deduping - balances freshness with performance
         }
     );
 }
