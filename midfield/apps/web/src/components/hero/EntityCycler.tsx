@@ -115,6 +115,19 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
         }
     }, [entities]);
 
+    // Preload all entity images for instant cycling
+    useEffect(() => {
+        if (shuffledEntities.length === 0) return;
+
+        // Preload all images
+        shuffledEntities.forEach(entity => {
+            if (entity.imageUrl) {
+                const img = new Image();
+                img.src = entity.imageUrl;
+            }
+        });
+    }, [shuffledEntities]);
+
     useEffect(() => {
         const supabase = createClient();
         supabase.auth.getSession().then(({ data }) => {

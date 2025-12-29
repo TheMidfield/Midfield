@@ -35,88 +35,88 @@ export type HeroTake = {
     reactionCount: number;
 };
 
-// Curated entity slugs - 70 diverse topics for connoisseurs and casual fans
-// Mix of legends, rising stars, top players, trending clubs, and leagues
+// Curated entity slugs (~60) — designed for takes: casual + connoisseur
+// Mix: megastars, legends, wonderkids, breakout names, tactical managers, clubs, competitions
 const CURATED_ENTITY_SLUGS = [
-    // === LEGENDS & ICONS ===
-    'luka-modric-34146306',              // Modric - Still world class
-    'thibaut-courtois',                  // Courtois - Elite GK
-    'kevin-de-bruyne-34155057',          // De Bruyne - Playmaker
-    'virgil-van-dijk',                   // Van Dijk - Best CB
-    'robert-lewandowski-34146705',       // Lewandowski - Goal machine
-    'mohamed-salah',                     // Salah - Liverpool legend
-    'harry-kane-34146220',               // Kane - Bayern striker
-    'antoine-griezmann',                 // Griezmann - French star
-    'alisson-becker',                    // Alisson - Top GK
 
-    // === RISING STARS & WONDERKIDS ===
-    'endrick-34219641',                  // Endrick - Real Madrid wonderkid
-    'florian-wirtz',                     // Wirtz - Leverkusen gem
-    'gavi-34193417',                     // Gavi - Barça youngster
-    'gabriel-martinelli-34169883',       // Martinelli - Arsenal winger
-    'eduardo-camavinga',                 // Camavinga - RM midfielder
-    'federico-valverde',                 // Valverde - Uruguayan beast
-    'evan-ferguson-34196408',            // Ferguson - Brighton striker
-    'brennan-johnson-34177246',          // Johnson - Spurs winger
+    // === MEGASTARS / GLOBAL NAMES (grand public) ===
+    'kylian-mbapp',                      // Kylian Mbappé
+    'erling-haaland-34169116',           // Erling Haaland
+    'jude-bellingham',                   // Jude Bellingham
+    'mohamed-salah',                     // Mohamed Salah
+    'kevin-de-bruyne-34155057',          // Kevin De Bruyne
+    'robert-lewandowski-34146705',       // Robert Lewandowski
+    'harry-kane-34146220',               // Harry Kane
+    'rodri-34163415',                    // Rodri
+    'vinicius-jnior',
+    'antoine-griezmann',                 // Antoine Griezmann
+    'ousmane-dembl-34161375',            // Ousmane Dembélé
 
-    // === TOP CURRENT STARS ===
-    'erling-haaland-34169116',          // Haaland - Goal cyborg
-    'jude-bellingham',                   // Bellingham - Real Madrid
-    'lamine-yamal-34219490',             // Yamal - Barça prodigy
-    'cole-palmer-34192430',              // Palmer - Chelsea star
+    // === MODERN LEGENDS / ICONS (debate fuel) ===
+    'luka-modric-34146306',              // Luka Modric
+    'manuel-neuer-34146681',             // Manuel Neuer
+    'virgil-van-dijk',                   // Virgil van Dijk
+    'thibaut-courtois',                  // Thibaut Courtois
 
-    // === PREMIER LEAGUE CLUBS ===
-    'arsenal',                           // Arsenal
-    'liverpool',                         // Liverpool
-    'manchester-city',                   // Man City
-    'manchester-united',                 // Man United
-    'tottenham-hotspur',                 // Spurs
-    'chelsea',                           // Chelsea
-    'newcastle-united',                  // Newcastle
-    'brighton-and-hove-albion',         // Brighton
-    'aston-villa',                       // Aston Villa
-    'west-ham-united',                   // West Ham
-    'crystal-palace',                    // Crystal Palace
+    // === "RIGHT NOW" HYPE / RISING SUPERSTARS ===
+    'lamine-yamal-34219490',             // Lamine Yamal - huge teen hype
+    'jamal-musiala-34173035',            // Jamal Musiala - top-10 global value
+    'michael-olise-34172857',            // Michael Olise - Bayern buzz
+    'florian-wirtz',                     // Florian Wirtz
+    'pedri-34172243',                    // Pedri
+    'gavi-34193417',                     // Gavi
+    'bukayo-saka-34169884',              // Bukayo Saka
+    'cole-palmer-34192430',              // Cole Palmer
 
-    // === LA LIGA CLUBS ===
+    // === WONDERKIDS / NXGN-TYPE CONNOISSEUR PICKS ===
+    'endrick-34219641',                  // Endrick
+    'estvo-34232908',                    // Estêvão Willian
+    'franco-mastantuono',                // Franco Mastantuono
+    'pau-cubars-34226456',               // Pau Cubarsí
+    'yan-diomande-34336277',             // Yan Diomandé - connoisseur bait
+    'dsir-dou-34200291',                 // Désiré Doué
+
+    // === BREAKOUT / CULT-FAVORITES (connoisseur friendly) ===
+    'jrmy-doku-34172198',                // Jérémy Doku
+    'federico-valverde',                 // Federico Valverde
+    'eduardo-camavinga',                 // Eduardo Camavinga
+    'martin-degaard-34159218',           // Martin Ødegaard
+    'declan-rice-34161584',              // Declan Rice
+    'rafael-leo-34165647',               // Rafael Leão
+    'khvicha-kvaratskhelia-34178205',    // Khvicha Kvaratskhelia
+    'martn-zubimendi-34172850',          // Martín Zubimendi
+    'joo-neves-34217442',                // João Neves
+    'xavi-simons-34178997',              // Xavi Simons
+
+    // === GOALKEEPERS (keepers get engagement too) ===
+    'alisson-becker',                    // Alisson
+    'gianluigi-donnarumma-34162303',     // Gianluigi Donnarumma
+    'jan-oblak',                         // Jan Oblak
+
+    // === MANAGERS (high debate value: tactics, drama, eras) ===
+    'pep-guardiola-34164048',            // Pep Guardiola
+    'xabi-alonso',                       // Xabi Alonso
+    'mikel-arteta-34145406',             // Mikel Arteta
+    'luis-enrique-34164051',             // Luis Enrique
+    'diego-simeone',                     // Diego Simeone
+    'hansi-flick-34171571',              // Hansi Flick
+
+    // === CLUBS (big + trending + connoisseur) ===
     'real-madrid',                       // Real Madrid
     'barcelona',                         // Barcelona
-    'atltico-madrid',                    // Atletico
-    'athletic-bilbao',                   // Athletic
-    'real-sociedad',                     // Real Sociedad
-    'sevilla',                           // Sevilla
-    'valencia',                          // Valencia
-    'villarreal',                        // Villarreal
+    'manchester-city',                   // Manchester City
+    'arsenal',                           // Arsenal
+    'bayern-munich-133664',              // Bayern Munich
+    'paris-sg-133714',                   // Paris Saint-Germain
+    'inter-milan-133681',                // Inter
+    'borussia-dortmund-133650',          // Borussia Dortmund
+    'bayer-leverkusen-133666',           // Bayer Leverkusen
+    'atltico-madrid',                    // Atlético Madrid
+    'napoli-133670',                     // Napoli
+    'ac-milan-133667',                   // AC Milan
+    'juventus-133676',                   // Juventus
 
-    // === BUNDESLIGA CLUBS ===
-    'bayern-munich-133664',              // Bayern
-    'bayer-leverkusen-133666',          // Leverkusen
-    'borussia-dortmund-133652',         // Dortmund
-    'rb-leipzig-135268',                 // RB Leipzig
-    'eintracht-frankfurt-133814',        // Frankfurt
-    'freiburg-133653',                   // Freiburg
-    'union-berlin-134690',               // Union Berlin
-
-    // === SERIE A CLUBS ===
-    'inter-milan-133676',               // Inter
-    'ac-milan',                          // Milan
-    'juventus-133668',                   // Juve
-    'napoli',                            // Napoli
-    'roma-133680',                       // Roma
-    'lazio-133678',                      // Lazio
-    'atalanta',                          // Atalanta
-    'fiorentina-133670',                 // Fiorentina
-
-    // === LIGUE 1 CLUBS ===
-    'paris-saint-germain',               // PSG
-    'marseille-133707',                  // Marseille
-    'lyon-133709',                       //Lyon
-    'monaco-133710',                     // Monaco
-    'lille-133711',                      // Lille
-    'rennes',                            // Rennes
-    'nice-133714',                       // Nice
-
-    // === LEAGUES ===
+    // === COMPETITIONS / LEAGUES (broad appeal + constant) ===
     'english-premier-league',            // Premier League
     'spanish-la-liga-4335',              // La Liga
     'german-bundesliga-4331',            // Bundesliga
