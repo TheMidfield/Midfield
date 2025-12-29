@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TakeComposer } from "@/components/TakeComposer";
 import { TakeFeed } from "@/components/TakeFeed";
 import { EntityHeader } from "@/components/EntityHeader";
@@ -58,9 +58,23 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
     const isManager = isPlayer && (metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach'));
 
     // Clubs section always open for leagues, Players for clubs, Team Form for managers, Ratings for players
+    // Note: Ratings/Players default state on mobile will be adjusted in useEffect
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(
         isLeague ? ["clubs"] : isClub ? ["players"] : isManager ? ["team-form"] : ["ratings"]
     ));
+
+    // Collapse sections on mobile by default to save space
+    useEffect(() => {
+        if (window.innerWidth < 768) {
+            setExpandedSections(prev => {
+                const next = new Set(prev);
+                next.delete("ratings");
+                // We can choose to keep 'players' open for clubs or collapse that too if user wants mostly clean mobile view
+                // For now, specifically targeting 'ratings' as requested.
+                return next;
+            });
+        }
+    }, []);
 
     // Ref to add posts to TakeFeed
     const addPostRef = useRef<((post: any) => void) | null>(null);
