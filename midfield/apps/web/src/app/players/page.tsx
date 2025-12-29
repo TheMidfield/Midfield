@@ -35,28 +35,28 @@ export default async function PlayersPage() {
         <div className="w-full">
             {/* Hero Banner - Inline, naturally delimited by grid */}
             <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
-                {/* Fading grid background - homepage inspired */}
+                {/* Fading grid background - guaranteed smooth vignette */}
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
+                    className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03] rounded-md"
                     style={{
                         backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
                         backgroundSize: '24px 24px',
-                        maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)'
+                        maskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)',
+                        WebkitMaskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)'
                     }}
                 />
 
-                {/* Green-tinted grid accent (masked) */}
+                {/* Green-tinted grid accent (soft spotlights with heavy fade) */}
                 <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.5] dark:opacity-[0.3]"
+                    className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.3] rounded-md"
                     style={{
                         backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
                         backgroundSize: '24px 24px',
-                        maskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)',
-                        WebkitMaskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)'
+                        maskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
+                        WebkitMaskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)'
                     }}
                 />
-                <div className="relative px-6 py-10 sm:px-8 sm:py-12">
+                <div className="relative z-10 px-6 py-10 sm:px-8 sm:py-12 max-w-7xl mx-auto">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                         {/* Left: Title & Icon */}
                         <div className="flex items-center gap-4">

@@ -37,28 +37,28 @@ export default async function LeaguesPage() {
     <div className="w-full">
       {/* Hero Banner - Inline, naturally delimited by grid */}
       <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
-        {/* Fading grid background - homepage inspired */}
+        {/* Fading grid background - guaranteed smooth vignette */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
+          className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03] rounded-md"
           style={{
             backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
-            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)'
+            maskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)'
           }}
         />
 
-        {/* Green-tinted grid accent (masked) */}
+        {/* Green-tinted grid accent (soft spotlights with heavy fade) */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.5] dark:opacity-[0.3]"
+          className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.3] rounded-md"
           style={{
             backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
-            maskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)'
+            maskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
+            WebkitMaskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)'
           }}
         />
-        <div className="relative px-6 py-10 sm:px-8 sm:py-12">
+        <div className="relative z-10 px-6 py-10 sm:px-8 sm:py-12 max-w-7xl mx-auto">
           {/* Beta Badge - Small, top right corner */}
           <div className="absolute top-4 right-4 sm:top-6 sm:right-8 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
             <Sparkles className="w-2.5 h-2.5" />
@@ -79,7 +79,7 @@ export default async function LeaguesPage() {
             </div>
 
             {/* Right: Stats - Single Row */}
-            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-neutral-800 backdrop-blur-md rounded- md border border-slate-200 dark:border-neutral-700 self-start sm:self-auto">
+            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-neutral-800 backdrop-blur-md rounded-md border border-slate-200 dark:border-neutral-700 self-start sm:self-auto">
               <Globe2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               <div className="text-2xl font-black text-slate-900 dark:text-neutral-100 tabular-nums leading-none">{leaguesWithCounts.length}</div>
               <div className="text-xs font-semibold text-slate-600 dark:text-neutral-400 uppercase tracking-wider">Leagues</div>

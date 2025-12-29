@@ -42,30 +42,32 @@ const SkeletonFixture = memo(() => (
 SkeletonFixture.displayName = 'SkeletonFixture';
 
 // Single fixture row - matches ClubFixtures style
-const FixtureRow = memo(({ fixture }: { fixture: MatchCenterFixture }) => {
+const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixture, hideClubNames?: boolean }) => {
     const { dayMonth, time, isToday, isTomorrow } = formatMatchDate(fixture.date);
 
     return (
         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50">
             {/* Date */}
-            <div className="w-10 sm:w-12 text-center shrink-0">
+            <div className={`shrink-0 ${hideClubNames ? 'w-8' : 'w-10 sm:w-12'} text-center`}>
                 <span className="text-[10px] sm:text-xs font-bold block text-slate-500 dark:text-neutral-400">
                     {dayMonth}
                 </span>
             </div>
 
-            {/* Home Team Name */}
-            <Link
-                href={`/topic/${fixture.homeTeam.slug}`}
-                className="flex-1 min-w-0 group text-right"
-            >
-                <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
-                    {fixture.homeTeam.title}
-                </span>
-            </Link>
+            {/* Home Team Name - Hidden if compact */}
+            {!hideClubNames && (
+                <Link
+                    href={`/topic/${fixture.homeTeam.slug}`}
+                    className="flex-1 min-w-0 group text-right"
+                >
+                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
+                        {fixture.homeTeam.title}
+                    </span>
+                </Link>
+            )}
 
             {/* Centered: Home Badge + VS + Away Badge */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className={`flex items-center gap-2 shrink-0 ${hideClubNames ? 'flex-1 justify-center' : ''}`}>
                 <Link href={`/topic/${fixture.homeTeam.slug}`} className="group">
                     <div className="relative w-6 h-6 shrink-0">
                         {fixture.homeTeam.badgeUrl ? (
@@ -105,18 +107,20 @@ const FixtureRow = memo(({ fixture }: { fixture: MatchCenterFixture }) => {
                 </Link>
             </div>
 
-            {/* Away Team Name */}
-            <Link
-                href={`/topic/${fixture.awayTeam.slug}`}
-                className="flex-1 min-w-0 group"
-            >
-                <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
-                    {fixture.awayTeam.title}
-                </span>
-            </Link>
+            {/* Away Team Name - Hidden if compact */}
+            {!hideClubNames && (
+                <Link
+                    href={`/topic/${fixture.awayTeam.slug}`}
+                    className="flex-1 min-w-0 group"
+                >
+                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
+                        {fixture.awayTeam.title}
+                    </span>
+                </Link>
+            )}
 
             {/* Time */}
-            <div className="shrink-0 text-right w-12">
+            <div className={`shrink-0 text-right ${hideClubNames ? 'w-auto' : 'w-12'}`}>
                 <span className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">
                     {time}
                 </span>
@@ -126,7 +130,7 @@ const FixtureRow = memo(({ fixture }: { fixture: MatchCenterFixture }) => {
 });
 FixtureRow.displayName = 'FixtureRow';
 
-export function MatchCenterWidget() {
+export function MatchCenterWidget({ hideClubNames }: { hideClubNames?: boolean }) {
     const { data, isLoading: loading } = useMatchCenter(5);
 
     // Sort by date ascending (earliest first)
@@ -156,7 +160,7 @@ export function MatchCenterWidget() {
                     </>
                 ) : fixtures.length > 0 ? (
                     fixtures.map((fixture) => (
-                        <FixtureRow key={fixture.id} fixture={fixture} />
+                        <FixtureRow key={fixture.id} fixture={fixture} hideClubNames={hideClubNames} />
                     ))
                 ) : (
                     <div className="text-center py-8 text-sm text-slate-500 dark:text-neutral-500">

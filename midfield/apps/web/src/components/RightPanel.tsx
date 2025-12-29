@@ -26,7 +26,7 @@ export function RightPanel() {
     return (
         <div className="w-full space-y-6">
             {/* Match Center - show on non-topic, non-homepage pages */}
-            {!isTopicPage && <MatchCenterWidget />}
+            {!isTopicPage && <MatchCenterWidget hideClubNames={true} />}
 
             {/* Smart Similar Recommendations (Priority on topic pages) */}
             <SimilarWidget slug={slug} />

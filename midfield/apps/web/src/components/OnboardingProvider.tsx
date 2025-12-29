@@ -12,11 +12,10 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     const [isChecking, setIsChecking] = useState(true);
     const router = useRouter();
 
+    // 1. Auth & Onboarding Check Effect (Runs once on mount + auth changes)
     useEffect(() => {
         const checkOnboarding = async () => {
             const supabase = createClient();
-
-            // Get current user
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
@@ -56,6 +55,22 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
         return () => subscription.unsubscribe();
     }, []);
+
+    // 2. Dev Trigger Effect (Re-binds when userId changes)
+    useEffect(() => {
+        const handleDevTrigger = () => {
+            setShowOnboarding(true);
+            // If user is not logged in, we might need a dummy ID for testing wizard visual, 
+            // but wizard requires userId prop. 
+            // If logged in, use real ID. If not, use dummy.
+            if (!userId) {
+                setUserId('dev-test-user');
+            }
+        };
+
+        window.addEventListener('dev:open-onboarding', handleDevTrigger);
+        return () => window.removeEventListener('dev:open-onboarding', handleDevTrigger);
+    }, [userId]);
 
     const handleOnboardingComplete = () => {
         setShowOnboarding(false);

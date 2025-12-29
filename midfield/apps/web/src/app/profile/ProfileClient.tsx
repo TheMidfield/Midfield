@@ -4,8 +4,9 @@ import { useState, useRef, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight } from "lucide-react";
+import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield } from "lucide-react";
 import { uploadAvatar, updateProfile } from "./actions";
+import { FavoriteClubSelector, type Club } from "@/components/onboarding/FavoriteClubSelector";
 import { signOut } from "@/app/auth/actions";
 
 interface ProfileClientProps {
@@ -83,6 +84,8 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
     const [profile, setProfile] = useState(initialData.profile);
     const [username, setUsername] = useState(profile?.username || "");
     const [isEditingUsername, setIsEditingUsername] = useState(false);
+    const [isEditingClub, setIsEditingClub] = useState(false);
+    const [favoriteClubId, setFavoriteClubId] = useState(profile?.favorite_club_id || null);
     const [usernameError, setUsernameError] = useState<string | null>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -261,6 +264,90 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                 </div>
                             )}
                         </div>
+                    </div>
+                </div>
+            </Card>
+
+            {/* Favorite Club Section */}
+            <Card style={{ padding: '24px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                        <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2">Favorite Club</p>
+
+                        {!isEditingClub ? (
+                            <div className="space-y-3">
+                                {profile?.favorite_club_id ? (
+                                    <>
+                                        <div className="flex items-center gap-3 p-3 rounded-md bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700">
+                                            {/* We fetch the club details in the selector usually, but here we might only have ID initially. 
+                                                However, for ProfileClient to show the badge/name properly without editing, we ideally need the club data in initialData.
+                                                Assuming initialData.profile contains joined club data or we re-fetch.
+                                                For now, let's rely on the Selector to show current state when editing, 
+                                                and if not editing, simplified view if we lack data, or just show Selector in read-only mode?
+                                                Better: Show "Edit" button that opens the selector.
+                                             */}
+                                            <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                            <span className="text-sm font-medium text-slate-900 dark:text-neutral-100">
+                                                Click edit to change your club
+                                            </span>
+                                        </div>
+                                        <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
+                                            Change Club
+                                        </Button>
+                                    </>
+                                ) : (
+                                    <div>
+                                        <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">No club selected</p>
+                                        <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield}>
+                                            Select Club
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                <FavoriteClubSelector
+                                    initialClubId={favoriteClubId}
+                                    onSelect={(club) => setFavoriteClubId(club?.id || null)}
+                                />
+                                <div className="flex gap-2">
+                                    <Button
+                                        onClick={() => {
+                                            if (favoriteClubId === profile.favorite_club_id) {
+                                                setIsEditingClub(false);
+                                                return;
+                                            }
+                                            startTransition(async () => {
+                                                const result = await updateProfile({ favorite_club_id: favoriteClubId });
+                                                if (result.success) {
+                                                    showToast("Club updated", 'success');
+                                                    setProfile((prev: any) => ({ ...prev, favorite_club_id: favoriteClubId }));
+                                                    setIsEditingClub(false);
+                                                    router.refresh();
+                                                } else {
+                                                    showToast("Update failed", 'error');
+                                                }
+                                            });
+                                        }}
+                                        size="sm"
+                                        disabled={isPending}
+                                    >
+                                        {isPending ? "Saving..." : "Save Club"}
+                                    </Button>
+                                    <Button
+                                        onClick={() => {
+                                            setFavoriteClubId(profile.favorite_club_id);
+                                            setIsEditingClub(false);
+                                        }}
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isPending}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Card>

@@ -105,6 +105,18 @@ export function Navbar() {
                             <NavbarSearch />
                         </div>
 
+                        {/* DEV ONLY: Temp button for Onboarding */}
+                        <div className="hidden xl:block">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => window.dispatchEvent(new Event('dev:open-onboarding'))}
+                                className="text-xs text-amber-500 hover:text-amber-600"
+                            >
+                                Test Wizard
+                            </Button>
+                        </div>
+
                         <Link href="/design-system" className="hidden xl:block">
                             <Button variant="ghost" size="sm" icon={Terminal}>
                                 Showcase
