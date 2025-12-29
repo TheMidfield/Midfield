@@ -12,28 +12,29 @@ export default async function ClubsPage() {
 
     return (
         <div className="w-full">
-            {/* Elegant Hero Banner - Single Grid with Visible Gradient Stain */}
-            <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 border border-slate-200 dark:border-neutral-800/50">
-                {/* Single grid with radial gradient mask for greenish stain - MORE VISIBLE */}
+            {/* Hero Banner - Inline, naturally delimited by grid */}
+            <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
+                {/* Fading grid background - homepage inspired */}
                 <div
-                    className="absolute inset-0 opacity-[0.2] dark:opacity-[0.12]"
+                    className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
                     style={{
-                        backgroundImage: `linear-gradient(to right, rgb(100 116 139 / 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgb(100 116 139 / 0.25) 1px, transparent 1px)`,
+                        backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
                         backgroundSize: '24px 24px',
-                        maskImage: `
-                            radial-gradient(ellipse 800px 500px at top right, rgb(16 185 129) 0%, transparent 65%),
-                            linear-gradient(to right, rgb(100 116 139) 0%, rgb(100 116 139) 100%)
-                        `,
-                        WebkitMaskImage: `
-                            radial-gradient(ellipse 800px 500px at top right, rgb(16 185 129) 0%, transparent 65%),
-                            linear-gradient(to right, rgb(100 116 139) 0%, rgb(100 116 139) 100%)
-                        `,
-                        maskComposite: 'add',
-                        WebkitMaskComposite: 'source-over'
+                        maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)',
+                        WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)'
                     }}
-                ></div>
+                />
 
-                {/* Content */}
+                {/* Green-tinted grid accent (masked) */}
+                <div
+                    className="absolute inset-0 pointer-events-none opacity-[0.5] dark:opacity-[0.3]"
+                    style={{
+                        backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
+                        backgroundSize: '24px 24px',
+                        maskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)',
+                        WebkitMaskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)'
+                    }}
+                />
                 <div className="relative px-6 py-10 sm:px-8 sm:py-12">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
                         {/* Left: Title & Icon */}
@@ -56,7 +57,7 @@ export default async function ClubsPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {sortedClubs.map((club: any) => (
@@ -83,6 +84,6 @@ export default async function ClubsPage() {
                     </Link>
                 ))}
             </div>
-        </div>
+        </div >
     );
 }

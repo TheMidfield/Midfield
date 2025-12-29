@@ -35,28 +35,29 @@ export default async function LeaguesPage() {
 
   return (
     <div className="w-full">
-      {/* Elegant Hero Banner - Single Grid with Visible Gradient Stain */}
-      <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950 border border-slate-200 dark:border-neutral-800/50">
-        {/* Single grid with radial gradient mask for greenish stain - MORE VISIBLE */}
+      {/* Hero Banner - Inline, naturally delimited by grid */}
+      <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
+        {/* Fading grid background - homepage inspired */}
         <div
-          className="absolute inset-0 opacity-[0.2] dark:opacity-[0.12]"
+          className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
           style={{
-            backgroundImage: `linear-gradient(to right, rgb(100 116 139 / 0.25) 1px, transparent 1px), linear-gradient(to bottom, rgb(100 116 139 / 0.25) 1px, transparent 1px)`,
+            backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
             backgroundSize: '24px 24px',
-            maskImage: `
-              radial-gradient(ellipse 800px 500px at top right, rgb(16 185 129) 0%, transparent 65%),
-              linear-gradient(to right, rgb(100 116 139) 0%, rgb(100 116 139) 100%)
-            `,
-            WebkitMaskImage: `
-              radial-gradient(ellipse 800px 500px at top right, rgb(16 185 129) 0%, transparent 65%),
-              linear-gradient(to right, rgb(100 116 139) 0%, rgb(100 116 139) 100%)
-            `,
-            maskComposite: 'add',
-            WebkitMaskComposite: 'source-over'
+            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)'
           }}
-        ></div>
+        />
 
-        {/* Content */}
+        {/* Green-tinted grid accent (masked) */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.5] dark:opacity-[0.3]"
+          style={{
+            backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
+            backgroundSize: '24px 24px',
+            maskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 50% 40% at 80% 10%, black 0%, transparent 50%)'
+          }}
+        />
         <div className="relative px-6 py-10 sm:px-8 sm:py-12">
           {/* Beta Badge - Small, top right corner */}
           <div className="absolute top-4 right-4 sm:top-6 sm:right-8 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
@@ -78,14 +79,14 @@ export default async function LeaguesPage() {
             </div>
 
             {/* Right: Stats - Single Row */}
-            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-neutral-800 backdrop-blur-md rounded-md border border-slate-200 dark:border-neutral-700 self-start sm:self-auto">
+            <div className="flex items-center gap-3 px-5 py-3 bg-slate-100 dark:bg-neutral-800 backdrop-blur-md rounded- md border border-slate-200 dark:border-neutral-700 self-start sm:self-auto">
               <Globe2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               <div className="text-2xl font-black text-slate-900 dark:text-neutral-100 tabular-nums leading-none">{leaguesWithCounts.length}</div>
               <div className="text-xs font-semibold text-slate-600 dark:text-neutral-400 uppercase tracking-wider">Leagues</div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Leagues Grid - Bigger, More Prominent Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">

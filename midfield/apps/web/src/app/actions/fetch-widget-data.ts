@@ -598,18 +598,21 @@ const UEFA_CLUB_RANKINGS: Record<string, number> = {
     'juventus': 25,
 };
 
-// League prestige rankings
+// League prestige rankings - REBALANCED for diversity
 const LEAGUE_PRESTIGE: Record<string, number> = {
     'english-premier-league': 5,
     'premier-league': 5,
-    'la-liga': 4,
-    'spanish-la-liga': 4,
-    'serie-a': 4,
-    'italian-serie-a': 4,
-    'bundesliga': 3,
-    'german-bundesliga': 3,
-    'ligue-1': 3,
-    'french-ligue-1': 3,
+    'la-liga': 5,  // Increased from 4
+    'spanish-la-liga': 5,  // Increased from 4
+    'serie-a': 5,  // Increased from 4
+    'italian-serie-a': 5,  // Increased from 4 (was 'italian-serie-a-4332')
+    'italian-serie-a-4332': 5,  // Support both slug formats
+    'spanish-la-liga-4335': 5,  // Support both slug formats
+    'french-ligue-1-4334': 4,  // Support both slug formats
+    'bundesliga': 4,  // Increased from 3
+    'german-bundesliga': 4,  // Increased from 3
+    'ligue-1': 4,  // Increased from 3
+    'french-ligue-1': 4,  // Increased from 3
     'champions-league': 6,
     'uefa-champions-league': 6,
     'europa-league': 4,
@@ -646,9 +649,10 @@ export type MatchCenterFixture = {
  * Get top fixtures for the Match Center widget
  * Scoring factors:
  * - UEFA rankings of both teams
- * - League prestige
+ * - League prestige (BALANCED - all top 5 leagues equal)
  * - League standings proximity (close positions = more exciting)
  * - Derby/rivalry bonus
+ * - League diversity bonus (ensures variety)
  */
 export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[]> {
     const supabase = await createClient();
@@ -699,31 +703,27 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
 
         let importance = 0;
 
-        // 1. UEFA Rankings factor (0-40 points)
-        // Lower rank = higher score, max 40 points if both teams are top 10
+        // 1. UEFA Rankings factor (0-30 points) - REDUCED from 40
         const homeUefa = UEFA_CLUB_RANKINGS[homeTeam.slug] || 50;
         const awayUefa = UEFA_CLUB_RANKINGS[awayTeam.slug] || 50;
         const avgUefa = (homeUefa + awayUefa) / 2;
-        // Top teams (avg rank < 15) get 40 points, rank 15-25 gets 20-30, others get 0-15
         if (avgUefa <= 15) {
-            importance += Math.max(0, 40 - avgUefa);
+            importance += Math.max(0, 30 - avgUefa);
         } else if (avgUefa <= 30) {
-            importance += Math.max(0, 25 - (avgUefa - 15));
+            importance += Math.max(0, 20 - (avgUefa - 15));
         } else {
-            importance += Math.max(0, 10 - (avgUefa - 30) / 2);
+            importance += Math.max(0, 8 - (avgUefa - 30) / 2);
         }
 
-        // 2. League prestige (0-25 points)
+        // 2. League prestige (0-25 points) - SAME weight as before
         const leaguePrestige = LEAGUE_PRESTIGE[competition.slug] || 1;
         importance += leaguePrestige * 5;
 
         // 3. League standings proximity (0-20 points)
-        // Teams close in the table = more competitive match
         const homeStanding = standingsMap.get(homeTeam.id);
         const awayStanding = standingsMap.get(awayTeam.id);
         if (homeStanding && awayStanding && homeStanding.leagueId === awayStanding.leagueId) {
             const posDiff = Math.abs(homeStanding.rank - awayStanding.rank);
-            // Same position diff = more exciting (e.g., 1st vs 2nd)
             importance += Math.max(0, 20 - posDiff * 2);
 
             // Title race bonus: both teams in top 4
@@ -771,10 +771,38 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
         };
     }).filter(Boolean) as MatchCenterFixture[];
 
-    // Sort by importance and return top fixtures
-    return scoredFixtures
-        .sort((a, b) => b.importance - a.importance)
-        .slice(0, limit);
+    // Pure power ranking with soft diversity adjustment
+    // Apply a small penalty for "league saturation" to encourage variety
+    const leagueCount = new Map<string, number>();
+
+    const adjustedFixtures = scoredFixtures.map(f => {
+        const league = f.competition.slug;
+        const currentCount = leagueCount.get(league) || 0;
+
+        // Soft penalty: -3 points per existing match from same league (max -12)
+        // This prevents 100% same league without destroying power ranking
+        const diversityPenalty = Math.min(currentCount * 3, 12);
+
+        return {
+            ...f,
+            adjustedImportance: f.importance - diversityPenalty
+        };
+    });
+
+    // Sort by adjusted importance
+    const sorted = adjustedFixtures.sort((a, b) => b.adjustedImportance - a.adjustedImportance);
+
+    // Pick top matches and track league counts
+    const result: MatchCenterFixture[] = [];
+    sorted.forEach(f => {
+        if (result.length < limit) {
+            result.push(f);
+            const league = f.competition.slug;
+            leagueCount.set(league, (leagueCount.get(league) || 0) + 1);
+        }
+    });
+
+    return result;
 }
 
 // ==================== HERO LIVE FEED DATA ====================
