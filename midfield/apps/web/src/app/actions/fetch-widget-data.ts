@@ -627,12 +627,14 @@ export type MatchCenterFixture = {
         title: string;
         slug: string;
         badgeUrl?: string;
+        abbreviation?: string;
     };
     awayTeam: {
         id: string;
         title: string;
         slug: string;
         badgeUrl?: string;
+        abbreviation?: string;
     };
     competition: {
         id: string;
@@ -752,12 +754,14 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
                 title: homeTeam.title,
                 slug: homeTeam.slug,
                 badgeUrl: (homeTeam.metadata as any)?.badge_url,
+                abbreviation: (homeTeam.metadata as any)?.abbreviation,
             },
             awayTeam: {
                 id: awayTeam.id,
                 title: awayTeam.title,
                 slug: awayTeam.slug,
                 badgeUrl: (awayTeam.metadata as any)?.badge_url,
+                abbreviation: (awayTeam.metadata as any)?.abbreviation,
             },
             competition: {
                 id: competition.id,

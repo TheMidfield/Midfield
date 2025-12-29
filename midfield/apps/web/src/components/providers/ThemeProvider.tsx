@@ -22,13 +22,12 @@ function getInitialTheme(): Theme {
         return stored
     }
 
-    // Default to light mode - don't auto-detect system preference
-    // This ensures OG light theme is the default experience
-    return 'light'
+    // Default to dark mode
+    return 'dark'
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>('light')
+    const [theme, setThemeState] = useState<Theme>('dark')
     const [mounted, setMounted] = useState(false)
 
     // Initialize theme on mount

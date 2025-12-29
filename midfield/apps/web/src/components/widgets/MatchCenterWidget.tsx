@@ -47,9 +47,9 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
 
     return (
         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50">
-            {/* Date */}
-            <div className={`shrink-0 ${hideClubNames ? 'w-8' : 'w-10 sm:w-12'} text-center`}>
-                <span className="text-[10px] sm:text-xs font-bold block text-slate-500 dark:text-neutral-400">
+            {/* Date - with min-width to prevent wrap */}
+            <div className={`shrink-0 ${hideClubNames ? 'w-10' : 'w-10 sm:w-12'} text-center`}>
+                <span className="text-[10px] sm:text-xs font-bold block text-slate-500 dark:text-neutral-400 whitespace-nowrap">
                     {dayMonth}
                 </span>
             </div>
@@ -67,44 +67,67 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
             )}
 
             {/* Centered: Home Badge + VS + Away Badge */}
-            <div className={`flex items-center gap-2 shrink-0 ${hideClubNames ? 'flex-1 justify-center' : ''}`}>
-                <Link href={`/topic/${fixture.homeTeam.slug}`} className="group">
-                    <div className="relative w-6 h-6 shrink-0">
-                        {fixture.homeTeam.badgeUrl ? (
-                            <NextImage
-                                src={fixture.homeTeam.badgeUrl}
-                                alt={fixture.homeTeam.title}
-                                fill
-                                className="object-contain"
-                                sizes="24px"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
-                                <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
-                            </div>
-                        )}
-                    </div>
-                </Link>
+            <div className={`flex items-center gap-1 shrink-0 ${hideClubNames ? 'flex-1 justify-center' : ''}`}>
+                <div className="flex items-center gap-1">
+                    {/* Home Abbr (Compact only) */}
+                    {hideClubNames && (
+                        <Link href={`/topic/${fixture.homeTeam.slug}`} className="group/abbr">
+                            <span className="text-[9px] font-bold text-slate-500 dark:text-neutral-400 w-[20px] text-right block group-hover/abbr:text-emerald-600 dark:group-hover/abbr:text-emerald-400 transition-colors">
+                                {fixture.homeTeam.abbreviation || fixture.homeTeam.title.slice(0, 3).toUpperCase()}
+                            </span>
+                        </Link>
+                    )}
 
-                <span className="text-[10px] font-bold text-slate-300 dark:text-neutral-600">vs</span>
+                    <Link href={`/topic/${fixture.homeTeam.slug}`} className="group relative">
+                        {/* Hover ring effect to link logo interaction to text */}
+                        <div className="relative w-6 h-6 shrink-0 transition-transform group-hover:scale-110">
+                            {fixture.homeTeam.badgeUrl ? (
+                                <NextImage
+                                    src={fixture.homeTeam.badgeUrl}
+                                    alt={fixture.homeTeam.title}
+                                    fill
+                                    className="object-contain"
+                                    sizes="24px"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                    <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                </div>
+                            )}
+                        </div>
+                    </Link>
+                </div>
 
-                <Link href={`/topic/${fixture.awayTeam.slug}`} className="group">
-                    <div className="relative w-6 h-6 shrink-0">
-                        {fixture.awayTeam.badgeUrl ? (
-                            <NextImage
-                                src={fixture.awayTeam.badgeUrl}
-                                alt={fixture.awayTeam.title}
-                                fill
-                                className="object-contain"
-                                sizes="24px"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
-                                <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
-                            </div>
-                        )}
-                    </div>
-                </Link>
+                <span className="text-[10px] font-bold text-slate-300 dark:text-neutral-600 px-0.5">vs</span>
+
+                <div className="flex items-center gap-1">
+                    <Link href={`/topic/${fixture.awayTeam.slug}`} className="group relative">
+                        <div className="relative w-6 h-6 shrink-0 transition-transform group-hover:scale-110">
+                            {fixture.awayTeam.badgeUrl ? (
+                                <NextImage
+                                    src={fixture.awayTeam.badgeUrl}
+                                    alt={fixture.awayTeam.title}
+                                    fill
+                                    className="object-contain"
+                                    sizes="24px"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                    <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                </div>
+                            )}
+                        </div>
+                    </Link>
+
+                    {/* Away Abbr (Compact only) */}
+                    {hideClubNames && (
+                        <Link href={`/topic/${fixture.awayTeam.slug}`} className="group/abbr">
+                            <span className="text-[9px] font-bold text-slate-500 dark:text-neutral-400 w-[20px] text-left block group-hover/abbr:text-emerald-600 dark:group-hover/abbr:text-emerald-400 transition-colors">
+                                {fixture.awayTeam.abbreviation || fixture.awayTeam.title.slice(0, 3).toUpperCase()}
+                            </span>
+                        </Link>
+                    )}
+                </div>
             </div>
 
             {/* Away Team Name - Hidden if compact */}

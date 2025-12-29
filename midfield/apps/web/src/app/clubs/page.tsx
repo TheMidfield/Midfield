@@ -32,7 +32,8 @@ export default async function ClubsPage() {
                         backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
                         backgroundSize: '24px 24px',
                         maskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
-                        WebkitMaskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)'
+                        WebkitMaskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
+                        borderRadius: '0.375rem' // rounded-md equivalent
                     }}
                 />
                 <div className="relative z-10 px-6 py-10 sm:px-8 sm:py-12 max-w-7xl mx-auto">

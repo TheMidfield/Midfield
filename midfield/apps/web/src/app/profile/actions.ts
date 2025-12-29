@@ -79,7 +79,7 @@ export async function uploadAvatar(formData: FormData) {
 /**
  * Update user profile (username, display name)
  */
-export async function updateProfile(data: { username?: string }) {
+export async function updateProfile(data: { username?: string; favorite_club_id?: string | null }) {
     const supabase = await createClient()
 
     const { data: { user } } = await supabase.auth.getUser()
@@ -96,6 +96,10 @@ export async function updateProfile(data: { username?: string }) {
             return { success: false, error: 'Username must be 3-20 characters (letters, numbers, underscore only)' }
         }
         updates.username = data.username
+    }
+
+    if (data.favorite_club_id !== undefined) {
+        updates.favorite_club_id = data.favorite_club_id
     }
 
     const { error } = await supabase

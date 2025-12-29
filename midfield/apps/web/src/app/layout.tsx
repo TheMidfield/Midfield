@@ -54,7 +54,7 @@ export default function RootLayout({
                             var theme = localStorage.getItem('midfield-theme');
                             var root = document.documentElement;
                             root.classList.remove('dark');
-                            if (theme === 'dark') {
+                            if (theme === 'dark' || !theme) {
                                 root.classList.add('dark');
                             }
                         } catch (e) {}
