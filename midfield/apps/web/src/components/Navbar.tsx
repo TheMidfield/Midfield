@@ -8,6 +8,8 @@ import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
 import { NavbarSearch } from "./NavbarSearch";
 import { useEffect, useState } from "react";
+import { useOnboarding } from "./OnboardingProvider";
+import { Logo } from "@/components/Logo";
 
 export function Navbar() {
     const pathname = usePathname();
@@ -71,26 +73,32 @@ export function Navbar() {
         return pathname?.startsWith(path);
     };
 
+    const { isOnboardingOpen } = useOnboarding();
+
     return (
         <>
-            <nav className="fixed top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-slate-300 dark:border-neutral-800">
-                <div className="w-full max-w-[1600px] mx-auto flex h-14 sm:h-16 items-center justify-between px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+            <nav className={`fixed top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b transition-colors duration-500 ${isOnboardingOpen ? 'border-transparent' : 'border-slate-300 dark:border-neutral-800'}`}>
+                <div className="relative w-full max-w-[1600px] mx-auto flex h-14 sm:h-16 items-center px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+
+
 
                     {/* Left: Brand + Nav */}
-                    <div className="flex items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 min-w-0">
-                        <Link href="/" className="flex items-center gap-2 shrink-0">
-                            <img
-                                src="/midfield-logo.png"
-                                alt=""
-                                className="h-7 sm:h-8 md:h-9 w-auto"
-                            />
-                            <span className="font-black text-base sm:text-lg md:text-xl tracking-tighter text-slate-900 dark:text-neutral-100 uppercase">
+                    <div
+                        className={`flex items-center min-w-0 transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${isOnboardingOpen
+                            ? "absolute left-1/2 -translate-x-1/2 justify-center gap-0"
+                            : "relative left-0 translate-x-0 justify-start gap-3 sm:gap-4 md:gap-6 lg:gap-8"
+                            }`}
+                        style={{ zIndex: 60 }} // Ensure logo stays on top during animation
+                    >
+                        <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+                            <Logo className="h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110" />
+                            <span className="font-extralight text-lg sm:text-xl md:text-2xl tracking-tight text-slate-900 dark:text-neutral-100">
                                 Midfield
                             </span>
                         </Link>
 
                         {/* Desktop Nav - visible at 900px+ */}
-                        <div className="hidden lg:flex items-center gap-1">
+                        <div className={`hidden lg:flex items-center gap-1 transition-all duration-500 ${isOnboardingOpen ? 'opacity-0 w-0 overflow-hidden pointer-events-none' : 'opacity-100 w-auto'}`}>
                             <NavLink href="/" active={isActive("/")}>Home</NavLink>
                             <NavLink href="/players" active={isActive("/players")}>Players</NavLink>
                             <NavLink href="/clubs" active={isActive("/clubs")}>Clubs</NavLink>
@@ -98,8 +106,11 @@ export function Navbar() {
                         </div>
                     </div>
 
+                    {/* Spacer to maintain layout balance when not absolute */}
+                    <div className="flex-1" />
+
                     {/* Right: Actions */}
-                    <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                    <div className={`flex items-center gap-2 sm:gap-3 shrink-0 transition-all duration-500 ${isOnboardingOpen ? 'opacity-0 translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
                         {/* Search - visible at 768px+ */}
                         <div className="hidden md:block">
                             <NavbarSearch />

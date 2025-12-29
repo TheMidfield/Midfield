@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Card } from "./ui/Card";
-import { Shield, User, Check, ArrowRight, Upload, X } from "lucide-react";
+import { Shield, User, Check, ArrowRight, Upload, X, Globe } from "lucide-react";
 import NextImage from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
@@ -23,31 +23,53 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
     const [selectedClub, setSelectedClub] = useState<Club | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+
+    // Validate and check username availability
+    const validateUsername = async (value: string) => {
+        const cleaned = value.trim().toLowerCase();
+
+        if (!cleaned) {
+            setError("Username is required");
+            return false;
+        }
+
+        if (cleaned.length < 3) {
+            setError("Username must be at least 3 characters");
+            return false;
+        }
+
+        if (!/^[a-z0-9_]+$/.test(cleaned)) {
+            setError("Only letters, numbers, and underscores allowed");
+            return false;
+        }
+
+        setIsCheckingUsername(true);
+        const supabase = createClient();
+        const { data: existing } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', cleaned)
+            .neq('id', userId) // exclude current user if reusing logic
+            .maybeSingle();
+
+        setIsCheckingUsername(false);
+
+        if (existing) {
+            setError("Username is already taken");
+            return false;
+        }
+
+        setError(null);
+        return true;
+    };
 
     const handleNextStep = async () => {
-        setError(null);
-
         if (step === 1) {
-            // Validate username
-            if (!username.trim() || username.length < 3) {
-                setError("Username must be at least 3 characters");
-                return;
-            }
+            const isValid = await validateUsername(username);
+            if (!isValid) return;
 
-            // Check username availability
-            const supabase = createClient();
-            const { data: existing } = await supabase
-                .from('users')
-                .select('id')
-                .eq('username', username.trim())
-                .maybeSingle();
-
-            if (existing) {
-                setError("Username is already taken");
-                return;
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 0)); // No-op for now, clubs load in component
+            await new Promise(resolve => setTimeout(resolve, 0)); // No-op for now
             setStep(2);
         } else if (step === 2) {
             // Complete onboarding
@@ -85,10 +107,10 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                     />
                 </div>
 
-                <div className="p-6 sm:p-8">
+                <div className="p-6 sm:p-8 min-h-[520px] flex flex-col justify-center relative">
                     {/* Step 1: Username & Avatar */}
                     {step === 1 && (
-                        <div className="space-y-6">
+                        <div className="space-y-6 w-full animate-in fade-in slide-in-from-right-4 duration-300">
                             {/* Header */}
                             <div className="text-center space-y-2">
                                 <div className="w-14 h-14 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
@@ -138,9 +160,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                                 }}
                                             />
                                         </label>
-                                        <p className="text-xs text-slate-500 dark:text-neutral-500 mt-1">
-                                            Or leave blank for a default avatar
-                                        </p>
+
                                     </div>
                                 </div>
 
@@ -156,12 +176,20 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                         <Input
                                             type="text"
                                             value={username}
-                                            onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                                            onChange={(e) => {
+                                                const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                                                setUsername(val);
+                                                if (error) setError(null);
+                                            }}
                                             placeholder="your_username"
                                             maxLength={20}
                                             required
-                                            className="text-base pl-9 font-medium tracking-wide border-2 border-slate-200 dark:border-neutral-700 rounded-md hover:border-emerald-300 dark:hover:border-emerald-700 focus:border-emerald-500 dark:focus:border-emerald-500 transition-colors"
-                                            style={{ width: '100%' }}
+                                            className={`text-base pl-9 font-medium tracking-wide border-2 bg-white dark:bg-neutral-800 rounded-md transition-colors w-full
+                                                ${error
+                                                    ? 'border-red-300 dark:border-red-700 focus:border-red-500 dark:focus:border-red-500'
+                                                    : 'border-slate-200 dark:border-neutral-700 hover:border-emerald-300 dark:hover:border-emerald-700 focus:border-emerald-500 dark:focus:border-emerald-500'
+                                                }
+                                            `}
                                         />
                                     </div>
                                     <p className="text-xs text-slate-500 dark:text-neutral-500 mt-1.5">
@@ -179,19 +207,27 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                             {/* Actions */}
                             <Button
                                 onClick={handleNextStep}
-                                disabled={!username.trim() || username.length < 3}
+                                disabled={!username || isCheckingUsername}
                                 className="w-full h-12 text-base font-semibold"
                                 size="lg"
                             >
-                                Continue
-                                <ArrowRight className="w-5 h-5 ml-2" />
+                                {isCheckingUsername ? "Checking availability..." : "Continue"}
+                                {!isCheckingUsername && <ArrowRight className="w-5 h-5 ml-2" />}
                             </Button>
                         </div>
                     )}
 
                     {/* Step 2: Favorite Club */}
                     {step === 2 && (
-                        <div className="space-y-6">
+                        <div className="space-y-6 relative w-full animate-in fade-in slide-in-from-right-4 duration-300 pt-2">
+                            {/* Corner Badge */}
+                            <div className="absolute -top-2 -right-2 sm:right-0 hidden sm:block">
+                                <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50 shadow-sm animate-in fade-in slide-in-from-top-1">
+                                    <Globe className="w-3 h-3" />
+                                    Top 5 Leagues - More Coming Soon!
+                                </span>
+                            </div>
+
                             {/* Header */}
                             <div className="text-center space-y-2">
                                 <div className="w-14 h-14 mx-auto bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center">
@@ -201,7 +237,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                     Choose Your Club
                                 </h2>
                                 <p className="text-sm text-slate-600 dark:text-neutral-400">
-                                    Select your favorite team (optional)
+                                    Select your favorite team
                                 </p>
                             </div>
 

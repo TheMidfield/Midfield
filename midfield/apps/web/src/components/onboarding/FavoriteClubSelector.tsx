@@ -94,9 +94,9 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
             </div>
 
             {/* Clubs Grid */}
-            <div className="max-h-[320px] overflow-y-auto -mx-2 px-2 custom-scrollbar">
+            <div className="max-h-[320px] overflow-y-auto -mx-2 px-2 custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]">
                 {filteredClubs.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-6">
                         {filteredClubs.slice(0, 30).map((club) => {
                             const isSelected = selectedClubId === club.id;
 

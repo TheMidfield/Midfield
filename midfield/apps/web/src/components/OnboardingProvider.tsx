@@ -1,9 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { OnboardingWizard } from "./OnboardingWizard";
 import { useRouter } from "next/navigation";
+
+// Define Context
+export const OnboardingContext = createContext<{ isOnboardingOpen: boolean }>({ isOnboardingOpen: false });
+
+// Hook for consuming
+export const useOnboarding = () => useContext(OnboardingContext);
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
     const [showOnboarding, setShowOnboarding] = useState(false);
@@ -82,7 +88,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     }
 
     return (
-        <>
+        <OnboardingContext.Provider value={{ isOnboardingOpen: showOnboarding }}>
             {showOnboarding && userId && (
                 <OnboardingWizard
                     userId={userId}
@@ -91,6 +97,6 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
                 />
             )}
             {children}
-        </>
+        </OnboardingContext.Provider>
     );
 }

@@ -3,33 +3,36 @@ import { SVGProps } from "react";
 export function Logo({ className, ...props }: SVGProps<SVGSVGElement>) {
     return (
         <svg
-            viewBox="0 0 100 100"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={className}
             {...props}
         >
-            {/* Outer Circle Background */}
-            <circle cx="50" cy="50" r="50" className="fill-emerald-600 dark:fill-emerald-500" />
+            {/* Minimalist Pitch Center / Lens Concept */}
+            {/* Left Bracket */}
+            <path
+                d="M8 4C4.5 6 2 9.5 2 12C2 14.5 4.5 18 8 20"
+                className="stroke-emerald-600 dark:stroke-emerald-400"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+            />
 
-            {/* Inner Design - Techy Pitch Center */}
-            <g className="stroke-white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
-                {/* Center Circle */}
-                <circle cx="50" cy="50" r="18" fill="none" />
+            {/* Right Bracket */}
+            <path
+                d="M16 4C19.5 6 22 9.5 22 12C22 14.5 19.5 18 16 20"
+                className="stroke-emerald-600 dark:stroke-emerald-400"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+            />
 
-                {/* Diagonal Divider Line */}
-                <line x1="25" y1="75" x2="75" y2="25" />
-
-                {/* Top Arc / Sector */}
-                <path d="M50 20 V 32" /> {/* Vertical connector top */}
-                <path d="M25 35 Q 35 25 50 20" fill="none" /> {/* Top Left Curve */}
-                <path d="M50 20 Q 65 25 75 35" fill="none" /> {/* Top Right Curve */}
-
-                {/* Bottom Arc / Sector */}
-                <path d="M50 80 V 68" /> {/* Vertical connector bottom */}
-                <path d="M25 65 Q 35 75 50 80" fill="none" /> {/* Bottom Left Curve */}
-                <path d="M50 80 Q 65 75 75 65" fill="none" /> {/* Bottom Right Curve */}
-            </g>
+            {/* Center Dot (Kickoff / Focus) */}
+            <circle
+                cx="12"
+                cy="12"
+                r="3"
+                className="fill-slate-900 dark:fill-white"
+            />
         </svg>
     );
 }
