@@ -25,6 +25,10 @@ export type HeroTake = {
     author: {
         username: string;
         avatarUrl?: string;
+        favoriteClub?: {
+            title: string;
+            badgeUrl?: string;
+        };
     };
     topic: {
         title: string;
@@ -237,8 +241,23 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
 
     const [topicsRes, authorsRes] = await Promise.all([
         supabase.from('topics').select('id, title, slug, type, metadata').in('id', topicIds),
-        supabase.from('users').select('id, username, avatar_url').in('id', authorIds)
+        supabase.from('users').select('id, username, avatar_url, favorite_club_id').in('id', authorIds)
     ]);
+
+    // Fetch favorite clubs if any
+    const favClubIds = (authorsRes.data || [])
+        .map((u: any) => u.favorite_club_id)
+        .filter(Boolean);
+
+    let clubMap = new Map();
+    if (favClubIds.length > 0) {
+        const { data: clubs } = await supabase
+            .from('topics')
+            .select('id, title, metadata')
+            .in('id', favClubIds);
+
+        clubMap = new Map((clubs || []).map((c: any) => [c.id, c]));
+    }
 
     const topicMap = new Map((topicsRes.data || []).map((t: any) => [t.id, t]));
     const authorMap = new Map((authorsRes.data || []).map((a: any) => [a.id, a]));
@@ -253,6 +272,17 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
             const topic = topicMap.get(p.topic_id) as any;
             if (!topic) return null;
 
+            let favoriteClub = undefined;
+            if (author?.favorite_club_id) {
+                const club = clubMap.get(author.favorite_club_id);
+                if (club) {
+                    favoriteClub = {
+                        title: club.title,
+                        badgeUrl: club.metadata?.badge_url || club.metadata?.logo_url
+                    };
+                }
+            }
+
             return {
                 id: String(p.id),
                 content: String(p.content),
@@ -260,7 +290,8 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
                 reactionCount: Number(p.reaction_count) || 0,
                 author: {
                     username: String(author?.username || 'fan'),
-                    avatarUrl: author?.avatar_url || undefined
+                    avatarUrl: author?.avatar_url || undefined,
+                    favoriteClub
                 },
                 topic: {
                     title: String(topic.title),

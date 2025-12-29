@@ -95,7 +95,7 @@ export async function getTakesLogic(supabase: any, topicId: string) {
         .from('posts')
         .select(`
             *,
-            author:users(*)
+            author:users(*, favorite_club:topics!favorite_club_id(*))
         `)
         .eq('topic_id', topicId)
         .eq('is_deleted', false)

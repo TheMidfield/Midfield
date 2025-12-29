@@ -133,7 +133,7 @@ export async function getUserProfile() {
 
     const { data: profile } = await supabase
         .from('users')
-        .select('*')
+        .select('*, favorite_club:topics!favorite_club_id(*)')
         .eq('id', user.id)
         .single()
 

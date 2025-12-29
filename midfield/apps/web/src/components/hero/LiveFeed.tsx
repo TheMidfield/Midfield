@@ -63,7 +63,7 @@ function TakeCard({ take }: { take: HeroTake }) {
 
                 {/* Footer: Author + Time */}
                 <div className="flex items-center justify-between mt-auto pt-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
                         <div className="shrink-0 rounded-md bg-slate-100 dark:bg-neutral-800 overflow-hidden w-4 h-4 border border-slate-200 dark:border-neutral-700">
                             {take.author.avatarUrl ? (
                                 <NextImage
@@ -80,7 +80,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                                 </div>
                             )}
                         </div>
-                        <span className="text-emerald-600 dark:text-emerald-500 font-medium text-[11px]">
+                        <span className="text-emerald-600 dark:text-emerald-500 font-medium text-[11px] truncate">
                             @{take.author.username}
                         </span>
                     </div>

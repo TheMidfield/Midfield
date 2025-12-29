@@ -44,6 +44,13 @@ interface TakeCardProps {
         author?: {
             username?: string;
             avatar_url?: string;
+            favorite_club?: {
+                title: string;
+                metadata?: {
+                    badge_url?: string;
+                    logo_url?: string;
+                };
+            };
         };
         updated_at?: string;
     };
@@ -335,8 +342,15 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     <div className="min-w-0">
                         {/* Header */}
                         <div className="flex items-center justify-between mb-1 sm:mb-2 h-5 sm:h-6 min-w-0 gap-1.5">
-                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-slate-400 dark:text-neutral-500 leading-5 sm:leading-6">
-                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer">@{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2">•</span><span className="text-[10px] xs:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
+                            <div className="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-slate-400 dark:text-neutral-500 leading-5 sm:leading-6 flex items-center">
+                                {post.author?.favorite_club && (post.author.favorite_club.metadata?.badge_url || post.author.favorite_club.metadata?.logo_url) && (
+                                    <img
+                                        src={post.author.favorite_club.metadata.badge_url || post.author.favorite_club.metadata.logo_url}
+                                        alt={post.author.favorite_club.title}
+                                        className="w-5 h-5 object-contain mr-1.5 flex-shrink-0"
+                                    />
+                                )}
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer mr-0.5">{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2">•</span><span className="text-[10px] xs:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
                             </div>
                             {isOwner && !isEditing && (
                                 <div className="flex items-center flex-shrink-0">
@@ -599,7 +613,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                             <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-2.5 py-1 sm:py-1.5 border-l-2 border-slate-200 dark:border-neutral-800 w-full min-w-0">
                                                 <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5">
                                                     <span className="text-[10px] xs:text-[11px] sm:text-[11px] font-medium text-slate-500 dark:text-neutral-400 flex-shrink-0">
-                                                        Replying to @{replyingTo.username}
+                                                        Replying to {replyingTo.username}
                                                     </span>
                                                     {replyingTo.content && (
                                                         <>

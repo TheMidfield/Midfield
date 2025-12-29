@@ -276,20 +276,28 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
 
                         {!isEditingClub ? (
                             <div className="space-y-3">
-                                {profile?.favorite_club_id ? (
+                                {profile?.favorite_club ? (
                                     <>
                                         <div className="flex items-center gap-3 p-3 rounded-md bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700">
-                                            {/* We fetch the club details in the selector usually, but here we might only have ID initially. 
-                                                However, for ProfileClient to show the badge/name properly without editing, we ideally need the club data in initialData.
-                                                Assuming initialData.profile contains joined club data or we re-fetch.
-                                                For now, let's rely on the Selector to show current state when editing, 
-                                                and if not editing, simplified view if we lack data, or just show Selector in read-only mode?
-                                                Better: Show "Edit" button that opens the selector.
-                                             */}
-                                            <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                            <span className="text-sm font-medium text-slate-900 dark:text-neutral-100">
-                                                Click edit to change your club
-                                            </span>
+                                            {profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url ? (
+                                                <img
+                                                    src={profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url}
+                                                    alt={profile.favorite_club.title}
+                                                    className="w-8 h-8 object-contain"
+                                                />
+                                            ) : (
+                                                <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                            )}
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 uppercase tracking-tight">
+                                                    {profile.favorite_club.title}
+                                                </p>
+                                                {profile.favorite_club.metadata?.league_name && (
+                                                    <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider font-semibold">
+                                                        {profile.favorite_club.metadata.league_name}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
                                         <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
                                             Change Club
