@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { User as UserIcon, Terminal, Home, Users, Shield, Trophy } from "lucide-react";
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
@@ -13,10 +13,12 @@ import { Logo } from "@/components/Logo";
 
 export function Navbar() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const [userAvatar, setUserAvatar] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isNavigating, setIsNavigating] = useState(false);
 
     useEffect(() => {
         // Fetch user profile for avatar
@@ -25,9 +27,8 @@ export function Navbar() {
                 const response = await fetch('/api/user-profile');
                 if (response.ok) {
                     const data = await response.json();
-                    // If we got a response with user data (even if avatar_url is null), user is authenticated
-                    setIsAuthenticated(data.isAuthenticated || false);
                     setUserAvatar(data.avatar_url);
+                    setIsAuthenticated(data.isAuthenticated || false);
                 }
             } catch (error) {
                 console.error('Failed to load user profile:', error);
@@ -39,22 +40,35 @@ export function Navbar() {
 
         loadUserProfile();
 
-        // Listen for avatar updates from profile page
         const handleAvatarUpdate = (event: CustomEvent) => {
             setUserAvatar(event.detail.avatarUrl);
         };
 
         window.addEventListener('avatar-updated', handleAvatarUpdate as EventListener);
-
-        return () => {
-            window.removeEventListener('avatar-updated', handleAvatarUpdate as EventListener);
-        };
+        return () => window.removeEventListener('avatar-updated', handleAvatarUpdate as EventListener);
     }, []);
 
-    // Close menu on route change
+    // Handle Navigation Loading State
     useEffect(() => {
+        setIsNavigating(false);
         setIsMobileMenuOpen(false);
-    }, [pathname]);
+    }, [pathname, searchParams]);
+
+    useEffect(() => {
+        const handleAnchorClick = (e: MouseEvent) => {
+            const target = (e.target as HTMLElement).closest('a');
+            if (target && target.href && !target.target && target.href.startsWith(window.location.origin)) {
+                // Determine if it's a navigation to a different path
+                const targetUrl = new URL(target.href);
+                if (targetUrl.pathname !== window.location.pathname || targetUrl.search !== window.location.search) {
+                    setIsNavigating(true);
+                }
+            }
+        };
+
+        document.addEventListener('click', handleAnchorClick);
+        return () => document.removeEventListener('click', handleAnchorClick);
+    }, []);
 
     // Prevent body scroll when menu is open
     useEffect(() => {
@@ -77,27 +91,34 @@ export function Navbar() {
 
     return (
         <>
-            <nav className={`fixed top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b transition-colors duration-500 ${isOnboardingOpen ? 'border-transparent' : 'border-slate-300 dark:border-neutral-800'}`}>
-                <div className="relative w-full max-w-[1600px] mx-auto flex h-14 sm:h-16 items-center px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
+            <nav
+                className={`fixed top-0 z-50 w-full bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b transition-all duration-500 pt-[env(safe-area-inset-top)] ${isOnboardingOpen ? 'border-transparent' : 'border-slate-300 dark:border-neutral-800'
+                    }`}
+            >
+                {/* Loading Bar */}
+                {isNavigating && (
+                    <div className="absolute bottom-0 left-0 w-full h-[2px] bg-slate-100 dark:bg-neutral-800 overflow-hidden z-50">
+                        <div className="h-full bg-emerald-500 animate-loading-bar" />
+                    </div>
+                )}
 
-
-
+                <div className="relative w-full max-w-[1600px] mx-auto flex h-[62px] sm:h-16 items-center px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24">
                     {/* Left: Brand + Nav */}
                     <div
                         className={`flex items-center min-w-0 transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${isOnboardingOpen
                             ? "absolute left-1/2 -translate-x-1/2 justify-center gap-0"
                             : "relative left-0 translate-x-0 justify-start gap-3 sm:gap-4 md:gap-6 lg:gap-8"
                             }`}
-                        style={{ zIndex: 60 }} // Ensure logo stays on top during animation
+                        style={{ zIndex: 60 }}
                     >
                         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-                            <Logo className="h-7 w-7 sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110" />
-                            <span className="font-extralight text-lg sm:text-xl md:text-2xl tracking-tight text-slate-900 dark:text-neutral-100">
+                            <Logo className="h-[34px] w-[34px] sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110" />
+                            <span className="font-extralight text-xl sm:text-xl md:text-2xl tracking-tight text-slate-900 dark:text-neutral-100">
                                 Midfield
                             </span>
                         </Link>
 
-                        {/* Desktop Nav - visible at 900px+ */}
+                        {/* Desktop Nav */}
                         <div className={`hidden lg:flex items-center gap-1 transition-all duration-500 ${isOnboardingOpen ? 'opacity-0 w-0 overflow-hidden pointer-events-none' : 'opacity-100 w-auto'}`}>
                             <NavLink href="/" active={isActive("/")}>Home</NavLink>
                             <NavLink href="/players" active={isActive("/players")}>Players</NavLink>
@@ -106,17 +127,14 @@ export function Navbar() {
                         </div>
                     </div>
 
-                    {/* Spacer to maintain layout balance when not absolute */}
                     <div className="flex-1" />
 
                     {/* Right: Actions */}
                     <div className={`flex items-center gap-2 sm:gap-3 shrink-0 transition-all duration-500 ${isOnboardingOpen ? 'opacity-0 translate-x-4 pointer-events-none' : 'opacity-100 translate-x-0'}`}>
-                        {/* Search - visible at 768px+ */}
                         <div className="hidden md:block">
                             <NavbarSearch />
                         </div>
 
-                        {/* DEV ONLY: Temp button for Onboarding */}
                         <div className="hidden xl:block">
                             <Button
                                 variant="ghost"
@@ -141,11 +159,7 @@ export function Navbar() {
                                 <Link href="/profile">
                                     {userAvatar ? (
                                         <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
-                                            <img
-                                                src={userAvatar}
-                                                alt="Profile"
-                                                className="w-full h-full object-cover"
-                                            />
+                                            <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
                                         </div>
                                     ) : (
                                         <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-center">
@@ -156,19 +170,12 @@ export function Navbar() {
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <Link href="/auth/login" className="hidden md:block">
-                                        <Button variant="ghost" size="sm">
-                                            Log in
-                                        </Button>
+                                        <Button variant="ghost" size="sm">Log in</Button>
                                     </Link>
                                     <Link href="/auth/signup">
                                         <Button variant="default" size="sm" className="hidden sm:flex group">
                                             <span>Join Midfield</span>
-                                            <svg
-                                                className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5"
-                                                fill="none"
-                                                viewBox="0 0 24 24"
-                                                stroke="currentColor"
-                                            >
+                                            <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                                             </svg>
                                         </Button>
@@ -180,7 +187,6 @@ export function Navbar() {
                             <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 animate-pulse" />
                         )}
 
-                        {/* Hamburger Menu - Below lg breakpoint */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="lg:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all cursor-pointer"
@@ -195,78 +201,33 @@ export function Navbar() {
                 </div>
             </nav>
 
-            {/* Mobile Menu Overlay - Behind navbar, darkens/blurs content */}
+            {/* Mobile Menu Overlay */}
             <div
-                className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ease-out ${isMobileMenuOpen
-                    ? 'opacity-100 pointer-events-auto'
-                    : 'opacity-0 pointer-events-none'
-                    }`}
+                className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ease-out ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsMobileMenuOpen(false)}
-                aria-hidden={!isMobileMenuOpen}
             >
-                {/* Backdrop - only covers content below navbar */}
-                <div className="absolute inset-0 top-14 sm:top-16 bg-black/50 backdrop-blur-sm" />
+                {/* Adjusted top offset for larger navbar */}
+                <div className="absolute inset-0 top-[62px] sm:top-16 bg-black/50 backdrop-blur-sm pt-[env(safe-area-inset-top)]" />
             </div>
 
-            {/* Mobile Menu Drawer - Slides down from navbar */}
+            {/* Mobile Menu Drawer */}
             <div
-                className={`fixed top-14 sm:top-16 left-0 right-0 z-40 lg:hidden transition-all duration-300 ease-out transform-gpu ${isMobileMenuOpen
+                className={`fixed top-[62px] sm:top-16 left-0 right-0 z-40 lg:hidden transition-all duration-300 ease-out transform-gpu rounded-b-xl border-b border-slate-200 dark:border-neutral-800 shadow-xl overflow-hidden pt-[env(safe-area-inset-top)] ${isMobileMenuOpen
                     ? 'translate-y-0 opacity-100'
                     : '-translate-y-4 opacity-0 pointer-events-none'
                     }`}
             >
-                <div className="bg-white dark:bg-neutral-900 border-b border-slate-200 dark:border-neutral-800 shadow-xl">
-                    <div className="px-4 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
-                        {/* Mobile Search - First Item (only show if not visible in header) */}
+                <div className="bg-white dark:bg-neutral-900">
+                    <div className="px-4 py-4 space-y-1 max-h-[calc(100vh-5rem)] overflow-y-auto">
                         <div className="mb-4 md:hidden">
                             <NavbarSearch onSearchStart={() => setIsMobileMenuOpen(false)} />
                         </div>
-
-                        {/* Navigation Links with Icons */}
-                        <MobileNavLink
-                            href="/"
-                            icon={Home}
-                            active={isActive("/")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Home
-                        </MobileNavLink>
-                        <MobileNavLink
-                            href="/players"
-                            icon={Users}
-                            active={isActive("/players")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Players
-                        </MobileNavLink>
-                        <MobileNavLink
-                            href="/clubs"
-                            icon={Shield}
-                            active={isActive("/clubs")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Clubs
-                        </MobileNavLink>
-                        <MobileNavLink
-                            href="/leagues"
-                            icon={Trophy}
-                            active={isActive("/leagues")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Leagues
-                        </MobileNavLink>
-
-                        {/* Divider */}
+                        <MobileNavLink href="/" icon={Home} active={isActive("/")} onClick={() => setIsMobileMenuOpen(false)}>Home</MobileNavLink>
+                        <MobileNavLink href="/players" icon={Users} active={isActive("/players")} onClick={() => setIsMobileMenuOpen(false)}>Players</MobileNavLink>
+                        <MobileNavLink href="/clubs" icon={Shield} active={isActive("/clubs")} onClick={() => setIsMobileMenuOpen(false)}>Clubs</MobileNavLink>
+                        <MobileNavLink href="/leagues" icon={Trophy} active={isActive("/leagues")} onClick={() => setIsMobileMenuOpen(false)}>Leagues</MobileNavLink>
                         <div className="my-3 border-t border-slate-200 dark:border-neutral-800" />
-
-                        <MobileNavLink
-                            href="/design-system"
-                            icon={Terminal}
-                            active={isActive("/design-system")}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            Showcase
-                        </MobileNavLink>
+                        <MobileNavLink href="/design-system" icon={Terminal} active={isActive("/design-system")} onClick={() => setIsMobileMenuOpen(false)}>Showcase</MobileNavLink>
                     </div>
                 </div>
             </div>
