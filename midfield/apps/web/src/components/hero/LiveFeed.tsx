@@ -117,7 +117,8 @@ export function LiveFeed() {
     const [takes, setTakes] = useState<TakeWithColumn[]>([]);
     const [scrollY, setScrollY] = useState(0);
     const [nextColumn, setNextColumn] = useState<1 | 2>(1);
-    const initialAnimationDone = useRef(false);
+    const [showFirstTake, setShowFirstTake] = useState(false);
+    const [showSecondTake, setShowSecondTake] = useState(false);
     const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
     // Initialize Supabase client
@@ -127,48 +128,40 @@ export function LiveFeed() {
 
     // Handle SWR data updates
     useEffect(() => {
-        if (!swrTakes) return;
+        if (!swrTakes || swrTakes.length < 2) return;
 
-        setTakes(prevTakes => {
-            // If first load and we want staggered animation
-            if (!initialAnimationDone.current && swrTakes.length >= 2) {
-                initialAnimationDone.current = true;
+        // Always assign columns: latest → column 1 (left), second → column 2 (right)
+        const [latest, secondLatest, ...rest] = swrTakes;
 
-                // Latest 2 takes get special treatment
-                const [latest, secondLatest, ...rest] = swrTakes;
+        const staggered: TakeWithColumn[] = [
+            { ...latest, column: 1 },
+            { ...secondLatest, column: 2 },
+            ...rest.map((take, i) => ({
+                ...take,
+                column: ((i % 2) === 0 ? 1 : 2) as 1 | 2
+            }))
+        ];
 
-                // Assign columns: latest → column 1 (left), second → column 2 (right)
-                const staggered: TakeWithColumn[] = [
-                    { ...latest, column: 1 },
-                    { ...secondLatest, column: 2 },
-                    ...rest.map((take, i) => ({
-                        ...take,
-                        column: (i % 2 === 0 ? 1 : 2) as 1 | 2
-                    }))
-                ];
+        setTakes(staggered);
 
-                return staggered;
-            }
+        // Reset and trigger staggered animation on every data load
+        setShowFirstTake(false);
+        setShowSecondTake(false);
 
-            // Normal update - check for new takes
-            const existingIds = new Set(prevTakes.map(t => t.id));
-            const newTakes = swrTakes.filter(t => !existingIds.has(t.id));
+        // Show first take after 1.5 seconds
+        const timer1 = setTimeout(() => {
+            setShowFirstTake(true);
+        }, 1500);
 
-            if (newTakes.length === 0) return prevTakes;
+        // Show second take after 3 seconds
+        const timer2 = setTimeout(() => {
+            setShowSecondTake(true);
+        }, 3000);
 
-            // Add new takes to the top, alternating columns starting from nextColumn
-            let currentCol = nextColumn;
-            const withColumns = newTakes.map((take) => {
-                const takeWithCol = { ...take, column: currentCol };
-                currentCol = currentCol === 1 ? 2 : 1;
-                return takeWithCol;
-            });
-
-            // Update nextColumn for future takes
-            setNextColumn(currentCol);
-
-            return [...withColumns, ...prevTakes].slice(0, 16);
-        });
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+        };
     }, [swrTakes]);
 
     // Supabase Realtime subscription for instant updates
@@ -311,23 +304,28 @@ export function LiveFeed() {
                     }}
                 >
                     <AnimatePresence initial={false}>
-                        {col1Takes.map((take) => (
-                            <motion.div
-                                key={take.id}
-                                layout="position"
-                                initial={{ opacity: 0, y: -20, scale: 0.96 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                transition={{
-                                    opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
-                                    y: { type: 'spring', stiffness: 400, damping: 28 },
-                                    scale: { type: 'spring', stiffness: 450, damping: 25 },
-                                    layout: { type: 'spring', stiffness: 350, damping: 30 }
-                                }}
-                                style={{ marginBottom: '12px' }}
-                            >
-                                <TakeCard take={take} />
-                            </motion.div>
-                        ))}
+                        {col1Takes.map((take, index) => {
+                            // First take (index 0) waits for showFirstTake
+                            if (index === 0 && !showFirstTake) return null;
+
+                            return (
+                                <motion.div
+                                    key={take.id}
+                                    layout="position"
+                                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{
+                                        opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                        y: { type: 'spring', stiffness: 400, damping: 28 },
+                                        scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                        layout: { type: 'spring', stiffness: 350, damping: 30 }
+                                    }}
+                                    style={{ marginBottom: '12px' }}
+                                >
+                                    <TakeCard take={take} />
+                                </motion.div>
+                            );
+                        })}
                     </AnimatePresence>
                 </div>
 
@@ -340,23 +338,28 @@ export function LiveFeed() {
                     }}
                 >
                     <AnimatePresence initial={false}>
-                        {col2Takes.map((take, index) => (
-                            <motion.div
-                                key={take.id}
-                                layout="position"
-                                initial={{ opacity: 0, y: -20, scale: 0.96 }}
-                                animate={{ opacity: 1, y: 0, scale: 1 }}
-                                transition={{
-                                    opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
-                                    y: { type: 'spring', stiffness: 400, damping: 28 },
-                                    scale: { type: 'spring', stiffness: 450, damping: 25 },
-                                    layout: { type: 'spring', stiffness: 350, damping: 30 }
-                                }}
-                                style={{ marginBottom: '12px' }}
-                            >
-                                <TakeCard take={take} />
-                            </motion.div>
-                        ))}
+                        {col2Takes.map((take, index) => {
+                            // First take in col2 (index 0) waits for showSecondTake
+                            if (index === 0 && !showSecondTake) return null;
+
+                            return (
+                                <motion.div
+                                    key={take.id}
+                                    layout="position"
+                                    initial={{ opacity: 0, y: -20, scale: 0.96 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{
+                                        opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                        y: { type: 'spring', stiffness: 400, damping: 28 },
+                                        scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                        layout: { type: 'spring', stiffness: 350, damping: 30 }
+                                    }}
+                                    style={{ marginBottom: '12px' }}
+                                >
+                                    <TakeCard take={take} />
+                                </motion.div>
+                            );
+                        })}
                     </AnimatePresence>
                 </div>
             </div>
