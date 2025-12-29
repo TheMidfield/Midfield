@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownWideNarrow, Flame, Sparkles, Plus } from "lucide-react";
+import { ArrowDownWideNarrow, Flame, Sparkles } from "lucide-react";
 import { useHeroTakes } from "@/lib/hooks/use-cached-data";
 import type { HeroTake } from "@/app/actions/hero-data";
 import Link from "next/link";
@@ -41,6 +41,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                                 alt={take.topic.title}
                                 fill
                                 sizes="20px"
+                                priority={true}
                                 className={isClub ? 'object-contain' : PLAYER_IMAGE_STYLE.className}
                                 {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
                             />
@@ -65,7 +66,14 @@ function TakeCard({ take }: { take: HeroTake }) {
                     <div className="flex items-center gap-1.5">
                         <div className="shrink-0 rounded-md bg-slate-100 dark:bg-neutral-800 overflow-hidden w-4 h-4 border border-slate-200 dark:border-neutral-700">
                             {take.author.avatarUrl ? (
-                                <img src={take.author.avatarUrl} alt="" className="w-full h-full object-cover" />
+                                <NextImage
+                                    src={take.author.avatarUrl}
+                                    alt=""
+                                    width={16}
+                                    height={16}
+                                    priority={true}
+                                    className="w-full h-full object-cover"
+                                />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-neutral-500 font-bold text-[7px]">
                                     {take.author.username.slice(0, 1).toUpperCase()}
@@ -116,7 +124,6 @@ export function LiveFeed() {
 
     const [takes, setTakes] = useState<TakeWithColumn[]>([]);
     const [scrollY, setScrollY] = useState(0);
-    const [nextColumn, setNextColumn] = useState<1 | 2>(1);
     const [showFirstTake, setShowFirstTake] = useState(false);
     const [showSecondTake, setShowSecondTake] = useState(false);
     const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
@@ -198,29 +205,6 @@ export function LiveFeed() {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // DEV: Add test take
-    const addTestTake = () => {
-        const sampleTake: TakeWithColumn = {
-            id: `test-${Date.now()}`,
-            content: "This is a test take to see the animation! 🔥",
-            createdAt: new Date().toISOString(),
-            author: {
-                username: "testuser",
-                avatarUrl: undefined
-            },
-            topic: {
-                title: "Test Player",
-                slug: "test-player",
-                type: "player",
-                imageUrl: undefined
-            },
-            reactionCount: 0,
-            column: nextColumn
-        };
-        setTakes(prev => [sampleTake, ...prev]);
-        setNextColumn(prev => prev === 1 ? 2 : 1);
-    };
-
     const col1Takes = takes.filter(t => t.column === 1);
     const col2Takes = takes.filter(t => t.column === 2);
 
@@ -228,20 +212,16 @@ export function LiveFeed() {
     if (!swrTakes) {
         return (
             <div>
-                {/* Header */}
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
-                        <span className="font-bold text-xs tracking-wider text-slate-600 dark:text-neutral-400 uppercase">
-                            Latest Takes
-                        </span>
-                    </div>
-                    <div className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-full">
-                        <span className="text-emerald-700 dark:text-emerald-400 font-bold text-[10px] flex items-center gap-1">
-                            <Sparkles className="w-3 h-3" />
-                            Loading...
-                        </span>
-                    </div>
+                {/* Header - same as loaded state */}
+                <div className="flex items-center gap-2 mb-4 pl-1">
+                    <Flame className="text-emerald-500 w-4 h-4 fill-emerald-500/20" />
+                    <span className="font-extrabold text-slate-500 dark:text-neutral-200 text-xs uppercase tracking-widest">
+                        Latest Takes
+                    </span>
+                    <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50">
+                        <Sparkles className="w-3 h-3" />
+                        Post a take and see it here
+                    </span>
                 </div>
 
                 {/* Skeleton */}
@@ -272,21 +252,11 @@ export function LiveFeed() {
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="flex items-center justify-between gap-2 mb-4 pl-1">
-                <div className="flex items-center gap-2">
-                    <Flame className="text-emerald-500 w-4 h-4 fill-emerald-500/20" />
-                    <span className="font-extrabold text-slate-500 dark:text-neutral-200 text-xs uppercase tracking-widest">
-                        Latest Takes
-                    </span>
-                    {/* DEV: Test button */}
-                    <button
-                        onClick={addTestTake}
-                        className="ml-2 p-1 rounded bg-amber-500/20 hover:bg-amber-500/40 text-amber-500 transition-colors"
-                        title="DEV: Add test take"
-                    >
-                        <Plus className="w-3 h-3" />
-                    </button>
-                </div>
+            <div className="flex items-center gap-2 mb-4 pl-1">
+                <Flame className="text-emerald-500 w-4 h-4 fill-emerald-500/20" />
+                <span className="font-extrabold text-slate-500 dark:text-neutral-200 text-xs uppercase tracking-widest">
+                    Latest Takes
+                </span>
                 <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50">
                     <Sparkles className="w-3 h-3" />
                     Post a take and see it here
