@@ -36,8 +36,10 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
                 .select('id, title, slug, metadata')
                 .eq('type', 'club')
                 .eq('is_active', true)
+                // Filter for Top 5 Leagues only
+                .or(`metadata->>league.eq."English Premier League",metadata->>league.eq."Spanish La Liga",metadata->>league.eq."German Bundesliga",metadata->>league.eq."Italian Serie A",metadata->>league.eq."French Ligue 1"`)
                 .order('title', { ascending: true })
-                .limit(100);
+                .limit(200); // 96 clubs total, 200 is safe buffer
 
             if (data) {
                 setClubs(data as Club[]);

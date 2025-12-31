@@ -40,7 +40,7 @@ export async function GET(request: Request) {
                     onboarding_completed: false
                 }, {
                     onConflict: 'id',
-                    ignoreDuplicates: false
+                    ignoreDuplicates: true
                 })
 
             if (upsertError) {

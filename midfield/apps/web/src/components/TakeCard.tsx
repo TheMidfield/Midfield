@@ -327,7 +327,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
                             />
                         ) : (
-                            <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700 flex items-center justify-center z-10">
+                            <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center z-10">
                                 <User className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5 text-slate-400 dark:text-neutral-500" />
                             </div>
                         )}

@@ -259,7 +259,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                         {profile?.avatar_url ? (
                             <img src={profile.avatar_url} alt="Profile" style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
                         ) : (
-                            <div style={{ width: '80px', height: '80px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-800 dark:to-neutral-700">
+                            <div style={{ width: '80px', height: '80px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700">
                                 <User className="w-8 h-8 text-slate-400 dark:text-neutral-500" />
                             </div>
                         )}
