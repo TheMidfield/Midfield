@@ -14,6 +14,42 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
             className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible"
             style={{ width: '100%' }}
         >
+            {/* Subtle radial gradient background - gives the hero a premium feel */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                    background: 'radial-gradient(ellipse 70% 60% at 50% 30%, rgba(16, 185, 129, 0.03) 0%, transparent 60%)',
+                    maskImage: 'radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 80%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 80%)'
+                }}
+            />
+
+            {/* Discrete emerald spotlight - top-left corner */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    top: '-10%',
+                    left: '5%',
+                    width: '400px',
+                    height: '400px',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+                    filter: 'blur(40px)',
+                }}
+            />
+
+            {/* Discrete emerald spotlight - bottom-right corner */}
+            <div
+                className="absolute pointer-events-none"
+                style={{
+                    bottom: '-5%',
+                    right: '10%',
+                    width: '350px',
+                    height: '350px',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)',
+                    filter: 'blur(50px)',
+                }}
+            />
+
             {/* Fading grid background - uses radial mask to fade edges */}
             <div
                 className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
