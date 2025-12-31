@@ -17,7 +17,7 @@ export default async function LeaguesPage() {
   // Fetch league topics directly from database
   const { data: leagues } = await supabase
     .from('topics')
-    .select('*')
+    .select('id, title, slug, type, metadata')
     .eq('type', 'league')
     .eq('is_active', true)
     .order('title', { ascending: true });

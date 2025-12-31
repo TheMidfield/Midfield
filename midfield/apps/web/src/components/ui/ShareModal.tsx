@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Download, Copy, Check, Loader2, Sun, Moon, Instagram } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,38 +50,34 @@ export function ShareModal({
     const [copyState, setCopyState] = useState<ActionState>("idle");
     const [isDarkMode, setIsDarkMode] = useState(true);
 
+    const hasGenerated = useRef(false);
+
     // Generate image via server-side API (no CORS issues!)
     const generateImage = useCallback(async () => {
         setIsGenerating(true);
-        setImageUrl(null);
+        // Don't clear imageUrl strictly here to avoid flickering on theme toggle
+        // setImageUrl(null); 
 
         try {
-            const params = new URLSearchParams({
-                content,
-                authorUsername,
-                topicTitle: topicTitle || '',
-                topicType: topicType || 'player',
-                createdAt,
-                theme: isDarkMode ? 'dark' : 'light',
+            const response = await fetch('/api/share-card', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content,
+                    authorUsername,
+                    topicTitle: topicTitle || '',
+                    topicType: topicType || 'player',
+                    createdAt,
+                    theme: isDarkMode ? 'dark' : 'light',
+                    topicImageUrl,
+                    authorAvatarUrl: authorAvatar,
+                    clubName,
+                    clubBadgeUrl,
+                    topicPosition,
+                }),
             });
-
-            if (topicImageUrl) {
-                params.set('topicImageUrl', topicImageUrl);
-            }
-            if (authorAvatar) {
-                params.set('authorAvatarUrl', authorAvatar);
-            }
-            if (clubName) {
-                params.set('clubName', clubName);
-            }
-            if (clubBadgeUrl) {
-                params.set('clubBadgeUrl', clubBadgeUrl);
-            }
-            if (topicPosition) {
-                params.set('topicPosition', topicPosition);
-            }
-
-            const response = await fetch(`/api/share-card?${params.toString()}`);
 
             if (!response.ok) {
                 throw new Error('Failed to generate image');
@@ -89,6 +85,12 @@ export function ShareModal({
 
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
+
+            // Clean up old URL if exists
+            if (imageUrl) {
+                URL.revokeObjectURL(imageUrl);
+            }
+
             setImageUrl(url);
         } catch (error) {
             console.error("Failed to generate image:", error);
@@ -99,23 +101,26 @@ export function ShareModal({
 
     // Generate when modal opens
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !hasGenerated.current) {
             generateImage();
-        } else {
-            // Cleanup blob URL when modal closes
+            hasGenerated.current = true;
+        } else if (!isOpen) {
+            // Cleanup when modal closes
+            hasGenerated.current = false;
             if (imageUrl) {
                 URL.revokeObjectURL(imageUrl);
+                setImageUrl(null);
             }
-            setImageUrl(null);
             setDownloadState("idle");
             setCopyState("idle");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen]);
+    }, [isOpen]); // Only depend on isOpen to prevent loops
 
     // Regenerate when theme changes
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && imageUrl) {
+            // Only regenerate if already open and previously generated
             generateImage();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

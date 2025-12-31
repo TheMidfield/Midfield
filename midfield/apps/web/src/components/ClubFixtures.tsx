@@ -72,21 +72,43 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
         const opponent = isHome ? fixture.away_team : fixture.home_team;
         const date = new Date(fixture.date);
 
-        const isFinished = fixture.status === 'Match Finished' || fixture.status === 'FT';
         const homeScore = fixture.home_score;
         const awayScore = fixture.away_score;
 
+        // Strict Enum Checks
+        const status = fixture.status;
+        const isFinished = status === 'FT' || status === 'ABD'; // Treat Abandoned as finished for display? Or handle separately?
+        const isLive = status === 'LIVE' || status === 'HT';
+        const isPostponed = status === 'PST';
+
         let resultBg = "";
+        let resultBorder = "";
+
         if (isFinished) {
             const clubScore = isHome ? homeScore : awayScore;
             const oppScore = isHome ? awayScore : homeScore;
-            if (clubScore > oppScore) resultBg = "bg-emerald-50 dark:bg-emerald-950/20 border-l-2 border-l-emerald-500";
-            else if (clubScore < oppScore) resultBg = "bg-rose-50 dark:bg-rose-950/20 border-l-2 border-l-rose-500";
-            else resultBg = "bg-slate-50 dark:bg-neutral-800/50 border-l-2 border-l-slate-400";
+            if (clubScore > oppScore) {
+                resultBg = "bg-emerald-50 dark:bg-emerald-950/20";
+                resultBorder = "border-l-2 border-l-emerald-500";
+            } else if (clubScore < oppScore) {
+                resultBg = "bg-rose-50 dark:bg-rose-950/20";
+                resultBorder = "border-l-2 border-l-rose-500";
+            } else {
+                resultBg = "bg-slate-50 dark:bg-neutral-800/50";
+                resultBorder = "border-l-2 border-l-slate-400";
+            }
+        } else if (isLive) {
+            resultBg = "bg-amber-50 dark:bg-amber-950/20";
+            resultBorder = "border-l-2 border-l-amber-500 animate-pulse";
+        } else if (isPostponed) {
+            resultBg = "bg-slate-100 dark:bg-neutral-800";
+            resultBorder = "border-l-2 border-l-slate-300";
         }
 
+        const containerClasses = `flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md ${resultBg || 'bg-slate-50 dark:bg-neutral-800/50'} ${resultBorder}`;
+
         return (
-            <div className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md ${resultBg || 'bg-slate-50 dark:bg-neutral-800/50'}`}>
+            <div className={containerClasses}>
                 {/* Date */}
                 <div className="w-10 sm:w-12 text-center shrink-0">
                     <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-neutral-400 block">
@@ -137,12 +159,12 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                         </span>
                     )}
                 </div>
-            </div>
+            </div >
         );
     };
 
     return (
-        <div 
+        <div
             className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 overflow-y-auto"
             style={{ maxHeight: showFormOnly ? '220px' : '400px' }}
         >

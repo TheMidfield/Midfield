@@ -17,7 +17,7 @@ export default async function BookmarksPage() {
     // Get user profile
     const { data: profile } = await supabase
         .from("users")
-        .select("*")
+        .select("avatar_url, username")
         .eq("id", user.id)
         .single();
 

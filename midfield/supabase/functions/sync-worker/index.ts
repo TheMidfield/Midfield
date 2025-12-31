@@ -56,11 +56,14 @@ Deno.serve(async (req) => {
 
                     if (clubJobs.length > 0) {
                         // Add Auxiliary Jobs (League Level)
+                        /* 
+                        // DISABLED: Realtime Engine (V2) now handles fixtures
                         clubJobs.push({
                             job_type: 'sync_fixtures',
                             payload: { leagueId, season: '2024-2025' },
                             status: 'pending'
                         } as any);
+                        */
 
                         clubJobs.push({
                             job_type: 'sync_standings',
@@ -155,52 +158,9 @@ Deno.serve(async (req) => {
                     }
 
                 } else if (job.job_type === 'sync_fixtures') {
-                    // Sync Fixtures (League Level) - Next 15 & Prev 15
-                    const { leagueId } = job.payload;
-                    const { data: leagueTopic } = await supabase.from('topics').select('id').eq('type', 'league').contains('metadata', { external: { thesportsdb_id: leagueId } }).single();
-
-                    if (leagueTopic) {
-                        const [next, prev] = await Promise.all([
-                            apiClient.getLeagueNextFixtures(leagueId),
-                            apiClient.getLeagueLastFixtures(leagueId)
-                        ]);
-
-                        const allFixtures = [...next, ...prev];
-                        // Cache club lookups to avoid N+1 DB calls
-                        const clubCache = new Map<string, string>(); // TSDB_ID -> UUID
-
-                        for (const f of allFixtures) {
-                            if (!f.idHomeTeam || !f.idAwayTeam) continue;
-
-                            let homeId = clubCache.get(f.idHomeTeam);
-                            if (!homeId) {
-                                const { data: h } = await supabase.from('topics').select('id').eq('type', 'club').contains('metadata', { external: { thesportsdb_id: f.idHomeTeam } }).single();
-                                if (h) { homeId = h.id; clubCache.set(f.idHomeTeam, h.id); }
-                            }
-
-                            let awayId = clubCache.get(f.idAwayTeam);
-                            if (!awayId) {
-                                const { data: a } = await supabase.from('topics').select('id').eq('type', 'club').contains('metadata', { external: { thesportsdb_id: f.idAwayTeam } }).single();
-                                if (a) { awayId = a.id; clubCache.set(f.idAwayTeam, a.id); }
-                            }
-
-                            if (homeId && awayId) {
-                                const fixturePayload = {
-                                    id: parseInt(f.idEvent),
-                                    home_team_id: homeId,
-                                    away_team_id: awayId,
-                                    competition_id: leagueTopic.id,
-                                    date: f.dateEvent + (f.strTime ? 'T' + f.strTime : ''),
-                                    status: f.strStatus === 'Match Finished' ? 'FT' : 'Not Started',
-                                    home_score: f.intHomeScore ? parseInt(f.intHomeScore) : null,
-                                    away_score: f.intAwayScore ? parseInt(f.intAwayScore) : null,
-                                    venue: f.strVenue,
-                                    gameweek: f.intRound ? parseInt(f.intRound) : null
-                                };
-                                await supabase.from('fixtures').upsert(fixturePayload);
-                            }
-                        }
-                    }
+                    // DISABLED: Realtime Engine (V2) now handles fixtures
+                    // Just mark as completed to clean queue
+                    results.push({ id: job.id, status: 'skipped' });
 
                 } else if (job.job_type === 'sync_standings') {
                     // Sync League Table

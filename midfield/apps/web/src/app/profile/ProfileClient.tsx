@@ -100,7 +100,56 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
         setTimeout(() => setToastMessage(null), 3000);
     };
 
-    const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+    // Helper: Client-side compression
+    const compressImage = (file: File): Promise<Blob> => {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = URL.createObjectURL(file);
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    URL.revokeObjectURL(img.src);
+                    return reject(new Error('Canvas context not available'));
+                }
+
+                // Max dimensions (500x500 is plenty for avatar)
+                const MAX_WIDTH = 500;
+                const MAX_HEIGHT = 500;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob((blob) => {
+                    URL.revokeObjectURL(img.src);
+                    if (blob) resolve(blob);
+                    else reject(new Error('Compression failed'));
+                }, 'image/jpeg', 0.8); // 80% quality JPEG
+            };
+            img.onerror = (err) => {
+                URL.revokeObjectURL(img.src);
+                reject(err);
+            };
+        });
+    };
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -109,28 +158,39 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
             return;
         }
 
-        if (file.size > 2 * 1024 * 1024) {
-            showToast('Image must be less than 2MB', 'error');
+        if (file.size > 5 * 1024 * 1024) { // Allow larger raw files for client-side compression
+            showToast('Image must be less than 5MB', 'error');
             return;
         }
 
         setIsUploading(true);
-        const formData = new FormData();
-        formData.append("avatar", file);
 
-        startTransition(async () => {
-            const result = await uploadAvatar(formData);
+        try {
+            const compressedBlob = await compressImage(file);
+            // Create a new file from blob to preserve name extension (force .jpg)
+            const compressedFile = new File([compressedBlob], "avatar.jpg", { type: "image/jpeg" });
+
+            const formData = new FormData();
+            formData.append("avatar", compressedFile);
+
+            startTransition(async () => {
+                const result = await uploadAvatar(formData);
+                setIsUploading(false);
+
+                if (result.success) {
+                    showToast("Photo updated", 'success');
+                    setProfile((prev: any) => ({ ...prev, avatar_url: result.avatarUrl }));
+                    window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { avatarUrl: result.avatarUrl } }));
+                    router.refresh();
+                } else {
+                    showToast(result.error || "Upload failed", 'error');
+                }
+            });
+        } catch (err) {
+            console.error(err);
             setIsUploading(false);
-
-            if (result.success) {
-                showToast("Photo updated", 'success');
-                setProfile((prev: any) => ({ ...prev, avatar_url: result.avatarUrl }));
-                window.dispatchEvent(new CustomEvent('avatar-updated', { detail: { avatarUrl: result.avatarUrl } }));
-                router.refresh();
-            } else {
-                showToast(result.error || "Upload failed", 'error');
-            }
-        });
+            showToast("Failed to process image", 'error');
+        }
     };
 
     const handleUsernameEdit = () => {

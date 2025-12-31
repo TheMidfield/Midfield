@@ -68,7 +68,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                     const { supabase } = await import("@midfield/logic/src/supabase");
                     const { data: leagues } = await supabase
                         .from('topics')
-                        .select('*')
+                        .select('id, title, metadata')
                         .eq('type', 'league')
                         .eq('is_active', true);
                     const leagueTopic = leagues?.find(l => l.title === leagueName || (l.metadata as any)?.league === leagueName);

@@ -7,6 +7,8 @@ UPDATE LOG (Dec 29, 2025):
 - **Match Ranking Algo**: Replaced round-robin with Power Ranking + Diversity Penalty (Top 5 Leagues).
 - **Performance**: EntityCycler now preloads all images to prevent flickering.
 - **Bug Fix**: Removed default "88" rating fallback; now hides badge if unknown.
+- **Fixture Sync V2**: Hybrid architecture (Edge + Next.js Cron) live. Surgical score updates via `simple-fixture-sync.ts`.
+- **Global Sync Architecture**: Formalized "Realtime Engine" (V2) vs "Atlas Engine" (Edge) split. Added "Stub Law" & Strict Enums.
 -->
 
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
@@ -94,19 +96,28 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 5) DATA PIPELINES (THE ENGINE ROOM)
 ──────────────────────────────────────────────────────────────────────────────
 
-**A) IMPORT PIPELINE ("The Stub Law")**
-- If a fixture refers to a missing team, create a STUB immediately.
-- Never fail an import for missing relations.
+**A) THE STUB LAW (Import Resilience)**
+- **Rule**: Never fail a sync due to missing Foreign Keys.
+- **Action**: If a fixture references a missing Entity ID, create a **STUB** `topic` immediately (Name + ExtID only).
+- **Resolution**: Atlas Engine fills in deep details (images, players) later.
 
-**B) FC26 RATINGS**
+**B) FC26 RATINGS & SOFIFA**
 - Source: SoFIFA (Python Scraper -> Edge Function).
 - Storage: `topics.fc26_data` JSONB column.
 - Display: 80+ Emerald, 70+ Dark Emerald, 60+ Yellow.
 
-**C) SYNC SCHEDULING**
-- **Static**: Weekly (Sundays).
-- **Dynamic**: Daily/Hourly (Fixtures, Scores).
-- **Queue**: `sync_jobs` table (Scheduler-Worker pattern) for reliability.
+**C) HYBRID ARCHITECTURE ("Realtime & Atlas")**
+- **I. ATLAS ENGINE (Legacy Edge)**:
+  - **Domain**: Structure (Clubs, Players, Leagues, Standings).
+  - **Frequency**: Deep/Heavy. Weekly runs.
+- **II. REALTIME ENGINE (V2 Next.js)**:
+  - **Domain**: Time (Fixtures, Live Scores, Match Status).
+  - **Frequency**: Surgical/Light. Daily (Schedule) & Minutely (Scores).
+  - **Rule**: Sole authority for `fixtures` table.
+
+**D) STRICT FIXTURE ENUMS**
+- **Values**: `NS`, `LIVE`, `HT`, `FT`, `PST`, `ABD`.
+- **Legacy Ban**: No string matching ("Match Finished"). Use strict Enum checks.
 
 ──────────────────────────────────────────────────────────────────────────────
 6) RESPONSIVE PERFECTION LAW
@@ -128,5 +139,17 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - `SplitHero` runs client-side fetching to avoid RSC serialization depth limits.
 4.  **Rating Integrity**: Removed "Default 88" bug.
 5.  **Blueprint Authority**: This file is the single source of truth.
+
+──────────────────────────────────────────────────────────────────────────────
+8) EGRESS DEFENSE & SECURITY PROTOCOLS
+──────────────────────────────────────────────────────────────────────────────
+
+- **No Base64 in Database**: Strictly forbidden. Use Supabase Storage. Database only stores `https://...` URLs.
+- **Payload Discipline**:
+  - **Uploads**: 2MB hard cap (Server).
+  - **Compression**: Avatars must be resized Client-Side (Max 500x500px, JPEG 80%) *before* upload to save bandwidth & storage.
+  - **Text Limits**: Posts (2000 chars), Bios (500 chars) enforced by DB constraints.
+- **Wildcards Forbidden**: `select('*')` is banned in API routes & Server Actions. Explicitly select ALL fields (e.g. `id, title, metadata`) to prevent hidden payload bloat.
+
 
 END OF DOCTRINE.

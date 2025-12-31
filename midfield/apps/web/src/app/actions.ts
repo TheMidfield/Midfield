@@ -60,6 +60,10 @@ export async function createReply(rootPostId: string, parentPostId: string, topi
         return { success: false, error: 'You must be signed in to reply' };
     }
 
+    if (content.length > 500) {
+        return { success: false, error: 'Reply exceeds 500 character limit' };
+    }
+
     return await createReplyLogic(supabase, topicId, user.id, content, rootPostId, parentPostId, replyToId);
 }
 

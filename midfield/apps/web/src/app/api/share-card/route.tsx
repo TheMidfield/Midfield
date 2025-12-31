@@ -47,22 +47,23 @@ function getContentFontSize(length: number): number {
     return 28;
 }
 
-export async function GET(request: NextRequest) {
-    const { searchParams } = request.nextUrl;
+export async function POST(request: NextRequest) {
+    const body = await request.json();
 
-    // Extract params
-    const content = searchParams.get('content') || '';
-    const authorUsername = searchParams.get('authorUsername') || 'anonymous';
-    const topicTitle = searchParams.get('topicTitle') || 'Topic';
-    const topicType = searchParams.get('topicType') || 'player';
-    const topicImageUrl = searchParams.get('topicImageUrl');
-    const authorAvatarUrl = searchParams.get('authorAvatarUrl');
-    const createdAt = searchParams.get('createdAt') || new Date().toISOString();
-    const theme = searchParams.get('theme') || 'dark';
-    // Club info for players
-    const clubName = searchParams.get('clubName');
-    const clubBadgeUrl = searchParams.get('clubBadgeUrl');
-    const topicPosition = searchParams.get('topicPosition');
+    // Extract params from body
+    const {
+        content = '',
+        authorUsername = 'anonymous',
+        topicTitle = 'Topic',
+        topicType = 'player',
+        topicImageUrl,
+        authorAvatarUrl,
+        createdAt = new Date().toISOString(),
+        theme = 'dark',
+        clubName,
+        clubBadgeUrl,
+        topicPosition
+    } = body;
 
     const isDark = theme === 'dark';
     const isClub = topicType === 'club';

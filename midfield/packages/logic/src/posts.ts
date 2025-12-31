@@ -95,7 +95,7 @@ export async function getTakesLogic(supabase: any, topicId: string) {
         .from('posts')
         .select(`
             *,
-            author:users(*, favorite_club:topics!favorite_club_id(*))
+            author:users(username, avatar_url, display_name, favorite_club:topics!favorite_club_id(title, slug, metadata))
         `)
         .eq('topic_id', topicId)
         .eq('is_deleted', false)
@@ -121,7 +121,7 @@ export async function getTakesPaginatedLogic(
         .from('posts')
         .select(`
             *,
-            author:users(*)
+            author:users(username, avatar_url, display_name)
         `)
         .eq('topic_id', topicId)
         .eq('is_deleted', false)
@@ -161,7 +161,7 @@ export async function getRepliesLogic(supabase: any, rootPostId: string) {
         .from('posts')
         .select(`
             *,
-            author:users(*),
+            author:users(username, avatar_url, display_name),
             reply_to:reply_to_post_id(
                 id,
                 content,
@@ -179,7 +179,7 @@ export async function getRepliesLogic(supabase: any, rootPostId: string) {
             .from('posts')
             .select(`
                 *,
-                author:users(*)
+                author:users(username, avatar_url, display_name)
             `)
             .eq('root_post_id', rootPostId)
             .eq('is_deleted', false)
@@ -247,11 +247,21 @@ export async function deletePostLogic(supabase: any, postId: string, userId: str
         return { success: false, error: error.message };
     }
 
-    // If this was a reply, decrement reply_count on root post using SECURITY DEFINER function
+    // If this was a reply, decrement reply_count on root post manually
     if (existingPost.root_post_id) {
-        await supabase.rpc('decrement_reply_count', {
-            root_post_id_param: existingPost.root_post_id
-        });
+        // Fetch current count first to be safe
+        const { data: rootPost } = await supabase
+            .from('posts')
+            .select('reply_count')
+            .eq('id', existingPost.root_post_id)
+            .single();
+
+        if (rootPost && (rootPost.reply_count || 0) > 0) {
+            await supabase
+                .from('posts')
+                .update({ reply_count: rootPost.reply_count - 1 })
+                .eq('id', existingPost.root_post_id);
+        }
     }
 
     return { success: true };

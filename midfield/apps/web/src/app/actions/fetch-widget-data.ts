@@ -484,7 +484,7 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
             // 3. Cross-league clubs - get all clubs from other leagues
             const { data: otherClubs } = await supabase
                 .from('topics')
-                .select('*')
+                .select('id, title, slug, type, metadata')
                 .eq('type', 'club')
                 .eq('is_active', true)
                 .not('metadata->>league', 'eq', league)
@@ -529,7 +529,7 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
         // Other random leagues
         const { data: otherLeagues } = await supabase
             .from('topics')
-            .select('*')
+            .select('id, title, slug, type, metadata')
             .eq('type', 'league')
             .eq('is_active', true)
             .neq('id', topic.id)
@@ -645,6 +645,7 @@ export type MatchCenterFixture = {
     venue?: string;
     importance: number; // 0-100 score
     isTopMatch: boolean; // Featured/big match indicator
+    status?: 'NS' | 'LIVE' | 'HT' | 'FT' | 'PST' | 'ABD';
 };
 
 /**
@@ -671,13 +672,14 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
             home_team_id,
             away_team_id,
             competition_id,
+            status,
             homeTeam:topics!fixtures_home_team_id_fkey(id, title, slug, metadata),
             awayTeam:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
             competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
         `)
         .gte('date', now.toISOString())
         .lte('date', weekAhead.toISOString())
-        .is('home_score', null) // Not yet played
+        .not('status', 'in', '("FT","ABD")') // strict enum check
         .order('date', { ascending: true })
         .limit(100); // Get more to filter/score
 
@@ -772,6 +774,7 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
             venue: f.venue,
             importance,
             isTopMatch: importance >= 60,
+            status: f.status,
         };
     }).filter(Boolean) as MatchCenterFixture[];
 
@@ -910,4 +913,87 @@ function transformPosts(posts: any[]): HeroTake[] {
         reactionCount: p.reaction_count || 0,
         replyCount: p.reply_count || 0,
     })).filter((t: HeroTake) => t.topic.id && t.content);
+}
+
+// ==================== RECENT RESULTS DATA ====================
+
+export type RecentResult = {
+    id: number;
+    date: string;
+    homeTeam: {
+        id: string;
+        title: string;
+        slug: string;
+        badgeUrl?: string;
+        abbreviation?: string;
+    };
+    awayTeam: {
+        id: string;
+        title: string;
+        slug: string;
+        badgeUrl?: string;
+        abbreviation?: string;
+    };
+    competition: {
+        id: string;
+        title: string;
+        slug: string;
+        logoUrl?: string;
+    };
+    homeScore: number | null;
+    awayScore: number | null;
+};
+
+export async function getRecentResultsData(limit = 6): Promise<RecentResult[]> {
+    const supabase = await createClient();
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const { data: fixtures, error } = await supabase
+        .from('fixtures')
+        .select(`
+            id,
+            date,
+            home_score,
+            away_score,
+            homeTeam:topics!fixtures_home_team_id_fkey(id, title, slug, metadata),
+            awayTeam:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
+            competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
+        `)
+        .lte('date', now.toISOString())
+        .gte('date', weekAgo.toISOString())
+        .not('home_score', 'is', null) // Must have a score
+        .order('date', { ascending: false })
+        .limit(limit);
+
+    if (error || !fixtures) {
+        return [];
+    }
+
+    return fixtures.map((f: any) => ({
+        id: f.id,
+        date: f.date,
+        homeTeam: {
+            id: f.homeTeam.id,
+            title: f.homeTeam.title,
+            slug: f.homeTeam.slug,
+            badgeUrl: (f.homeTeam.metadata as any)?.badge_url,
+            abbreviation: (f.homeTeam.metadata as any)?.abbreviation,
+        },
+        awayTeam: {
+            id: f.awayTeam.id,
+            title: f.awayTeam.title,
+            slug: f.awayTeam.slug,
+            badgeUrl: (f.awayTeam.metadata as any)?.badge_url,
+            abbreviation: (f.awayTeam.metadata as any)?.abbreviation,
+        },
+        competition: {
+            id: f.competition.id,
+            title: f.competition.title,
+            slug: f.competition.slug,
+            logoUrl: (f.competition.metadata as any)?.logo_url,
+        },
+        homeScore: f.home_score,
+        awayScore: f.away_score,
+    }));
 }
