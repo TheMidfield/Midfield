@@ -221,3 +221,48 @@ export const getClubStanding = async (clubId: string): Promise<any | null> => {
 
     return data || null;
 };
+
+/**
+ * Check if a league is a continental competition (Champions League, Europa League)
+ * These leagues are special - clubs don't "belong" to them, they only have fixtures
+ * Uses metadata.competition_type instead of hardcoded slugs for maintainability
+ */
+export const isContinentalLeague = (league: { metadata?: any; slug?: string }): boolean => {
+    // Primary check: metadata.competition_type
+    if (league.metadata?.competition_type === 'continental') {
+        return true;
+    }
+
+    // Fallback: check slug (for backwards compatibility during migration)
+    const continentalSlugs = ['uefa-champions-league', 'uefa-europa-league'];
+    return league.slug ? continentalSlugs.includes(league.slug) : false;
+};
+
+/**
+ * Get fixtures for a continental league (Champions League, Europa League, etc.)
+ * Since clubs don't belong to these leagues, we fetch by competition_id
+ */
+export const getContinentalLeagueFixtures = async (leagueId: string): Promise<any[]> => {
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const { data, error } = await supabase
+        .from('fixtures')
+        .select(`
+            *,
+            home_team:topics!fixtures_home_team_id_fkey(id, title, slug, metadata),
+            away_team:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
+            competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
+        `)
+        .eq('competition_id', leagueId)
+        .gte('date', sixMonthsAgo.toISOString())
+        .order('date', { ascending: true });
+
+    if (error) {
+        console.error('Error fetching continental league fixtures:', error);
+        return [];
+    }
+
+    return data || [];
+};
+

@@ -2,11 +2,13 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const LEAGUES = [
-    { id: '4328', name: 'English Premier League' },
-    { id: '4335', name: 'Spanish La Liga' },
-    { id: '4332', name: 'Italian Serie A' },
-    { id: '4331', name: 'German Bundesliga' },
-    { id: '4334', name: 'French Ligue 1' }
+    { id: '4328', name: 'English Premier League', type: 'national' },
+    { id: '4335', name: 'Spanish La Liga', type: 'national' },
+    { id: '4332', name: 'Italian Serie A', type: 'national' },
+    { id: '4331', name: 'German Bundesliga', type: 'national' },
+    { id: '4334', name: 'French Ligue 1', type: 'national' },
+    { id: '4480', name: 'UEFA Champions League', type: 'continental' },
+    { id: '4481', name: 'UEFA Europa League', type: 'continental' }
 ];
 
 Deno.serve(async (req) => {
@@ -36,7 +38,7 @@ Deno.serve(async (req) => {
         // 1. Create jobs payload
         const jobs = LEAGUES.map(league => ({
             job_type: 'sync_league',
-            payload: { leagueId: league.id, leagueName: league.name },
+            payload: { leagueId: league.id, leagueName: league.name, leagueType: league.type },
             status: 'pending',
             created_at: new Date().toISOString() // explicit timestamp often helps
         }));

@@ -38,7 +38,7 @@ export default function DesignSystemPage() {
                     </div>
                     <ThemeToggle />
                 </div>
-                <h1 className="text-5xl font-black tracking-tight text-slate-900 dark:text-neutral-100">Design System</h1>
+                <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">Design System</h1>
                 <p className="text-xl text-slate-600 dark:text-neutral-400 leading-relaxed max-w-3xl">
                     A complete reference of components, patterns, and principles. Every element is intentional, standardized, and accessible.
                 </p>

@@ -31,7 +31,7 @@ interface TopicPageClientProps {
     };
 }
 
-const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Manager"];
+const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Staff"];
 
 // Position badge priority order for sorting within groups
 const positionBadgePriority: Record<string, number> = {
@@ -110,12 +110,24 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
     };
 
     // Define sections based on entity type
+    // Check if this is a continental league (Champions League, Europa League)
+    // Use metadata.competition_type for professional, maintainable checking
+    const isContinentalLeague = isLeague && (topic.metadata as any)?.competition_type === 'continental';
+
     const sections = isLeague
-        ? [
-            { id: "clubs", title: "Clubs", icon: Trophy, count: leagueClubs.length },
-            { id: "standings", title: "Standings", icon: BarChart3 },
-            { id: "about", title: "About", icon: Info },
-        ]
+        ? (isContinentalLeague
+            // Continental leagues: only fixtures and about (no clubs list, no standings)
+            ? [
+                { id: "fixtures", title: "Fixtures", icon: Calendar },
+                { id: "about", title: "About", icon: Info },
+            ]
+            // National leagues: clubs, standings, about
+            : [
+                { id: "clubs", title: "Clubs", icon: Trophy, count: leagueClubs.length },
+                { id: "standings", title: "Standings", icon: BarChart3 },
+                { id: "about", title: "About", icon: Info },
+            ]
+        )
         : isClub
             ? [
                 { id: "players", title: "Players", icon: Users, count: squad.length },
@@ -581,6 +593,15 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                         <ClubFixtures
                                                             clubId={topic.id}
                                                             fixtures={fixtures}
+                                                        />
+                                                    )}
+
+                                                    {/* Fixtures Section (Continental Leagues) */}
+                                                    {section.id === "fixtures" && isContinentalLeague && (
+                                                        <ClubFixtures
+                                                            clubId={topic.id}
+                                                            fixtures={fixtures}
+                                                            showFormOnly={false}
                                                         />
                                                     )}
 

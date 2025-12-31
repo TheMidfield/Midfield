@@ -58,6 +58,12 @@ export class TheSportsDBClient {
     lookupLeague(id: string) { return this.fetchV2(`/lookup/league/${id}`); }
     lookupTeamV2(id: string) { return this.fetchV2(`/lookup/team/${id}`); } // Renamed to avoid conflict with V1 lookupTeam
 
+    // Get league details (V1 fallback for more complete data including badge)
+    async getLeagueDetails(leagueId: string) {
+        const data = await this.fetchV1<{ leagues: any[] }>(`lookupleague.php?id=${leagueId}`);
+        return data.leagues?.[0] || null;
+    }
+
     // --- V1 Methods (Legacy/Fallback) ---
 
     // List all players for a team with FULL details (V1 API)

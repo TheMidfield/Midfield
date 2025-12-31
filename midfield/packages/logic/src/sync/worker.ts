@@ -33,18 +33,46 @@ export async function processSyncJobs(
     for (const job of jobs) {
         try {
             if (job.job_type === 'sync_league') {
-                // Expand League -> Club Jobs
-                const { leagueId } = job.payload as any;
-                const teams = await apiClient.listLeagueTeams(leagueId);
+                // Extract league info
+                const { leagueId, name, type } = job.payload as any;
 
-                const clubJobs = teams.map((t: any) => ({
-                    job_type: 'sync_club',
-                    payload: { teamStr: t.strTeam, teamId: t.idTeam, teamData: t }, // Pass small data, fetch details if needed
-                    status: 'pending'
-                }));
+                // Robust check: Trust payload type, but fallback to ID list
+                const isContinental = type === 'continental' || ['4480', '4481'].includes(leagueId);
 
-                if (clubJobs.length > 0) {
-                    await supabase.from('sync_jobs').insert(clubJobs);
+                // For continental leagues, ONLY create the league topic
+                // Do NOT expand to clubs (clubs belong to their national leagues)
+                if (isContinental) {
+                    // Fetch league details from API
+                    const leagueDetails = await apiClient.getLeagueDetails(leagueId);
+
+                    // Upsert league topic only
+                    const leagueTopic = {
+                        slug: slugify(name),
+                        type: 'league',
+                        title: name,
+                        description: leagueDetails?.strDescriptionEN?.substring(0, 500) || `The official profile of ${name}.`,
+                        metadata: {
+                            competition_type: 'continental',
+                            region: 'Europe',
+                            badge_url: leagueDetails?.strBadge,
+                            thesportsdb_id: leagueId,
+                        },
+                        is_active: true
+                    };
+                    await smartUpsertTopic(supabase, leagueTopic as any, 'league', leagueId);
+                } else {
+                    // For national leagues: expand to club sync jobs as usual
+                    const teams = await apiClient.listLeagueTeams(leagueId);
+
+                    const clubJobs = teams.map((t: any) => ({
+                        job_type: 'sync_club',
+                        payload: { teamStr: t.strTeam, teamId: t.idTeam, teamData: t },
+                        status: 'pending'
+                    }));
+
+                    if (clubJobs.length > 0) {
+                        await supabase.from('sync_jobs').insert(clubJobs);
+                    }
                 }
 
             } else if (job.job_type === 'sync_club') {

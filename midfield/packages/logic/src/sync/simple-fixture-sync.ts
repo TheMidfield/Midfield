@@ -2,8 +2,11 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { TheSportsDBClient } from "./client";
 
-// Core leagues to track
-const LEAGUES = ['4328', '4335', '4332', '4331', '4334']; // EPL, La Liga, Serie A, Ligue 1, Bundesliga
+// Core leagues to track (national + continental)
+const LEAGUES = [
+    '4328', '4335', '4332', '4331', '4334', // EPL, La Liga, Serie A, Ligue 1, Bundesliga
+    '4480', '4481' // Champions League, Europa League
+];
 
 // === DAILY SCHEDULE SYNC (Run at 6 AM) ===
 // === DAILY SCHEDULE SYNC (Run at 6 AM) ===
@@ -179,10 +182,23 @@ function normalizeStatus(apiStatus: string | null): 'NS' | 'LIVE' | 'HT' | 'FT' 
 async function createStub(supabase: SupabaseClient, tsdbId: string, teamName: string): Promise<string | null> {
     console.log(`Creating Stub Club: ${teamName} (${tsdbId})`);
 
+    const baseSlug = slugify(teamName || `club-${tsdbId}`);
+    let slug = baseSlug;
+
+    // Check if topic with this slug already exists
+    const { data: existing } = await supabase.from('topics').select('id').eq('slug', slug).single();
+
+    if (existing) {
+        console.log(`Stub creation: Slug ${slug} already exists. Using existing topic ${existing.id}.`);
+        // Ideally we would update the metadata here to include the TSDB ID so we don't miss it next time
+        // But for now, returning the ID is enough to unblock the fixture sync
+        return existing.id;
+    }
+
     const stub = {
         type: 'club',
         title: teamName || 'Unknown Club',
-        slug: slugify(teamName || `club-${tsdbId}`),
+        slug: slug,
         metadata: {
             external: { thesportsdb_id: tsdbId, source: 'stub' },
             is_stub: true
@@ -194,7 +210,15 @@ async function createStub(supabase: SupabaseClient, tsdbId: string, teamName: st
 
     if (error) {
         console.error(`Failed to create stub for ${teamName}:`, error);
-        return null;
+        // Fallback: try one more time with random suffix just to save the fixture
+        const retrySlug = `${slug}-${Math.floor(Math.random() * 1000)}`;
+        const { data: retryClub, error: retryError } = await supabase.from('topics').insert({ ...stub, slug: retrySlug }).select('id').single();
+
+        if (retryError) {
+            console.error(`Retry failed for ${teamName}:`, retryError);
+            return null;
+        }
+        return retryClub.id;
     }
 
     return newClub.id;

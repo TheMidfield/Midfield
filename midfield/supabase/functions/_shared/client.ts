@@ -43,6 +43,12 @@ export class TheSportsDBClient {
         return data.players?.[0] || null;
     }
 
+    // Detailed League Lookup (V1)
+    async getLeagueDetails(leagueId: string) {
+        const data = await this.fetchV1<{ leagues: any[] }>(`lookupleague.php?id=${leagueId}`);
+        return data.leagues?.[0] || null;
+    }
+
     // --- PHASE 2: AUXILIARY DATA ---
 
 

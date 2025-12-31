@@ -7,7 +7,7 @@ const typographyVariants = cva(
     {
         variants: {
             variant: {
-                h1: "scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl font-[family-name:var(--font-brand)]",
+                h1: "scroll-m-20 text-4xl font-bold tracking-tight lg:text-5xl font-[family-name:var(--font-brand)]",
                 h2: "scroll-m-20 text-3xl font-bold tracking-tight first:mt-0 font-[family-name:var(--font-brand)]",
                 h3: "scroll-m-20 text-2xl font-bold tracking-tight font-[family-name:var(--font-brand)]",
                 h4: "text-xl font-bold tracking-tight font-[family-name:var(--font-brand)]",

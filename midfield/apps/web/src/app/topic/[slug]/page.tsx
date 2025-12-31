@@ -81,11 +81,23 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     }
 
     if (isLeague) {
-        // Fetch clubs belonging to this league
-        leagueClubs = await getClubsByLeague(topic.title);
+        // Import continental league helpers
+        const { isContinentalLeague, getContinentalLeagueFixtures } = await import("@midfield/logic/src/topics");
 
-        // Fetch standings for league
-        standings = await getLeagueTable(topic.id);
+        // Check if this is a continental competition (Champions League, Europa League)
+        const isContinental = isContinentalLeague(topic);
+
+        if (isContinental) {
+            // For continental leagues: fetch fixtures by competition_id
+            // Do NOT fetch clubs (they belong to their national leagues)
+            fixtures = await getContinentalLeagueFixtures(topic.id);
+            leagueClubs = []; // No club list for continental competitions
+            standings = []; // No standings table for continental competitions
+        } else {
+            // For national leagues: fetch clubs and standings as usual
+            leagueClubs = await getClubsByLeague(topic.title);
+            standings = await getLeagueTable(topic.id);
+        }
     }
 
     // Fetch takes (posts) for this topic

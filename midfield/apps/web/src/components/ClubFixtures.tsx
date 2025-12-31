@@ -33,19 +33,23 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
 
     // Split into Upcoming vs Results
     const now = new Date();
-    const results = fixtures
-        .filter(f => new Date(f.date) < now && (f.status === 'FT' || f.status === 'ABD'))
-        .slice(0, 3); // Show last 3 results (chronological - oldest first)
 
+    // Get all finished matches, sorted by date (most recent first)
+    const finishedMatches = fixtures
+        .filter(f => new Date(f.date) < now && (f.status === 'FT' || f.status === 'ABD'))
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Get last 3 results (most recent finished matches) - then reverse for chronological display
+    const results = finishedMatches.slice(0, 3).reverse();
+
+    // Get upcoming matches, sorted by date (soonest first)
     const upcoming = fixtures
         .filter(f => new Date(f.date) >= now)
-        .slice(0, 5); // Show next 5 upcoming
-
-    // Get last 5 matches for badges
-    const last5Matches = fixtures
-        .filter(f => new Date(f.date) < now && (f.status === 'FT' || f.status === 'ABD'))
-        .reverse()
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 5);
+
+    // Get last 5 matches for form display (oldest first for left-to-right reading)
+    const last5Matches = finishedMatches.slice(0, 5).reverse();
 
     // Get next match
     const nextMatch = upcoming[0];
@@ -79,6 +83,8 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
     const FixtureRow = ({ fixture }: { fixture: any }) => {
         const isHome = fixture.home_team_id === clubId;
         const opponent = isHome ? fixture.away_team : fixture.home_team;
+        const opponentName = opponent?.title || (isHome ? fixture.away_team_name : fixture.home_team_name) || "Unknown Team";
+        const opponentBadge = opponent?.metadata?.badge_url || (isHome ? fixture.away_team_badge : fixture.home_team_badge);
         const date = new Date(fixture.date);
 
         const homeScore = fixture.home_score;
@@ -139,10 +145,10 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                     {opponent?.slug ? (
                         <Link href={`/topic/${opponent.slug}`}>
                             <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform">
-                                {opponent.metadata?.badge_url ? (
+                                {opponentBadge ? (
                                     <NextImage
-                                        src={opponent.metadata.badge_url}
-                                        alt={opponent.title}
+                                        src={opponentBadge}
+                                        alt={opponentName}
                                         fill
                                         className="object-contain"
                                         sizes="24px"
@@ -156,10 +162,10 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                         </Link>
                     ) : (
                         <div className="relative w-6 h-6 shrink-0">
-                            {opponent?.metadata?.badge_url ? (
+                            {opponentBadge ? (
                                 <NextImage
-                                    src={opponent.metadata.badge_url}
-                                    alt={opponent?.title || "TBD"}
+                                    src={opponentBadge}
+                                    alt={opponentName}
                                     fill
                                     className="object-contain"
                                     sizes="24px"
@@ -174,12 +180,12 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                     {opponent?.slug ? (
                         <Link href={`/topic/${opponent.slug}`} className="truncate">
                             <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
-                                {opponent.title}
+                                {opponentName}
                             </span>
                         </Link>
                     ) : (
                         <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 truncate">
-                            {opponent?.title || "TBD"}
+                            {opponentName}
                         </span>
                     )}
                 </div>
@@ -285,8 +291,8 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                         const date = new Date(nextMatch.date);
                                         const dayMonth = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
                                         const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-                                        const opponentBadge = opponent?.metadata?.badge_url || null;
-                                        const opponentName = opponent?.title || "TBD";
+                                        const opponentBadge = opponent?.metadata?.badge_url || (isHome ? nextMatch.away_team_badge : nextMatch.home_team_badge) || null;
+                                        const opponentName = opponent?.title || (isHome ? nextMatch.away_team_name : nextMatch.home_team_name) || "Unknown Team";
                                         const opponentSlug = opponent?.slug;
 
                                         return (

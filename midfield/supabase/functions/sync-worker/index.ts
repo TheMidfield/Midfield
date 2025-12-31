@@ -44,34 +44,61 @@ Deno.serve(async (req) => {
         for (const job of jobs) {
             try {
                 if (job.job_type === 'sync_league') {
-                    // Expand League -> Club Jobs + Fixtures + Standings
-                    const { leagueId } = job.payload;
-                    const teams = await apiClient.listLeagueTeams(leagueId);
+                    // Update: Handle National vs Continental
+                    const { leagueId, leagueType } = job.payload;
+                    // Fallback detection if type not present
+                    const isContinental = leagueType === 'continental' || ['4480', '4481', '4482', '4483', '4484', '4485', '4506', '4511', '4570', '4571'].includes(leagueId);
 
-                    const clubJobs = teams.map((t: any) => ({
-                        job_type: 'sync_club',
-                        payload: { teamStr: t.strTeam, teamId: t.idTeam, teamData: t },
-                        status: 'pending'
-                    }));
+                    if (isContinental) {
+                        // Continental: Just upsert the league topic itself (metadata, badge) and STOP.
+                        // Do NOT expand to clubs because continental clubs belong to their national leagues.
+                        const details = await apiClient.getLeagueDetails(leagueId);
+                        if (details) {
+                            const leagueTopic = {
+                                type: 'league',
+                                title: details.strLeague,
+                                slug: slugify(details.strLeague),
+                                description: details.strDescriptionEN?.substring(0, 500) || `Overview of ${details.strLeague}.`,
+                                metadata: {
+                                    external: { thesportsdb_id: leagueId, source: 'thesportsdb' },
+                                    logo_url: details.strLogo,
+                                    logo_url_dark: details.strLogo,
+                                    badge_url: details.strBadge,
+                                    trophy_url: details.strTrophy,
+                                    poster_url: details.strPoster,
+                                    country: details.strCountry,
+                                    founded: details.intFormedYear ? parseInt(details.intFormedYear) : null,
+                                    website: details.strWebsite,
+                                    competition_type: 'continental',
+                                    region: 'Europe' // defaulting to Europe for now
+                                },
+                                is_active: true
+                            };
+                            // Upsert without expanding clubs
+                            await smartUpsertTopic(supabase, leagueTopic, 'league', leagueId);
+                        } else {
+                            console.warn(`Could not fetch details for continental league ${leagueId}`);
+                        }
+                    } else {
+                        // National League: Expand League -> Club Jobs + Fixtures + Standings
+                        // 1. Fetch Clubs
+                        const teams = await apiClient.listLeagueTeams(leagueId);
 
-                    if (clubJobs.length > 0) {
-                        // Add Auxiliary Jobs (League Level)
-                        /* 
-                        // DISABLED: Realtime Engine (V2) now handles fixtures
-                        clubJobs.push({
-                            job_type: 'sync_fixtures',
-                            payload: { leagueId, season: '2024-2025' },
+                        const clubJobs = teams.map((t: any) => ({
+                            job_type: 'sync_club',
+                            payload: { teamStr: t.strTeam, teamId: t.idTeam, teamData: t },
                             status: 'pending'
-                        } as any);
-                        */
+                        }));
 
-                        clubJobs.push({
-                            job_type: 'sync_standings',
-                            payload: { leagueId, season: '2024-2025' },
-                            status: 'pending'
-                        } as any);
+                        if (clubJobs.length > 0) {
+                            clubJobs.push({
+                                job_type: 'sync_standings',
+                                payload: { leagueId, season: '2024-2025' },
+                                status: 'pending'
+                            } as any);
 
-                        await supabase.from('sync_jobs').insert(clubJobs);
+                            await supabase.from('sync_jobs').insert(clubJobs);
+                        }
                     }
 
                 } else if (job.job_type === 'sync_club') {

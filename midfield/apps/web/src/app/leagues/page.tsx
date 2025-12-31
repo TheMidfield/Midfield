@@ -1,7 +1,7 @@
 import { supabase } from "@midfield/logic/src/supabase";
 import { getClubsByLeague } from "@midfield/logic/src/topics";
 import Link from "next/link";
-import { Trophy, Shield, Globe2, Sparkles } from "lucide-react";
+import { Trophy, Shield, Globe2, Sparkles, Star } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 
 // Country flag image mapping
@@ -22,16 +22,23 @@ export default async function LeaguesPage() {
     .eq('is_active', true)
     .order('title', { ascending: true });
 
-  // Get club counts for each league
+  // Get club counts for each league (only for national leagues)
   const leaguesWithCounts = await Promise.all(
     (leagues || []).map(async (league: any) => {
-      const clubs = await getClubsByLeague(league.title);
+      // Use metadata check first, then slug fallback to be safe
+      const isContinental = league.metadata?.competition_type === 'continental' || ['uefa-champions-league', 'uefa-europa-league'].includes(league.slug);
+      const clubs = isContinental ? [] : await getClubsByLeague(league.title);
       return {
         ...league,
         clubCount: clubs.length,
+        isContinental,
       };
     })
   );
+
+  // Separate national and continental leagues
+  const nationalLeagues = leaguesWithCounts.filter(l => !l.isContinental);
+  const continentalLeagues = leaguesWithCounts.filter(l => l.isContinental);
 
   return (
     <div className="w-full">
@@ -104,65 +111,123 @@ export default async function LeaguesPage() {
         </div>
       </section>
 
-      {/* Leagues Grid - Bigger, More Prominent Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-        {leaguesWithCounts.map((league: any) => {
-          const countryFlagImg = COUNTRY_FLAG_IMAGES[league.metadata?.country || ""];
+      <div className="space-y-12">
+        {/* National Leagues Section */}
+        {nationalLeagues.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-700 dark:text-neutral-300 mb-4 px-2 flex items-center gap-2">
+              <Globe2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              National Leagues
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+              {nationalLeagues.map((league: any) => {
+                const countryFlagImg = COUNTRY_FLAG_IMAGES[league.metadata?.country || ""];
 
-          return (
-            <Link key={league.id} href={`/topic/${league.slug}`}>
-              <Card variant="interactive" className="p-6 group h-full relative overflow-hidden">
-                {/* Background Gradient Accent */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-full blur-2xl group-hover:from-emerald-500/10 transition-all"></div>
+                return (
+                  <Link key={league.id} href={`/topic/${league.slug}`}>
+                    <Card variant="interactive" className="p-6 group h-full relative overflow-hidden">
+                      {/* Background Gradient Accent */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/5 to-transparent rounded-full blur-2xl group-hover:from-emerald-500/10 transition-all"></div>
 
-                <div className="relative">
-                  {/* League Logo - Larger */}
-                  <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                    {league.metadata?.logo_url ? (
-                      <>
-                        <img
-                          src={league.metadata.logo_url}
-                          alt={league.title}
-                          className="max-w-full max-h-full object-contain dark:hidden"
-                        />
-                        <img
-                          src={league.metadata.logo_url_dark || league.metadata.logo_url}
-                          alt={league.title}
-                          className="max-w-full max-h-full object-contain hidden dark:block"
-                        />
-                      </>
-                    ) : (
-                      <Trophy className="w-16 h-16 text-slate-300 dark:text-neutral-600" />
-                    )}
-                  </div>
+                      <div className="relative">
+                        {/* League Logo - Larger */}
+                        <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                          {league.metadata?.logo_url ? (
+                            <>
+                              <img
+                                src={league.metadata.logo_url}
+                                alt={league.title}
+                                className="max-w-full max-h-full object-contain dark:hidden"
+                              />
+                              <img
+                                src={league.metadata.logo_url_dark || league.metadata.logo_url}
+                                alt={league.title}
+                                className="max-w-full max-h-full object-contain hidden dark:block"
+                              />
+                            </>
+                          ) : (
+                            <Trophy className="w-16 h-16 text-slate-300 dark:text-neutral-600" />
+                          )}
+                        </div>
 
-                  {/* League Name */}
-                  <h3 className="text-center text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors mb-3">
-                    {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
-                  </h3>
+                        {/* League Name */}
+                        <h3 className="text-center text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors mb-3">
+                          {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
+                        </h3>
 
-                  {/* Country Flag & Club Count - Stacked to avoid wrap */}
-                  <div className="flex flex-col items-center gap-2">
-                    {/* Country Flag */}
-                    {countryFlagImg && (
-                      <img
-                        src={countryFlagImg}
-                        alt={league.metadata?.country}
-                        className="h-5 w-auto object-contain rounded border border-slate-200 dark:border-neutral-700"
-                      />
-                    )}
+                        {/* Country Flag & Club Count - Stacked to avoid wrap */}
+                        <div className="flex flex-col items-center gap-2">
+                          {/* Country Flag */}
+                          {countryFlagImg && (
+                            <img
+                              src={countryFlagImg}
+                              alt={league.metadata?.country}
+                              className="h-5 w-auto object-contain rounded border border-slate-200 dark:border-neutral-700"
+                            />
+                          )}
 
-                    {/* Club Count */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-neutral-800 rounded-md text-xs font-semibold text-slate-600 dark:text-neutral-400">
-                      <Shield className="w-3.5 h-3.5" />
-                      <span>{league.clubCount} clubs</span>
+                          {/* Club Count */}
+                          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-neutral-800 rounded-md text-xs font-semibold text-slate-600 dark:text-neutral-400">
+                            <Shield className="w-3.5 h-3.5" />
+                            <span>{league.clubCount} clubs</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Continental Competitions Section */}
+        {continentalLeagues.length > 0 && (
+          <div>
+            <h2 className="text-lg font-bold text-slate-700 dark:text-neutral-300 mb-4 px-2 flex items-center gap-2">
+              <Star className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+              Continental Competitions
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+              {continentalLeagues.map((league: any) => (
+                <Link key={league.id} href={`/topic/${league.slug}`}>
+                  <Card variant="interactive" className="p-6 group h-full relative overflow-hidden border-2 border-amber-200 dark:border-amber-900/50">
+                    {/* Background Gradient Accent - Amber for continental */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/5 to-transparent rounded-full blur-2xl group-hover:from-amber-500/10 transition-all"></div>
+
+                    <div className="relative">
+                      {/* League Badge */}
+                      <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                        {league.metadata?.badge_url ? (
+                          <img
+                            src={league.metadata.badge_url}
+                            alt={league.title}
+                            className="max-w-full max-h-full object-contain"
+                          />
+                        ) : (
+                          <Star className="w-16 h-16 text-amber-300 dark:text-amber-600" />
+                        )}
+                      </div>
+
+                      {/* League Name */}
+                      <h3 className="text-center text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors mb-3">
+                        {league.title.replace(/^UEFA\s/, '')}
+                      </h3>
+
+                      {/* Continental Badge */}
+                      <div className="flex justify-center">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 dark:bg-amber-950/30 rounded-md text-xs font-semibold text-amber-700 dark:text-amber-400">
+                          <Star className="w-3.5 h-3.5" />
+                          <span>Europe</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          );
-        })}
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
