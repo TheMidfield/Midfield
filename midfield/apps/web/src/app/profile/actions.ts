@@ -125,17 +125,28 @@ export async function updateProfile(data: { username?: string; favorite_club_id?
 export async function getUserProfile() {
     const supabase = await createClient()
 
-    const { data: { user } } = await supabase.auth.getUser()
+    try {
+        const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-        return null
+        if (!user) {
+            return null
+        }
+
+        const { data: profile, error } = await supabase
+            .from('users')
+            .select('id, username, display_name, avatar_url, favorite_club_id, created_at, favorite_club:topics!favorite_club_id(id, title, slug, metadata)')
+            .eq('id', user.id)
+            .maybeSingle()
+
+        if (error) {
+            console.error('Error fetching user profile:', error);
+            // Return user but null profile so client can handle it (or redirect)
+            return { user, profile: null };
+        }
+
+        return { user, profile }
+    } catch (error) {
+        console.error('Unexpected error in getUserProfile:', error);
+        return null;
     }
-
-    const { data: profile } = await supabase
-        .from('users')
-        .select('id, username, display_name, avatar_url, favorite_club_id, favorite_club:topics!favorite_club_id(id, title, slug, metadata)')
-        .eq('id', user.id)
-        .single()
-
-    return { user, profile }
 }

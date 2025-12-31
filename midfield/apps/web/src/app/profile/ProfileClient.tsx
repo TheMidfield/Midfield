@@ -81,7 +81,13 @@ function Toast({ message, type }: { message: string | null; type: 'success' | 'e
 
 export function ProfileClient({ initialData }: ProfileClientProps) {
     const router = useRouter();
-    const [profile, setProfile] = useState(initialData.profile);
+    const [profile, setProfile] = useState(initialData.profile || {
+        username: initialData.user?.user_metadata?.username || initialData.user?.email?.split('@')[0] || "User",
+        display_name: initialData.user?.user_metadata?.full_name || "",
+        avatar_url: initialData.user?.user_metadata?.avatar_url || null,
+        created_at: initialData.user?.created_at || new Date().toISOString(),
+        favorite_club_id: null
+    });
     const [username, setUsername] = useState(profile?.username || "");
     const [isEditingUsername, setIsEditingUsername] = useState(false);
     const [isEditingClub, setIsEditingClub] = useState(false);

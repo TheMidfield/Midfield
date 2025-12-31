@@ -14,7 +14,8 @@ export async function GET() {
         .from('users')
         .select('avatar_url')
         .eq('id', user.id)
-        .single()
+        .eq('id', user.id)
+        .maybeSingle()
 
     return NextResponse.json({ isAuthenticated: true, avatar_url: profile?.avatar_url || null })
 }
