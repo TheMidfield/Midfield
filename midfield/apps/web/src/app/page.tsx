@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { SplitHero } from "@/components/hero/SplitHero";
 import { HomeTrendingSection } from "@/components/hero/HomeTrendingSection";
 import { MobileTakeFeed } from "@/components/hero/MobileTakeFeed";
-import { EntityCycler } from "@/components/hero/EntityCycler";
+
 import { MatchCenterWidget } from "@/components/widgets/MatchCenterWidget";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
@@ -112,7 +112,7 @@ export default async function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                     <HomeTrendingSection />
                     {/* Desktop only: with offset for visual interest */}
-                    <div className="hidden lg:block" style={{ maxWidth: '512px', margin: '0 auto', width: '100%', paddingTop: '100px' }}>
+                    <div className="hidden lg:block" style={{ maxWidth: '512px', margin: '0 auto', width: '100%', paddingTop: '70px' }}>
                         {/* Stats / Matches Column - Desktop */}
                         <div className="hidden lg:flex flex-col gap-6 w-full">
                             <MatchCenterWidget />
@@ -124,11 +124,6 @@ export default async function Home() {
             {/* Mobile Layout */}
             <div className="lg:hidden flex flex-col gap-8 pb-20">
                 <MatchCenterWidget />
-
-                <h2 className="text-xl font-bold px-4 -mb-4 font-display">Featured Clubs</h2>
-                <div className="px-2">
-                    <EntityCycler entities={heroEntities} />
-                </div>
             </div>
 
             {/* Featured Clubs */}

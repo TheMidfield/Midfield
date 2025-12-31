@@ -156,6 +156,10 @@ export const getPlayerClub = async (playerId: string): Promise<Topic | null> => 
  * Get fixtures for a club (home or away)
  */
 export const getClubFixtures = async (clubId: string): Promise<any[]> => {
+    // Only fetch fixtures from last 6 months onwards (captures current season + upcoming)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
     const { data, error } = await supabase
         .from('fixtures')
         .select(`
@@ -165,7 +169,8 @@ export const getClubFixtures = async (clubId: string): Promise<any[]> => {
             competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
         `)
         .or(`home_team_id.eq.${clubId},away_team_id.eq.${clubId}`)
-        .order('date', { ascending: true }); // We'll sort into Results/Upcoming in UI
+        .gte('date', sixMonthsAgo.toISOString())
+        .order('date', { ascending: true });
 
     if (error) {
         console.error('Error fetching club fixtures:', error);

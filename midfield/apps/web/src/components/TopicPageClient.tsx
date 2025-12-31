@@ -119,6 +119,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
         : isClub
             ? [
                 { id: "players", title: "Players", icon: Users, count: squad.length },
+                { id: "team-form", title: "Team Form", icon: Activity },
                 { id: "fixtures", title: "Fixtures", icon: Calendar, count: fixtures.length > 0 ? fixtures.filter(f => new Date(f.date) >= new Date()).length : undefined },
                 { id: "about", title: "About", icon: Info },
             ]
@@ -563,6 +564,16 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                         <LeagueTable
                                                             standings={standings}
                                                             highlightTeamId={playerClub.id}
+                                                        />
+                                                    )}
+
+                                                    {/* Team Form Section (Clubs) */}
+                                                    {section.id === "team-form" && isClub && (
+                                                        <ClubFixtures
+                                                            clubId={topic.id}
+                                                            fixtures={fixtures}
+                                                            clubStanding={clubStanding}
+                                                            showFormOnly
                                                         />
                                                     )}
 

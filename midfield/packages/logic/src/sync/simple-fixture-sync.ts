@@ -7,9 +7,17 @@ const LEAGUES = ['4328', '4335', '4332', '4331', '4334']; // EPL, La Liga, Serie
 
 // === DAILY SCHEDULE SYNC (Run at 6 AM) ===
 // === DAILY SCHEDULE SYNC (Run at 6 AM) ===
-export async function syncDailySchedules(supabase: SupabaseClient, apiClient: TheSportsDBClient) {
-    const currentSeason = '2024-2025'; // Make dynamic in future if needed
-    console.log('Starting daily schedule sync...');
+export async function syncDailySchedules(supabase: SupabaseClient, apiClient: TheSportsDBClient, targetLeagues: string[] = LEAGUES) {
+    // Dynamically calculate season (Aug-July splits)
+    // Example: Dec 2025 -> 2025-2026, Aug 2026 -> 2026-2027
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed
+    const currentSeason = month >= 7 // August (7) onwards is new season
+        ? `${year}-${year + 1}`
+        : `${year - 1}-${year}`;
+
+    console.log(`Starting daily schedule sync for season ${currentSeason}...`);
 
     // 1. Pre-fetch all clubs to minimize DB lookups (Safe for current scale of ~100-500 clubs)
     const { data: allClubs } = await supabase.from('topics')
@@ -26,7 +34,7 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
     }
 
     // Process each league
-    for (const leagueId of LEAGUES) {
+    for (const leagueId of targetLeagues) {
         try {
             console.log(`Processing league ${leagueId}...`);
 
@@ -79,6 +87,10 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
                     date: e.dateEvent + 'T' + (e.strTime || '00:00:00'),
                     home_team_id: homeId,
                     away_team_id: awayId,
+                    home_team_name: e.strHomeTeam, // Fallback for display
+                    away_team_name: e.strAwayTeam, // Fallback for display
+                    home_team_badge: e.strHomeTeamBadge || e.strHomeBadge,
+                    away_team_badge: e.strAwayTeamBadge || e.strAwayBadge,
                     competition_id: leagueTopic.id,
                     venue: e.strVenue,
                     home_score: e.intHomeScore ? parseInt(e.intHomeScore) : null,

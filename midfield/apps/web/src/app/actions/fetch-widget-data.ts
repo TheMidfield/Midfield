@@ -657,12 +657,13 @@ export type MatchCenterFixture = {
  * - Derby/rivalry bonus
  * - League diversity bonus (ensures variety)
  */
-export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[]> {
+export async function getMatchCenterData(limit = 12): Promise<MatchCenterFixture[]> {
     const supabase = await createClient();
     const now = new Date();
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); // 3 days back for results
     const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    // Fetch upcoming fixtures with team and competition data
+    // Fetch fixtures (both upcoming AND recent finished) with team and competition data
     const { data: fixtures, error } = await supabase
         .from('fixtures')
         .select(`
@@ -671,17 +672,18 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
             venue,
             home_team_id,
             away_team_id,
+            home_score,
+            away_score,
             competition_id,
             status,
             homeTeam:topics!fixtures_home_team_id_fkey(id, title, slug, metadata),
             awayTeam:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
             competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
         `)
-        .gte('date', now.toISOString())
+        .gte('date', threeDaysAgo.toISOString()) // Include last 3 days
         .lte('date', weekAhead.toISOString())
-        .not('status', 'in', '("FT","ABD")') // strict enum check
         .order('date', { ascending: true })
-        .limit(100); // Get more to filter/score
+        .limit(150); // Get more to filter/score
 
     if (error || !fixtures?.length) {
         return [];
@@ -772,6 +774,8 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
                 logoUrl: (competition.metadata as any)?.logo_url,
             },
             venue: f.venue,
+            homeScore: f.home_score,
+            awayScore: f.away_score,
             importance,
             isTopMatch: importance >= 60,
             status: f.status,
@@ -796,20 +800,11 @@ export async function getMatchCenterData(limit = 6): Promise<MatchCenterFixture[
         };
     });
 
-    // Sort by adjusted importance
+    // Sort by adjusted importance and return all
+    // Let the widget handle filtering by status and limiting
     const sorted = adjustedFixtures.sort((a, b) => b.adjustedImportance - a.adjustedImportance);
 
-    // Pick top matches and track league counts
-    const result: MatchCenterFixture[] = [];
-    sorted.forEach(f => {
-        if (result.length < limit) {
-            result.push(f);
-            const league = f.competition.slug;
-            leagueCount.set(league, (leagueCount.get(league) || 0) + 1);
-        }
-    });
-
-    return result;
+    return sorted;
 }
 
 // ==================== HERO LIVE FEED DATA ====================
