@@ -22,7 +22,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
     const posInfo = isPlayer && entity.position ? getPositionInfo(entity.position) : null;
 
     return (
-        <Card variant="interactive" className="p-2.5 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all" style={{ width: '100%' }}>
+        <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all" style={{ width: '100%' }}>
             {/* Avatar */}
             {isPlayer ? (
                 <div className="relative w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
@@ -182,21 +182,21 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                 onClose={closeAuthModal}
                 context={authModalContext}
             />
-            <div style={{ maxWidth: '520px' }}>
-                {/* Title - Desktop original, smaller on mobile only */}
-                <h1 className="font-bold tracking-tight text-slate-900 dark:text-white text-3xl sm:text-5xl lg:text-6xl mb-8 sm:mb-12 leading-[1.1]">
+            <div style={{ maxWidth: '600px' }}>
+                {/* Title - Larger but NOT over-weighted */}
+                <h1 className="font-bold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-10 sm:mb-12 leading-[1.1]">
                     Everyone has a <br />
                     <span className="text-emerald-600 dark:text-emerald-500">football take.</span>
                 </h1>
 
                 {/* "What's your take on" + cycling card */}
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mb-8 sm:mb-16">
-                    <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-base sm:text-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-10 sm:mb-16">
+                    <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-lg sm:text-xl">
                         What's your take on...
                     </span>
 
-                    {/* Card container - same height on both */}
-                    <div className="relative h-12 sm:h-14" style={{ minWidth: '200px' }}>
+                    {/* Card container - Reverted to slightly larger 240px min-width */}
+                    <div className="relative h-14" style={{ minWidth: '240px' }}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentEntity.id}

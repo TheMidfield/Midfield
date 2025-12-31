@@ -1,19 +1,17 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.4)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.5)
 
 <!--
-UPDATE LOG (Dec 29, 2025):
-- **Hero/Grid Aesthetics**: Implemented "Strict Vignette" masking for grids (no abrupt edges).
-- **Match Center Widget**: Added "Compact/Sidebar Mode" (no club names) for narrow columns.
-- **Match Ranking Algo**: Replaced round-robin with Power Ranking + Diversity Penalty (Top 5 Leagues).
-- **Performance**: EntityCycler now preloads all images to prevent flickering.
-- **Bug Fix**: Removed default "88" rating fallback; now hides badge if unknown.
-- **Fixture Sync V2**: Hybrid architecture (Edge + Next.js Cron) live. Surgical score updates via `simple-fixture-sync.ts`.
-- **Global Sync Architecture**: Formalized "Realtime Engine" (V2) vs "Atlas Engine" (Edge) split. Added "Stub Law" & Strict Enums.
+UPDATE LOG (Jan 1, 2026):
+- **Smart Upsert Hardening**: Implemented "Safety Locks" in `smartUpsertTopic` to protect `fc26_data`, `follower_count`, and `post_count` from accidental overwrite.
+- **Metadata Merging**: Sync jobs now shallow-merge `metadata` JSONB. Enriched fields (Height, Weight, Foot) are preserved even if simpler syncs run later.
+- **Rich Player Metadata**: Implemented V1 + V2 Hybrid lookup for high-fidelity player profiles (Birth Location, Preferred Foot, Clean Weight strings).
+- **Match Center Stability**: Added sort-on-null safety and loading skeleton overflow fixes for the Sidebar widget.
+- **Design Alignment**: Added 10px standard left-padding to nested metadata rows to align icons with parent button text.
 -->
 
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
 OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
-FORGE DATE: DEC 29, 2025 (Updated)
+FORGE DATE: JAN 1, 2026 (Updated)
 OWNER: Developer is the master of this repo. Standards are non-negotiable.
 
 This file is designed to enable "fresh context window" resets at any time.
@@ -56,13 +54,18 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 ──────────────────────────────────────────────────────────────────────────────
 
 1.  **Border Hierarchy**: Borders define structure. No soft shadows.
-2.  **Optical Alignment**: Icons + Text must align perfectly (mt-0.5 patterns).
+2.  **Optical Alignment**: Icons + Text must align perfectly (mt-0.5 patterns). 
+    - **Nested Row Offset**: Second-row metadata icons must have a `pl-2` or `pl-2.5` padding to align with the *text* of buttons in the row above, not the button edge.
 3.  **Mandatory Hover**: Every interactive element gets a hover state (color/border shift).
 4.  **Rounded Corners**: `rounded-md` (6px) is the universal standard for interactive elements.
 5.  **Strict Vignette Grids**:
     - Hero grids must NEVER end abruptly.
     - Use `maskImage: radial-gradient(ellipse 50% 50% at 50% 50%, black 10%, transparent 85%)`.
     - This guarantees 0% opacity before the edge.
+6.  **Weight Discipline**: 
+    - NEVER use `font-extrabold` or `font-black`. 
+    - Even for primary hero titles, `font-bold` is the absolute maximum weight allowed. 
+    - This ensures the typography remains sharp and premium, avoiding an "over-weighted" or bulky aesthetic.
 
 ──────────────────────────────────────────────────────────────────────────────
 4) COMPONENT ARCHETYPES (CANONICAL)
@@ -79,6 +82,7 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Modes**:
   - `Default`: Shown on Homepage (includes Club Names).
   - `Sidebar/Compact`: Shown on RightPanel (Logos ONLY, no text names).
+- **Robustness**: Must verify data exists before calling `.sort()` or `.filter()`. Skeletons must respect `hideClubNames` to prevent layout overflow.
 - **Ranking Algo**:
   - Pure Power Ranking (UEFA Coefficients + League Prestige).
   - **Diversity Penalty**: Top 5 Leagues (EPL, La Liga, etc.) forced to mix. No single league dominates > 4 slots.
@@ -104,7 +108,7 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 **B) FC26 RATINGS & SOFIFA**
 - Source: SoFIFA (Python Scraper -> Edge Function).
 - Storage: `topics.fc26_data` JSONB column.
-- Display: 80+ Emerald, 70+ Dark Emerald, 60+ Yellow.
+- **Safety**: Protected by `smartUpsertTopic`. Never overwritten by regular sync jobs.
 
 **C) HYBRID ARCHITECTURE ("Realtime & Atlas")**
 - **I. ATLAS ENGINE (Legacy Edge)**:
@@ -119,6 +123,11 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Values**: `NS`, `LIVE`, `HT`, `FT`, `PST`, `ABD`.
 - **Legacy Ban**: No string matching ("Match Finished"). Use strict Enum checks.
 
+**E) THE SMART UPSERT LAW (Data Preservation)**
+- **Rule**: Protect expensive-to-get data (FC26 Ratings, Follower Counts, Enriched Metadata).
+- **Mechanism**: `smartUpsertTopic` strips `fc26_data`, `follower_count`, and `post_count` from all update payloads.
+- **Metadata Protection**: Existing `metadata` values are shallow-merged with new payloads. Enriched player physicals (Height/Weight) will persist even if a simpler sync job only provides a name/photo.
+
 ──────────────────────────────────────────────────────────────────────────────
 6) RESPONSIVE PERFECTION LAW
 ──────────────────────────────────────────────────────────────────────────────
@@ -128,26 +137,23 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Touch Targets**: 44px min height for mobile interactions.
 
 ──────────────────────────────────────────────────────────────────────────────
-7) RECENT CRITICAL DECISIONS (DEC 2025)
+7) RECENT CRITICAL DECISIONS (JAN 2026)
 ──────────────────────────────────────────────────────────────────────────────
 
 1.  **Sidebar Widget Constraints**: Widgets in sidebars (RightPanel) must be compact.
     - *Action*: `MatchCenterWidget` now accepts `hideClubNames` prop.
-2.  **Grid Fade Perfection**: Replaced complex composite masks with simple, strict radial ellipses (`transparent 85%`) to guarantee no edge clipping.
-3.  **Homepage Performance**:
-    - Entity preloading implemented.
-    - `SplitHero` runs client-side fetching to avoid RSC serialization depth limits.
-4.  **Rating Integrity**: Removed "Default 88" bug.
+2.  **Rich Player Metadata Strategy**:
+    - Use Hybrid V1 + V2 TheSportsDB lookup.
+    - V1 provides Height, Weight (Clean format: "72 kg"), Preferred Foot, and Birth Location.
+3.  **Metadata Merging**: Forced shallow-merge in `smartUpsertTopic` is now the standard to prevent "Metadata Erasure" bugs.
+4.  **MatchCenter Stability**: Sorting logic now safely handles `null` results during data fetching loading phases.
 5.  **Blueprint Authority**: This file is the single source of truth.
 6.  **Centralized League Control**:
     - `packages/logic/src/constants.ts` (`ALLOWED_LEAGUES`) is the SINGLE source of truth.
-    - Frontend selectors (e.g. `FavoriteClubSelector`) MUST dynamically import this list to prevent out-of-bounds selection.
 7.  **Auth Profile Safety**:
-    - `auth/callback` MUST use `ignoreDuplicates: true` on user upsert.
-    - Prevents OAuth providers (Google) from overwriting user-uploaded avatars on subsequent logins.
+    - `auth/callback` MUST use `ignoreDuplicates: true` on user upsert to protect custom avatars.
 8.  **Profile Resilience**:
     - `getUserProfile` (Server) uses `maybeSingle()` + `try/catch` to preventing hangs on missing data.
-    - `ProfileClient` (Client) auto-initializes from Auth metadata if DB row is missing.
 9.  **Live Match Distinction**:
     - Live matches display in "Results" tab (Top billing).
     - Pulsing Emerald Indicators for "LIVE" status.

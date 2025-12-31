@@ -225,7 +225,7 @@ export function ModalShowcase() {
                 <div className="flex items-center justify-center gap-4">
                     {/* Win */}
                     <div className="flex flex-col items-center gap-2">
-                        <div className="px-2 py-0.5 rounded font-black text-[11px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-600 dark:border-emerald-500">
+                        <div className="px-2 py-0.5 rounded font-bold text-[11px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-600 dark:border-emerald-500">
                             3–1
                         </div>
                         <div className="relative w-7 h-7 hover:scale-110 transition-transform">
@@ -237,7 +237,7 @@ export function ModalShowcase() {
 
                     {/* Draw */}
                     <div className="flex flex-col items-center gap-2">
-                        <div className="px-2 py-0.5 rounded font-black text-[11px] bg-slate-50 dark:bg-neutral-800/50 text-slate-700 dark:text-neutral-300 border-2 border-slate-400 dark:border-neutral-600">
+                        <div className="px-2 py-0.5 rounded font-bold text-[11px] bg-slate-50 dark:bg-neutral-800/50 text-slate-700 dark:text-neutral-300 border-2 border-slate-400 dark:border-neutral-600">
                             1–1
                         </div>
                         <div className="relative w-7 h-7 hover:scale-110 transition-transform">
@@ -249,7 +249,7 @@ export function ModalShowcase() {
 
                     {/* Loss */}
                     <div className="flex flex-col items-center gap-2">
-                        <div className="px-2 py-0.5 rounded font-black text-[11px] bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-2 border-rose-600 dark:border-rose-500">
+                        <div className="px-2 py-0.5 rounded font-bold text-[11px] bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-2 border-rose-600 dark:border-rose-500">
                             0–2
                         </div>
                         <div className="relative w-7 h-7 hover:scale-110 transition-transform">
