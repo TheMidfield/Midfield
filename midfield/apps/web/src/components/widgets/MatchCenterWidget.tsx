@@ -35,7 +35,7 @@ const SkeletonFixture = memo(() => (
 SkeletonFixture.displayName = 'SkeletonFixture';
 
 // Single fixture row with improved layout
-const FixtureRow = memo(({ fixture, showScore }: { fixture: MatchCenterFixture & { homeScore?: number; awayScore?: number }, showScore?: boolean }) => {
+const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: MatchCenterFixture & { homeScore?: number; awayScore?: number }, showScore?: boolean, hideClubNames?: boolean }) => {
     const { dayMonth, time, fullDateTime } = formatMatchDate(fixture.date);
 
     const homeWin = showScore && fixture.homeScore! > fixture.awayScore!;
@@ -44,15 +44,17 @@ const FixtureRow = memo(({ fixture, showScore }: { fixture: MatchCenterFixture &
     return (
         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50">
             {/* Home Team - Full width on left */}
-            <div className="flex-1 min-w-0 flex items-center justify-end gap-2 group">
-                <Link
-                    href={`/topic/${fixture.homeTeam.slug}`}
-                    className="truncate"
-                >
-                    <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
-                        {fixture.homeTeam.title}
-                    </span>
-                </Link>
+            <div className={`flex-1 min-w-0 flex items-center justify-end gap-2 group ${hideClubNames ? 'justify-center' : ''}`}>
+                {!hideClubNames && (
+                    <Link
+                        href={`/topic/${fixture.homeTeam.slug}`}
+                        className="truncate"
+                    >
+                        <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
+                            {fixture.homeTeam.title}
+                        </span>
+                    </Link>
+                )}
                 <Link href={`/topic/${fixture.homeTeam.slug}`}>
                     <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
                         {fixture.homeTeam.badgeUrl ? (
@@ -98,7 +100,7 @@ const FixtureRow = memo(({ fixture, showScore }: { fixture: MatchCenterFixture &
             </div>
 
             {/* Away Team - Full width on right */}
-            <div className="flex-1 min-w-0 flex items-center gap-2 group">
+            <div className={`flex-1 min-w-0 flex items-center gap-2 group ${hideClubNames ? 'justify-center' : ''}`}>
                 <Link href={`/topic/${fixture.awayTeam.slug}`}>
                     <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
                         {fixture.awayTeam.badgeUrl ? (
@@ -116,21 +118,27 @@ const FixtureRow = memo(({ fixture, showScore }: { fixture: MatchCenterFixture &
                         )}
                     </div>
                 </Link>
-                <Link
-                    href={`/topic/${fixture.awayTeam.slug}`}
-                    className="truncate"
-                >
-                    <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
-                        {fixture.awayTeam.title}
-                    </span>
-                </Link>
+                {!hideClubNames && (
+                    <Link
+                        href={`/topic/${fixture.awayTeam.slug}`}
+                        className="truncate"
+                    >
+                        <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
+                            {fixture.awayTeam.title}
+                        </span>
+                    </Link>
+                )}
             </div>
         </div>
     );
 });
 FixtureRow.displayName = 'FixtureRow';
 
-export function MatchCenterWidget() {
+interface MatchCenterWidgetProps {
+    hideClubNames?: boolean;
+}
+
+export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
     const { data: fixtures, isLoading } = useMatchCenter();
     const [activeTab, setActiveTab] = useState<'upcoming' | 'results'>('upcoming');
 
@@ -194,7 +202,7 @@ export function MatchCenterWidget() {
                     </>
                 ) : displayFixtures.length > 0 ? (
                     displayFixtures.map((fixture) => (
-                        <FixtureRow key={fixture.id} fixture={fixture as any} showScore={activeTab === 'results'} />
+                        <FixtureRow key={fixture.id} fixture={fixture as any} showScore={activeTab === 'results'} hideClubNames={hideClubNames} />
                     ))
                 ) : (
                     <div className="text-center py-8 text-sm text-slate-500 dark:text-neutral-500">
