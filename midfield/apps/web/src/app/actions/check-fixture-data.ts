@@ -2,46 +2,29 @@
 
 import { createClient } from '@/lib/supabase/server';
 
-export async function checkFixtureData() {
+export async function checkFixtureScores() {
     const supabase = await createClient();
 
-    // Get fixture statistics
-    const { data: fixtures, error } = await supabase
+    // Get a sample of past fixtures to check if we have scores
+    const { data: pastFixtures, error } = await supabase
         .from('fixtures')
-        .select('date')
-        .order('date', { ascending: true });
-
-    if (error || !fixtures) {
-        return { error: error?.message || 'No fixtures found' };
-    }
-
-    const now = new Date();
-    const today = new Date(now.toDateString());
-
-    const past = fixtures.filter(f => new Date(f.date) < now);
-    const future = fixtures.filter(f => new Date(f.date) >= now);
-    const todayFixtures = fixtures.filter(f => {
-        const fixtureDate = new Date(f.date);
-        return fixtureDate.toDateString() === today.toDateString();
-    });
-
-    // Check when clubs were last updated
-    const { data: clubs } = await supabase
-        .from('topics')
-        .select('updated_at')
-        .eq('type', 'club')
-        .order('updated_at', { ascending: false })
+        .select('*')
+        .lt('date', new Date().toISOString())
+        .order('date', { ascending: false })
         .limit(10);
 
+    if (error || !pastFixtures) {
+        return { error: error?.message || 'No past fixtures found' };
+    }
+
+    // Check the structure of fixture data
+    const sample = pastFixtures[0];
+    const hasScores = sample && ('home_score' in sample || 'away_score' in sample || 'score' in sample || 'status' in sample);
+
     return {
-        total: fixtures.length,
-        past: past.length,
-        future: future.length,
-        today: todayFixtures.length,
-        earliest: fixtures[0]?.date,
-        latest: fixtures[fixtures.length - 1]?.date,
-        recentUpdates: clubs?.map(c => c.updated_at).slice(0, 5) || [],
-        samplePast: past.slice(-5).map(f => f.date),
-        sampleFuture: future.slice(0, 5).map(f => f.date),
+        total: pastFixtures.length,
+        sample: pastFixtures.slice(0, 3),
+        fields: sample ? Object.keys(sample) : [],
+        hasScores,
     };
 }
