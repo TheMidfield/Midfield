@@ -9,37 +9,47 @@ export function Logo({ className, ...props }: SVGProps<SVGSVGElement>) {
             className={className}
             {...props}
         >
-            {/* Enhanced Pitch Center / Lens Concept */}
-            {/* Left Bracket - thicker, more refined curve */}
-            <path
-                d="M7.5 3.5C4 5.8 2 9.2 2 12C2 14.8 4 18.2 7.5 20.5"
-                className="stroke-emerald-500 dark:stroke-emerald-400"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
+            {/* 
+                Midfield Logo - Sophisticated pitch center concept
+                - Center circle represents the kickoff spot (the heart of football)
+                - Elegant arcs suggest the center circle markings
+                - Premium, minimal design aligned with our rounded-md aesthetic
+            */}
 
-            {/* Right Bracket */}
-            <path
-                d="M16.5 3.5C20 5.8 22 9.2 22 12C22 14.8 20 18.2 16.5 20.5"
-                className="stroke-emerald-500 dark:stroke-emerald-400"
-                strokeWidth="2"
-                strokeLinecap="round"
-            />
-
-            {/* Center Dot (Kickoff / Focus) - with subtle ring */}
+            {/* Outer ring - subtle, refined circle */}
             <circle
                 cx="12"
                 cy="12"
-                r="3.5"
-                className="fill-slate-900 dark:fill-white"
-            />
-            <circle
-                cx="12"
-                cy="12"
-                r="5"
-                className="stroke-slate-900/20 dark:stroke-white/20"
-                strokeWidth="1"
+                r="10"
+                className="stroke-slate-300 dark:stroke-neutral-600"
+                strokeWidth="1.5"
                 fill="none"
+            />
+
+            {/* Inner emerald arc - left side (pitch line aesthetic) */}
+            <path
+                d="M6.5 12C6.5 8.96 8.96 6.5 12 6.5"
+                className="stroke-emerald-500 dark:stroke-emerald-400"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+            />
+
+            {/* Inner emerald arc - right side (pitch line aesthetic) */}
+            <path
+                d="M17.5 12C17.5 15.04 15.04 17.5 12 17.5"
+                className="stroke-emerald-500 dark:stroke-emerald-400"
+                strokeWidth="2"
+                strokeLinecap="round"
+                fill="none"
+            />
+
+            {/* Center dot - the kickoff point */}
+            <circle
+                cx="12"
+                cy="12"
+                r="2.5"
+                className="fill-slate-900 dark:fill-white"
             />
         </svg>
     );
