@@ -137,15 +137,15 @@ export default async function Home() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2 sm:gap-4">
                     {featuredClubs.map((club) => (
                         <Link key={club.id} href={`/topic/${club.slug}`}>
-                            <Card variant="interactive" className="p-3 sm:p-5 flex items-center gap-3 sm:gap-4 group">
+                            <Card variant="interactive" className="p-2.5 sm:p-5 flex items-center gap-2.5 sm:gap-4 group">
                                 {club.badgeUrl && (
                                     <img
                                         src={club.badgeUrl}
                                         alt={club.title}
-                                        className="w-12 h-12 sm:w-16 sm:h-16 object-contain shrink-0"
+                                        className="w-10 h-10 sm:w-16 sm:h-16 object-contain shrink-0"
                                     />
                                 )}
                                 <div className="flex-1 min-w-0">
@@ -153,7 +153,7 @@ export default async function Home() {
                                         {club.title}
                                     </h3>
                                     {club.league && (
-                                        <Badge variant="secondary" className="text-[10px] mt-1 sm:mt-1.5">
+                                        <Badge variant="secondary" className="text-[9px] sm:text-[10px] mt-1">
                                             {club.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                         </Badge>
                                     )}

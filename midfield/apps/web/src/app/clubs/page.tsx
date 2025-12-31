@@ -59,7 +59,7 @@ export default async function ClubsPage() {
                                 <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div>
-                                <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-slate-900 dark:text-neutral-100">
+                                <h1 className="font-display text-2xl sm:text-4xl font-semibold tracking-tight text-slate-900 dark:text-neutral-100">
                                     Clubs
                                 </h1>
                             </div>
