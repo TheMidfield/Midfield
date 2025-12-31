@@ -1,5 +1,6 @@
 import { supabase } from "./supabase";
 import type { Topic, TopicType } from "@midfield/types";
+import { ALLOWED_LEAGUES } from "./constants";
 
 /**
  * Get all topics
@@ -104,6 +105,26 @@ export const getClubsByLeague = async (leagueName: string): Promise<Topic[]> => 
     }
 
     return data || [];
+};
+
+/**
+ * Get league topic by title
+ */
+export const getLeagueByTitle = async (title: string): Promise<Topic | null> => {
+    const { data, error } = await supabase
+        .from('topics')
+        .select('*')
+        .eq('type', 'league')
+        .eq('title', title)
+        .eq('is_active', true)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching league by title:', error);
+        return null;
+    }
+
+    return data || null;
 };
 
 /**
@@ -266,3 +287,65 @@ export const getContinentalLeagueFixtures = async (leagueId: string): Promise<an
     return data || [];
 };
 
+
+/**
+ * Get all players belonging to clubs in Allowed Leagues (Frontend visibility filter)
+ */
+export const getVisiblePlayers = async (): Promise<Topic[]> => {
+    // 1. Get all allowed clubs
+    // Note: This relies on metadata->league matching the constant strings
+    // AND filtering locally if needed, but we can try DB filter if keys match.
+    // 'metadata->>league' eq 'English Premier League' etc.
+    // Since we have multiple, using .in() with json arrow is best.
+
+    // Fetch club IDs first
+    const { data: clubs, error: clubError } = await supabase
+        .from('topics')
+        .select('id')
+        .eq('type', 'club')
+        .eq('is_active', true)
+    // Helper to construct OR filter? or IN?
+    // Supabase doesn't support .in('metadata->>league', [...]) easily on all PG versions via PostgREST?
+    // It does support generic filter.
+    // Let's just fetch all clubs and filter in JS to be safe and simple (only expected ~200 clubs total).
+
+    if (clubError || !clubs) return [];
+
+    // Filter JS side for safety and exact match
+    // Reuse getAllTopics logic effectively or just fetch metadata
+    const { data: allClubs } = await supabase.from('topics').select('id, metadata').eq('type', 'club');
+
+    if (!allClubs) return [];
+
+    const allowedClubIds = allClubs
+        .filter(c => ALLOWED_LEAGUES.includes((c.metadata as any)?.league))
+        .map(c => c.id);
+
+    if (allowedClubIds.length === 0) return [];
+
+    // 2. Fetch players linked to these clubs
+    // We use topic_relationships
+    const { data: relations, error: relError } = await supabase
+        .from('topic_relationships')
+        .select('child_topic_id')
+        .eq('relationship_type', 'plays_for')
+        .in('parent_topic_id', allowedClubIds);
+
+    if (relError || !relations) return [];
+
+    const playerIds = relations.map(r => r.child_topic_id);
+
+    if (playerIds.length === 0) return [];
+
+    // 3. Fetch full player topics
+    const { data: players, error: playerError } = await supabase
+        .from('topics')
+        .select('*')
+        .in('id', playerIds)
+        .eq('is_active', true)
+        .order('follower_count', { ascending: false });
+
+    if (playerError) return [];
+
+    return players || [];
+};

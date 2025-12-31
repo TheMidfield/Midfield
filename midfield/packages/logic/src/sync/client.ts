@@ -85,10 +85,25 @@ export class TheSportsDBClient {
     }
 
     async lookupTeam(teamId: string) { // This is the V1 lookupTeam
-        return this.fetchV1<{ teams: any[] }>(`lookupteam.php?id=${teamId}`);
+        const data = await this.fetchV1<{ teams: any[] }>(`lookupteam.php?id=${teamId}`);
+        return data.teams?.[0] || null;
     }
 
     async lookupPlayer(playerId: string) {
-        return this.fetchV1<{ players: any[] }>(`lookupplayer.php?id=${playerId}`);
+        const data = await this.fetchV1<{ players: any[] }>(`lookupplayer.php?id=${playerId}`);
+        return data.players?.[0] || null;
+    }
+
+    async getLeagueTable(leagueId: string, season: string) {
+        const data = await this.fetchV1<{ table: any[] }>(`lookuptable.php?l=${leagueId}&s=${season}`);
+        return data.table || [];
+    }
+
+    async getPlayerContracts(playerId: string) {
+        // V2 endpoint for contracts (requires paid tier usually or v2 access)
+        // If it fails (404/401), fetchV2 returns empty or throws.
+        // We will assume V2 access or graceful failure.
+        const data = await this.fetchV2<{ contracts: any[] }>(`/lookup/contract/${playerId}`);
+        return data.contracts || [];
     }
 }

@@ -11,6 +11,7 @@ import Link from "next/link";
 import NextImage from "next/image";
 import { PLAYER_IMAGE_STYLE, getPositionInfo, getRatingColor, getRatingBgColor } from "@/lib/entity-helpers";
 import { ClubFixtures } from "@/components/ClubFixtures";
+import { ContinentalFixtures } from "@/components/ContinentalFixtures";
 import { LeagueTable } from "@/components/LeagueTable";
 import { TopicDescription } from "@/components/TopicDescription";
 
@@ -29,6 +30,7 @@ interface TopicPageClientProps {
         avatar_url: string | null;
         username: string | null;
     };
+    leagueSlug?: string;
 }
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Staff"];
@@ -48,7 +50,7 @@ const getPositionPriority = (pos: string): number => {
     return positionBadgePriority[info.abbr] || 50;
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
@@ -116,7 +118,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
     const sections = isLeague
         ? (isContinentalLeague
-            // Continental leagues: only fixtures and about (no clubs list, no standings)
+            // Continental leagues: fixtures and about only
             ? [
                 { id: "fixtures", title: "Fixtures", icon: Calendar },
                 { id: "about", title: "About", icon: Info },
@@ -289,7 +291,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                     height: metadata?.height,
                     kitNumber: metadata?.kit_number || metadata?.jersey_number,
                     league: isClub ? metadata?.league : clubData.league,
-                    leagueSlug: clubData.leagueSlug,
+                    leagueSlug: leagueSlug || clubData.leagueSlug,
                     stadium: metadata?.stadium,
                     founded: metadata?.founded,
                     country: metadata?.country,
@@ -598,11 +600,12 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
                                                     {/* Fixtures Section (Continental Leagues) */}
                                                     {section.id === "fixtures" && isContinentalLeague && (
-                                                        <ClubFixtures
-                                                            clubId={topic.id}
-                                                            fixtures={fixtures}
-                                                            showFormOnly={false}
-                                                        />
+                                                        <div
+                                                            className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 space-y-1 overflow-y-auto"
+                                                            style={{ maxHeight: '300px' }}
+                                                        >
+                                                            <ContinentalFixtures fixtures={fixtures} />
+                                                        </div>
                                                     )}
 
                                                     {/* Clubs Section (Leagues) */}

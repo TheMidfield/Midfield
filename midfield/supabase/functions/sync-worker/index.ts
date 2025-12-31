@@ -211,7 +211,7 @@ Deno.serve(async (req) => {
                                     standingsPayloads.push({
                                         league_id: leagueTopic.id,
                                         team_id: teamTopic.id,
-                                        rank: parseInt(row.intRank),
+                                        position: parseInt(row.intRank),
                                         points: parseInt(row.intPoints),
                                         played: parseInt(row.intPlayed),
                                         goals_diff: parseInt(row.intGoalDifference),

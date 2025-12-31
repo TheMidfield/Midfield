@@ -1,4 +1,5 @@
-import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getClubFixtures, getLeagueTable, getClubStanding } from "@midfield/logic/src/topics";
+import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getLeagueByTitle, getClubFixtures, getLeagueTable, getClubStanding, isContinentalLeague, getContinentalLeagueFixtures } from "@midfield/logic/src/topics";
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
 import { getTakes } from "@/app/actions";
@@ -12,6 +13,16 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         return notFound();
     }
 
+    // VISIBILITY CHECK (Top 5 Leagues Only)
+    if (topic.type === 'club') {
+        const league = (topic.metadata as any)?.league;
+        if (!ALLOWED_LEAGUES.includes(league)) return notFound();
+    } else if (topic.type === 'league') {
+        const isContinental = isContinentalLeague(topic);
+        const isAllowedNational = ALLOWED_LEAGUES.includes(topic.title);
+        if (!isContinental && !isAllowedNational) return notFound();
+    }
+
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
@@ -23,7 +34,16 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     let standings: any[] = [];
     let clubStanding: any = null;
 
+    let leagueSlug: string | undefined;
+
     if (isClub) {
+        // Resolve valid league slug for navigation
+        const leagueName = (topic.metadata as any)?.league;
+        if (leagueName) {
+            const leagueTopic = await getLeagueByTitle(leagueName);
+            if (leagueTopic) leagueSlug = leagueTopic.slug;
+        }
+
         squad = await getPlayersByClub(topic.id);
 
         // Group players by position
@@ -54,36 +74,35 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         // Fetch the player's club
         playerClub = await getPlayerClub(topic.id);
 
-        // For managers/coaches, also fetch their club's fixtures, standings
-        const position = (topic.metadata as any)?.position?.toLowerCase() || '';
-        if (position.includes('manager') || position.includes('coach')) {
-            if (playerClub) {
-                fixtures = await getClubFixtures(playerClub.id);
-                clubStanding = await getClubStanding(playerClub.id);
+        // VISIBILITY CHECK: Only show players from Allowed Clubs
+        if (playerClub) {
+            const leagueName = (playerClub.metadata as any)?.league;
+            if (!ALLOWED_LEAGUES.includes(leagueName)) return notFound();
 
-                // Get league standings for the manager's club league
-                const leagueName = (playerClub.metadata as any)?.league;
-                if (leagueName) {
-                    // Find the league topic to get standings
-                    const { supabase } = await import("@midfield/logic/src/supabase");
-                    const { data: leagues } = await supabase
-                        .from('topics')
-                        .select('id, title, metadata')
-                        .eq('type', 'league')
-                        .eq('is_active', true);
-                    const leagueTopic = leagues?.find(l => l.title === leagueName || (l.metadata as any)?.league === leagueName);
-                    if (leagueTopic) {
+            // Resolve valid league slug
+            if (leagueName) {
+                const leagueTopic = await getLeagueByTitle(leagueName);
+                if (leagueTopic) {
+                    leagueSlug = leagueTopic.slug;
+
+                    // For managers: fetch league standings
+                    const position = (topic.metadata as any)?.position?.toLowerCase() || '';
+                    if (position.includes('manager') || position.includes('coach')) {
+                        fixtures = await getClubFixtures(playerClub.id);
+                        clubStanding = await getClubStanding(playerClub.id);
                         standings = await getLeagueTable(leagueTopic.id);
                     }
                 }
             }
+        } else {
+            // If player has NO club (e.g. Free Agent or data issue), hide them?
+            // User said "only players from the 96 clubs".
+            // So safe to hide.
+            return notFound();
         }
     }
 
     if (isLeague) {
-        // Import continental league helpers
-        const { isContinentalLeague, getContinentalLeagueFixtures } = await import("@midfield/logic/src/topics");
-
         // Check if this is a continental competition (Champions League, Europa League)
         const isContinental = isContinentalLeague(topic);
 
@@ -121,8 +140,8 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                 id: userData?.user?.id,
                 avatar_url: userData?.profile?.avatar_url || null,
                 username: userData?.profile?.username || null,
-            }
-            }
+            }}
+            leagueSlug={leagueSlug}
         />
     );
 }

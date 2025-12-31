@@ -2,6 +2,8 @@ import { FeaturedPlayersInfinite } from "@/components/FeaturedPlayersInfinite";
 import { supabase } from "@midfield/logic/src/supabase";
 import { Users } from "lucide-react";
 
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
+
 export default async function PlayersPage() {
     // Fetch ALL players (we'll handle pagination on client)
     const { data: playerRelationships } = await supabase
@@ -19,17 +21,23 @@ export default async function PlayersPage() {
         .eq('type', 'player')
         .eq('is_active', true);
 
-    // Process players with club data
-    const playersWithClubs = (playerRelationships || []).map((player: any) => {
-        const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
-        return {
-            ...player,
-            clubInfo: clubData ? {
-                name: clubData.title,
-                badge_url: clubData.metadata?.badge_url
-            } : null
-        };
-    }).sort(() => Math.random() - 0.5); // Randomize order
+    // Process players with club data AND filter by allowed leagues
+    const playersWithClubs = (playerRelationships || [])
+        .filter((player: any) => {
+            const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
+            const league = (clubData?.metadata as any)?.league;
+            return ALLOWED_LEAGUES.includes(league);
+        })
+        .map((player: any) => {
+            const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
+            return {
+                ...player,
+                clubInfo: clubData ? {
+                    name: clubData.title,
+                    badge_url: clubData.metadata?.badge_url
+                } : null
+            };
+        }).sort(() => Math.random() - 0.5); // Randomize order
 
     return (
         <div className="w-full">

@@ -3,6 +3,10 @@ import { createClient } from "@supabase/supabase-js"; // Using generic client fo
 // For now, let's stick to the pattern of creating a client if needed, but since this is shared logic, it might run on client or server.
 // Best pattern: Accept supabase client as Dependency Injection to be platform agnostic.
 
+// Best pattern: Accept supabase client as Dependency Injection to be platform agnostic.
+
+import { ALLOWED_LEAGUES } from "./constants";
+
 // Helper: Remove accents/diacritics for normalization
 function removeDiacritics(str: string): string {
     return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -57,9 +61,16 @@ async function getAllTopicsForSearch(supabase: any) {
         return topicsCache;
     }
 
+    // Include relationships to determine player's club league
     const { data, error } = await supabase
         .from('topics')
-        .select('id, title, slug, type, metadata')
+        .select(`
+            id, title, slug, type, metadata,
+            relations:topic_relationships!topic_relationships_child_topic_id_fkey(
+                relationship_type,
+                parent_topic:topics!topic_relationships_parent_topic_id_fkey(metadata)
+            )
+        `)
         .eq('is_active', true)
         .order('title', { ascending: true });
 
@@ -68,7 +79,19 @@ async function getAllTopicsForSearch(supabase: any) {
         return topicsCache || [];
     }
 
-    topicsCache = data || [];
+    // Process data to attach 'derivedLeague' for filtering
+    const processed = (data || []).map((t: any) => {
+        let derivedLeague: string | null = null;
+        if (t.type === 'club') {
+            derivedLeague = t.metadata?.league;
+        } else if (t.type === 'player') {
+            const clubRel = (t.relations || []).find((r: any) => r.relationship_type === 'plays_for');
+            derivedLeague = (clubRel?.parent_topic?.metadata as any)?.league;
+        }
+        return { ...t, derivedLeague };
+    });
+
+    topicsCache = processed;
     cacheTimestamp = now;
     return topicsCache;
 }
@@ -87,6 +110,17 @@ export async function searchTopicsLogic(supabase: any, query: string, type?: str
     for (const topic of all) {
         // Early type filter
         if (type && topic.type !== type) continue;
+
+        // VISIBILITY FILTER
+        if (topic.type === 'club') {
+            if (!ALLOWED_LEAGUES.includes(topic.derivedLeague)) continue;
+        } else if (topic.type === 'player') {
+            if (!ALLOWED_LEAGUES.includes(topic.derivedLeague)) continue;
+        } else if (topic.type === 'league') {
+            const isContinental = topic.metadata?.competition_type === 'continental';
+            const isAllowed = ALLOWED_LEAGUES.includes(topic.title) || ALLOWED_LEAGUES.includes(topic.metadata?.league);
+            if (!isContinental && !isAllowed) continue;
+        }
 
         const rawTitle = topic.title.toLowerCase();
         const normalizedTitle = removeDiacritics(rawTitle);

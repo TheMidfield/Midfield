@@ -214,12 +214,13 @@ export default async function LeaguesPage() {
                         {league.title.replace(/^UEFA\s/, '')}
                       </h3>
 
-                      {/* Continental Badge */}
+                      {/* Continental Flag (UEFA) */}
                       <div className="flex justify-center">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 dark:bg-amber-950/30 rounded-md text-xs font-semibold text-amber-700 dark:text-amber-400">
-                          <Star className="w-3.5 h-3.5" />
-                          <span>Europe</span>
-                        </div>
+                        <img
+                          src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/uefa.png"
+                          alt="UEFA"
+                          className="h-5 w-auto object-contain rounded border border-slate-200 dark:border-neutral-700 bg-white"
+                        />
                       </div>
                     </div>
                   </Card>

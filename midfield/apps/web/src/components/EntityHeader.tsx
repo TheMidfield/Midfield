@@ -144,7 +144,7 @@ export function EntityHeader({
             { label: "Leagues", href: "/leagues" },
             ...(metadata?.league ? [{
                 label: metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, ''),
-                href: `/leagues/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`
+                href: `/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`
             }] : []),
             ...(metadata?.clubName ? [{
                 label: metadata.clubName,
@@ -158,7 +158,7 @@ export function EntityHeader({
                 { label: "Leagues", href: "/leagues" },
                 ...(metadata?.league ? [{
                     label: metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, ''),
-                    href: `/leagues/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`
+                    href: `/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`
                 }] : []),
                 { label: title, href: null }
             ]
@@ -421,7 +421,7 @@ export function EntityHeader({
                                     {isClub && (
                                         <>
                                             {metadata?.league && (
-                                                <Link href={`/leagues/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                <Link href={`/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
                                                     <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
                                                         <Trophy className="w-3.5 sm:w-4 md:w-4 h-3.5 sm:h-4 md:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                                                         <span className="whitespace-nowrap">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>

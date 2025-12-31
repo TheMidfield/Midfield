@@ -1,11 +1,15 @@
 import { getTopicsByType } from "@midfield/logic/src/topics";
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 import Link from "next/link";
 import { Shield } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 
 export default async function ClubsPage() {
-    const clubs = await getTopicsByType('club');
+    const allClubs = await getTopicsByType('club');
+
+    // Filter strictly to allowed leagues
+    const clubs = allClubs.filter(club => ALLOWED_LEAGUES.includes((club.metadata as any)?.league));
 
     // Sort clubs alphabetically
     const sortedClubs = clubs.sort((a, b) => a.title.localeCompare(b.title));
