@@ -2,6 +2,7 @@
 "use client";
 
 import NextImage from "next/image";
+import Link from "next/link";
 import { Home, Plane, Shield } from "lucide-react";
 
 interface ClubFixturesProps {
@@ -33,13 +34,21 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
     // Split into Upcoming vs Results
     const now = new Date();
     const results = fixtures
-        .filter(f => new Date(f.date) < now)
-        .reverse()
-        .slice(0, 5); // Show last 5 results
+        .filter(f => new Date(f.date) < now && (f.status === 'FT' || f.status === 'ABD'))
+        .slice(0, 3); // Show last 3 results (chronological - oldest first)
 
     const upcoming = fixtures
         .filter(f => new Date(f.date) >= now)
         .slice(0, 5); // Show next 5 upcoming
+
+    // Get last 5 matches for badges
+    const last5Matches = fixtures
+        .filter(f => new Date(f.date) < now && (f.status === 'FT' || f.status === 'ABD'))
+        .reverse()
+        .slice(0, 5);
+
+    // Get next match
+    const nextMatch = upcoming[0];
 
     // Form Bubbles Helper
     const FormBubbles = ({ form }: { form: string }) => {
@@ -125,33 +134,61 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                     )}
                 </div>
 
-                {/* Opponent Badge + Name */}
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className="relative w-6 h-6 shrink-0">
-                        {opponent?.metadata?.badge_url ? (
-                            <NextImage
-                                src={opponent.metadata.badge_url}
-                                alt={opponent.title}
-                                fill
-                                className="object-contain"
-                                sizes="24px"
-                            />
-                        ) : (
-                            <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
-                                <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                {/* Opponent Badge + Name - Clickable with hover */}
+                <div className="flex items-center gap-2 flex-1 min-w-0 group">
+                    {opponent?.slug ? (
+                        <Link href={`/topic/${opponent.slug}`}>
+                            <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform">
+                                {opponent.metadata?.badge_url ? (
+                                    <NextImage
+                                        src={opponent.metadata.badge_url}
+                                        alt={opponent.title}
+                                        fill
+                                        className="object-contain"
+                                        sizes="24px"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                        <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 truncate">
-                        {opponent?.title || "TBD"}
-                    </span>
+                        </Link>
+                    ) : (
+                        <div className="relative w-6 h-6 shrink-0">
+                            {opponent?.metadata?.badge_url ? (
+                                <NextImage
+                                    src={opponent.metadata.badge_url}
+                                    alt={opponent?.title || "TBD"}
+                                    fill
+                                    className="object-contain"
+                                    sizes="24px"
+                                />
+                            ) : (
+                                <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                    <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {opponent?.slug ? (
+                        <Link href={`/topic/${opponent.slug}`} className="truncate">
+                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
+                                {opponent.title}
+                            </span>
+                        </Link>
+                    ) : (
+                        <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 truncate">
+                            {opponent?.title || "TBD"}
+                        </span>
+                    )}
                 </div>
 
                 {/* Score / Time */}
                 <div className="shrink-0 text-right">
                     {isFinished ? (
-                        <span className="font-mono font-bold text-sm text-slate-900 dark:text-neutral-100">
-                            {homeScore}-{awayScore}
+                        <span className="font-bold text-sm text-slate-900 dark:text-neutral-100">
+                            {homeScore}–{awayScore}
                         </span>
                     ) : (
                         <span className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">
@@ -164,56 +201,188 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
     };
 
     return (
-        <div
-            className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 overflow-y-auto"
-            style={{ maxHeight: showFormOnly ? '220px' : '400px' }}
-        >
-            {/* Season Performance Card */}
+        <div className="pt-3 sm:pt-4">
+            {/* Team Form - Minimal Display */}
             {clubStanding && (
-                <div className={showFormOnly ? "" : "mb-4"}>
-                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-neutral-800 dark:to-neutral-800/50 rounded-md p-3 sm:p-4 border border-slate-200 dark:border-neutral-700">
-                        {/* Position & Points Row */}
-                        <div className="flex items-center justify-between mb-2.5">
-                            <div className="flex items-center gap-2.5">
-                                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-md bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-700 flex items-center justify-center">
-                                    <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-neutral-100">
-                                        {clubStanding.position}
-                                    </span>
-                                </div>
-                                <div className="-space-y-0.5">
-                                    <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wide block">Position</span>
-                                    <span className="text-xs text-slate-500 dark:text-neutral-400">{clubStanding.played} games played</span>
-                                </div>
-                            </div>
-                            <div className="text-right -space-y-0.5">
-                                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{clubStanding.points}</span>
-                                <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wide block">Points</span>
-                            </div>
-                        </div>
+                <div className={showFormOnly ? "" : "mb-6"}>
+                    <div className="space-y-6">
+                        {/* Last 5 Matches - Centered with equal spacing */}
+                        {last5Matches.length > 0 && (
+                            <div>
+                                <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-3 text-center">Last 5 Matches</span>
+                                <div className="flex items-center justify-center gap-4">
+                                    {last5Matches.map((match, idx) => {
+                                        const isHome = match.home_team_id === clubId;
+                                        const opponent = isHome ? match.away_team : match.home_team;
+                                        const clubScore = isHome ? match.home_score : match.away_score;
+                                        const oppScore = isHome ? match.away_score : match.home_score;
 
-                        {/* W/D/L Stats */}
-                        <div className="grid grid-cols-3 gap-2 text-center text-xs mb-3">
-                            <div className="bg-white dark:bg-neutral-900 rounded-md p-2 border border-slate-100 dark:border-neutral-700/50">
-                                <span className="block font-bold text-emerald-600 dark:text-emerald-400">{clubStanding.won}</span>
-                                <span className="text-[10px] text-slate-400 dark:text-neutral-500">W</span>
-                            </div>
-                            <div className="bg-white dark:bg-neutral-900 rounded-md p-2 border border-slate-100 dark:border-neutral-700/50">
-                                <span className="block font-bold text-slate-600 dark:text-neutral-300">{clubStanding.drawn}</span>
-                                <span className="text-[10px] text-slate-400 dark:text-neutral-500">D</span>
-                            </div>
-                            <div className="bg-white dark:bg-neutral-900 rounded-md p-2 border border-slate-100 dark:border-neutral-700/50">
-                                <span className="block font-bold text-rose-600 dark:text-rose-400">{clubStanding.lost}</span>
-                                <span className="text-[10px] text-slate-400 dark:text-neutral-500">L</span>
-                            </div>
-                        </div>
+                                        const isWin = clubScore > oppScore;
+                                        const isLoss = clubScore < oppScore;
 
-                        {/* Form */}
-                        {clubStanding.form && (
-                            <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wide">Form</span>
-                                <FormBubbles form={clubStanding.form} />
+                                        const opponentBadge = opponent?.metadata?.badge_url ||
+                                            (isHome ? match.away_team_badge : match.home_team_badge) ||
+                                            null;
+                                        const opponentSlug = opponent?.slug;
+
+                                        // Score badge style - outline & lighter background
+                                        const scoreBadgeStyle = isWin
+                                            ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-600 dark:border-emerald-500'
+                                            : isLoss
+                                                ? 'bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-2 border-rose-600 dark:border-rose-500'
+                                                : 'bg-slate-50 dark:bg-neutral-800/50 text-slate-700 dark:text-neutral-300 border-2 border-slate-400 dark:border-neutral-600';
+
+                                        const BadgeContent = (
+                                            <div className="flex flex-col items-center gap-2">
+                                                {/* Score Badge */}
+                                                <div className={`px-2 py-0.5 rounded font-black text-[11px] ${scoreBadgeStyle}`}>
+                                                    {clubScore}–{oppScore}
+                                                </div>
+                                                {/* Club Badge - smaller, scale on hover */}
+                                                <div className="relative w-7 h-7 hover:scale-110 transition-transform">
+                                                    {opponentBadge ? (
+                                                        <NextImage
+                                                            src={opponentBadge}
+                                                            alt=""
+                                                            fill
+                                                            className="object-contain"
+                                                            sizes="28px"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Shield className="w-6 h-6 text-slate-400 dark:text-neutral-500" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+
+                                        if (opponentSlug) {
+                                            return (
+                                                <Link
+                                                    key={idx}
+                                                    href={`/topic/${opponentSlug}`}
+                                                >
+                                                    {BadgeContent}
+                                                </Link>
+                                            );
+                                        }
+
+                                        return <div key={idx}>{BadgeContent}</div>;
+                                    })}
+                                </div>
                             </div>
                         )}
+
+                        {/* Next Match - Similar to fixture rows */}
+                        {nextMatch && (
+                            <div>
+                                <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-2">Next Match</span>
+                                <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50">
+                                    {(() => {
+                                        const isHome = nextMatch.home_team_id === clubId;
+                                        const opponent = isHome ? nextMatch.away_team : nextMatch.home_team;
+                                        const date = new Date(nextMatch.date);
+                                        const dayMonth = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                        const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                                        const opponentBadge = opponent?.metadata?.badge_url || null;
+                                        const opponentName = opponent?.title || "TBD";
+                                        const opponentSlug = opponent?.slug;
+
+                                        return (
+                                            <>
+                                                {/* Date */}
+                                                <div className="w-10 sm:w-12 text-center shrink-0">
+                                                    <span className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-neutral-400 block">
+                                                        {dayMonth}
+                                                    </span>
+                                                </div>
+
+                                                {/* Home/Away indicator */}
+                                                <div className="w-4 shrink-0 flex items-center justify-center" title={isHome ? 'Home' : 'Away'}>
+                                                    {isHome ? (
+                                                        <Home className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                                    ) : (
+                                                        <Plane className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                                    )}
+                                                </div>
+
+                                                {/* Opponent Badge + Name */}
+                                                <div className="flex items-center gap-2 flex-1 min-w-0 group">
+                                                    {opponentSlug ? (
+                                                        <>
+                                                            <Link href={`/topic/${opponentSlug}`}>
+                                                                <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform">
+                                                                    {opponentBadge ? (
+                                                                        <NextImage
+                                                                            src={opponentBadge}
+                                                                            alt={opponentName}
+                                                                            fill
+                                                                            className="object-contain"
+                                                                            sizes="24px"
+                                                                        />
+                                                                    ) : (
+                                                                        <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                                                            <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </Link>
+                                                            <Link href={`/topic/${opponentSlug}`} className="truncate">
+                                                                <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
+                                                                    {opponentName}
+                                                                </span>
+                                                            </Link>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="relative w-6 h-6 shrink-0">
+                                                                {opponentBadge ? (
+                                                                    <NextImage
+                                                                        src={opponentBadge}
+                                                                        alt={opponentName}
+                                                                        fill
+                                                                        className="object-contain"
+                                                                        sizes="24px"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                                                        <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 truncate">
+                                                                {opponentName}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                {/* Time */}
+                                                <div className="shrink-0 text-right">
+                                                    <span className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400">
+                                                        {time}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Position & Points - Last */}
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">Current Standing</span>
+                                <span className="text-2xl font-black text-slate-900 dark:text-neutral-100">{clubStanding.position}</span>
+                                <span className="text-sm text-slate-500 dark:text-neutral-400">/{clubStanding.played}</span>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">Points</span>
+                                <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">{clubStanding.points}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -224,12 +393,9 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                     {/* Recent Results */}
                     {results.length > 0 && (
                         <div className="mb-4">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="mb-2">
                                 <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
                                     Results
-                                </span>
-                                <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
-                                    {results.length}
                                 </span>
                             </div>
                             <div className="space-y-1.5">
@@ -241,12 +407,9 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                     {/* Upcoming Fixtures */}
                     {upcoming.length > 0 && (
                         <div>
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="mb-2">
                                 <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 dark:text-neutral-500 uppercase tracking-wider">
                                     Upcoming
-                                </span>
-                                <span className="text-[9px] sm:text-[10px] text-slate-300 dark:text-neutral-600">
-                                    {upcoming.length}
                                 </span>
                             </div>
                             <div className="space-y-1.5">
