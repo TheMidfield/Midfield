@@ -549,10 +549,10 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                         <div className="pt-8 pb-6 flex flex-col items-center justify-center text-center opacity-70">
                                                             <Activity className="w-8 h-8 text-slate-300 dark:text-neutral-600 mb-3" />
                                                             <p className="text-sm font-medium text-slate-500 dark:text-neutral-400 mb-1">
-                                                                Season Statistics
+                                                                Advanced Data
                                                             </p>
                                                             <p className="text-xs text-slate-400 dark:text-neutral-500">
-                                                                Detailed match data coming soon...
+                                                                Advanced player data and stats coming soon
                                                             </p>
                                                         </div>
                                                     )}

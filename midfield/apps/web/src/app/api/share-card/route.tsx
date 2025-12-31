@@ -40,11 +40,12 @@ function getContentFontSize(length: number): number {
     // Medium takes
     if (length < 200) return 42;
     // Medium-long takes
-    if (length < 280) return 36;
+    if (length < 320) return 32;
     // Long takes
-    if (length < 400) return 32;
-    // Very long takes
-    return 28;
+    if (length < 500) return 28;
+    // Very long takes (Up to 1000 chars)
+    if (length < 750) return 24;
+    return 21;
 }
 
 export async function POST(request: NextRequest) {
@@ -81,26 +82,19 @@ export async function POST(request: NextRequest) {
     const accentBg = isDark ? '#022c22' : '#ecfdf5'; // Emerald 50
     const watermarkOpacity = isDark ? 0.04 : 0.08; // Stronger watermark in light mode
 
+    // Check for "Not enough room" edge case (takes up to 1000 chars)
+    const isLongTake = content.length > 500;
     const contentFontSize = getContentFontSize(content.length);
+
+    // Branding colors for SVG Logo
+    const logoRing = isDark ? '#525252' : '#cbd5e1';
+    const logoArc = isDark ? '#34d399' : '#10b981';
+    const logoDot = isDark ? '#ffffff' : '#0f172a';
+
     const origin = request.nextUrl.origin;
     // Optimization: Load logo from FS to avoid internal fetch issues
     const logoPath = path.join(process.cwd(), 'public/midfield-logo.png');
     let logoUrl = `${origin}/midfield-logo.png`;
-
-    // Try to load local logo as base64 for robustness
-    try {
-        const logoPathLocal = path.join(process.cwd(), 'apps/web/public/midfield-logo.png'); // Try repo path first
-        if (fs.existsSync(logoPathLocal)) {
-            const logoBuffer = fs.readFileSync(logoPathLocal);
-            logoUrl = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-        } else if (fs.existsSync(logoPath)) {
-            // Fallback to runtime cwd
-            const logoBuffer = fs.readFileSync(logoPath);
-            logoUrl = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-        }
-    } catch (e) {
-        console.warn("Could not load logo locally, falling back to URL", e);
-    }
 
     // Load fonts
     let fonts: any[] = [];
@@ -184,14 +178,14 @@ export async function POST(request: NextRequest) {
                         overflow: 'hidden',
                     }}
                 >
-                    {/* HEADER ZONE - Entity Header Style */}
+                    {/* HEADER ZONE - Reduced for long takes */}
                     <div
                         style={{
                             display: 'flex',
-                            padding: isClub ? '48px 56px 48px 56px' : '0px 56px 0 56px',
+                            padding: isLongTake ? '24px 56px' : (isClub ? '48px 56px' : '0px 56px 0 56px'),
                             borderBottom: `1px solid ${border}`,
-                            gap: 40,
-                            alignItems: isClub ? 'center' : 'flex-end', // Center align for clubs
+                            gap: isLongTake ? 24 : 40,
+                            alignItems: isClub || isLongTake ? 'center' : 'flex-end',
                             position: 'relative',
                             overflow: 'hidden', // Contain the watermark
                         }}
@@ -220,19 +214,19 @@ export async function POST(request: NextRequest) {
                             style={{
                                 display: 'flex',
                                 position: 'relative',
-                                width: isClub ? 200 : 250,
-                                height: isClub ? 200 : 340,
+                                width: isLongTake ? (isClub ? 100 : 140) : (isClub ? 200 : 250),
+                                height: isLongTake ? (isClub ? 100 : 180) : (isClub ? 200 : 340),
                                 alignItems: 'flex-end',
                                 justifyContent: 'center',
-                                marginBottom: isClub ? 0 : -44,
+                                marginBottom: isClub || isLongTake ? 0 : -44,
                             }}
                         >
                             {topicImageUrl ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                     src={topicImageUrl}
-                                    width={isClub ? 200 : 250}
-                                    height={isClub ? 200 : 340}
+                                    width={isLongTake ? (isClub ? 100 : 140) : (isClub ? 200 : 250)}
+                                    height={isLongTake ? (isClub ? 100 : 180) : (isClub ? 200 : 340)}
                                     style={{
                                         objectFit: 'contain',
                                         objectPosition: isClub ? 'center' : 'bottom',
@@ -276,7 +270,7 @@ export async function POST(request: NextRequest) {
                             {/* Title */}
                             <h1
                                 style={{
-                                    fontSize: 56,
+                                    fontSize: isLongTake ? 40 : 56,
                                     fontWeight: 700,
                                     color: textPrimary,
                                     margin: 0,
@@ -298,14 +292,14 @@ export async function POST(request: NextRequest) {
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
                                             src={clubBadgeUrl}
-                                            width={44}
-                                            height={44}
+                                            width={isLongTake ? 32 : 44}
+                                            height={isLongTake ? 32 : 44}
                                             style={{ objectFit: 'contain' }}
                                             alt=""
                                         />
                                         <span
                                             style={{
-                                                fontSize: 32,
+                                                fontSize: isLongTake ? 24 : 32,
                                                 color: textSecondary,
                                                 fontWeight: 500,
                                                 fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -325,7 +319,7 @@ export async function POST(request: NextRequest) {
                                             color: textSecondary,
                                             padding: '8px 16px',
                                             borderRadius: 8,
-                                            fontSize: 20,
+                                            fontSize: isLongTake ? 16 : 20,
                                             fontWeight: 600,
                                             textTransform: 'capitalize',
                                             fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -342,7 +336,7 @@ export async function POST(request: NextRequest) {
                                                 color: accent,
                                                 padding: '8px 16px',
                                                 borderRadius: 8,
-                                                fontSize: 20,
+                                                fontSize: isLongTake ? 16 : 20,
                                                 fontWeight: 600,
                                                 fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                                             }}
@@ -361,7 +355,7 @@ export async function POST(request: NextRequest) {
                             flex: 1,
                             display: 'flex',
                             flexDirection: 'column',
-                            padding: '48px 56px',
+                            padding: isLongTake ? '32px 56px' : '48px 56px',
                         }}
                     >
                         {/* Top: Avatar, Username, Date */}
@@ -417,7 +411,7 @@ export async function POST(request: NextRequest) {
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                 <span
                                     style={{
-                                        fontSize: 36,
+                                        fontSize: isLongTake ? 28 : 36,
                                         fontWeight: 600,
                                         color: accent,
                                         fontFamily: '"Onest", -apple-system, sans-serif',
@@ -428,7 +422,7 @@ export async function POST(request: NextRequest) {
                                 <span style={{ color: isDark ? '#404040' : '#d4d4d8', fontSize: 24, marginTop: 4, marginLeft: 12 }}>•</span>
                                 <span
                                     style={{
-                                        fontSize: 28,
+                                        fontSize: isLongTake ? 24 : 28,
                                         color: textMuted,
                                         fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                                         marginTop: 2,
@@ -461,27 +455,50 @@ export async function POST(request: NextRequest) {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                            padding: '40px 56px',
+                            padding: isLongTake ? '24px 56px' : '40px 56px',
                             borderTop: `1px solid ${border}`,
                             backgroundColor: footerBg,
                         }}
                     >
                         {/* Logo + Wordmark */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                                src={logoUrl}
-                                width={48}
-                                height={48}
-                                style={{
-                                    objectFit: 'contain',
-                                }}
-                                alt=""
-                            />
+                            <svg
+                                width="48"
+                                height="48"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                            >
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke={logoRing}
+                                    strokeWidth="1.5"
+                                    fill="none"
+                                />
+                                <path
+                                    d="M6.5 12C6.5 8.96 8.96 6.5 12 6.5"
+                                    stroke={logoArc}
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
+                                <path
+                                    d="M17.5 12C17.5 15.04 15.04 17.5 12 17.5"
+                                    stroke={logoArc}
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
+                                <circle
+                                    cx="12"
+                                    cy="12"
+                                    r="2.5"
+                                    fill={logoDot}
+                                />
+                            </svg>
                             <span
                                 style={{
                                     fontSize: 36,
-                                    fontWeight: 700,
+                                    fontWeight: 300,
                                     color: textPrimary,
                                     letterSpacing: '-0.02em',
                                     fontFamily: '"Onest", -apple-system, sans-serif',

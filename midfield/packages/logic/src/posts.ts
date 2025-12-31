@@ -78,15 +78,6 @@ export async function createReplyLogic(supabase: any, topicId: string, authorId:
         return { success: false, error: `Failed to post reply: ${(error as any).message || 'Unknown error'}` };
     }
 
-    // Increment reply_count on root post manually
-    const { data: rootPost } = await supabase.from('posts').select('reply_count').eq('id', rootPostId).single();
-    if (rootPost) {
-        await supabase
-            .from('posts')
-            .update({ reply_count: (rootPost.reply_count || 0) + 1 })
-            .eq('id', rootPostId);
-    }
-
     return { success: true, post: data };
 }
 
@@ -245,23 +236,6 @@ export async function deletePostLogic(supabase: any, postId: string, userId: str
     if (error) {
         console.error('Error deleting post:', error);
         return { success: false, error: error.message };
-    }
-
-    // If this was a reply, decrement reply_count on root post manually
-    if (existingPost.root_post_id) {
-        // Fetch current count first to be safe
-        const { data: rootPost } = await supabase
-            .from('posts')
-            .select('reply_count')
-            .eq('id', existingPost.root_post_id)
-            .single();
-
-        if (rootPost && (rootPost.reply_count || 0) > 0) {
-            await supabase
-                .from('posts')
-                .update({ reply_count: rootPost.reply_count - 1 })
-                .eq('id', existingPost.root_post_id);
-        }
     }
 
     return { success: true };
