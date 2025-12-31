@@ -73,12 +73,12 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
                         </Badge>
                     )}
                     {isClub && entity.subtitle && (
-                        <Badge variant="secondary" className="text-[8px] px-1.5 h-4 bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 truncate max-w-[120px]">
+                        <Badge variant="secondary" className="text-[8px] px-1.5 h-4 truncate max-w-[120px]">
                             {entity.subtitle}
                         </Badge>
                     )}
                     {!isPlayer && !entity.subtitle && (
-                        <Badge variant="secondary" className="text-[8px] px-1 h-4 bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 border-none capitalize">
+                        <Badge variant="secondary" className="text-[8px] px-1 h-4 capitalize">
                             {entity.type}
                         </Badge>
                     )}
@@ -115,11 +115,11 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
         }
     }, [entities]);
 
-    // Preload all entity images for instant cycling
+    // Preload all entity images on initial load
     useEffect(() => {
         if (shuffledEntities.length === 0) return;
 
-        // Preload all images
+        // Preload all images immediately
         shuffledEntities.forEach(entity => {
             if (entity.imageUrl) {
                 const img = new Image();
@@ -127,6 +127,33 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
             }
         });
     }, [shuffledEntities]);
+
+    // Aggressively preload NEXT image using link[rel=preload] when index changes
+    useEffect(() => {
+        if (shuffledEntities.length < 2) return;
+
+        const nextIndex = (index + 1) % shuffledEntities.length;
+        const nextEntity = shuffledEntities[nextIndex];
+
+        if (nextEntity?.imageUrl) {
+            // Check if preload link already exists
+            const existingLink = document.querySelector(`link[href="${nextEntity.imageUrl}"]`);
+            if (!existingLink) {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.as = 'image';
+                link.href = nextEntity.imageUrl;
+                link.fetchPriority = 'high';
+                document.head.appendChild(link);
+
+                // Clean up old preload links (keep max 3)
+                const allPreloads = document.querySelectorAll('link[rel="preload"][as="image"]');
+                if (allPreloads.length > 3) {
+                    allPreloads[0]?.remove();
+                }
+            }
+        }
+    }, [index, shuffledEntities]);
 
     useEffect(() => {
         const supabase = createClient();

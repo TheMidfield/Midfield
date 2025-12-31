@@ -58,28 +58,41 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
             {!hideClubNames && (
                 <Link
                     href={`/topic/${fixture.homeTeam.slug}`}
-                    className="flex-1 min-w-0 group text-right"
+                    className="flex-1 min-w-0 flex items-center gap-2 justify-end group/home"
                 >
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
+                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover/home:text-emerald-600 dark:group-hover/home:text-emerald-400 transition-colors truncate">
                         {fixture.homeTeam.title}
                     </span>
+                    <div className="relative w-6 h-6 shrink-0 transition-transform group-hover/home:scale-110">
+                        {fixture.homeTeam.badgeUrl ? (
+                            <NextImage
+                                src={fixture.homeTeam.badgeUrl}
+                                alt={fixture.homeTeam.title}
+                                fill
+                                className="object-contain"
+                                sizes="24px"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                            </div>
+                        )}
+                    </div>
                 </Link>
             )}
 
-            {/* Centered: Home Badge + VS + Away Badge */}
-            <div className={`flex items-center gap-1 shrink-0 ${hideClubNames ? 'flex-1 justify-center' : ''}`}>
-                <div className="flex items-center gap-1.5 group/home">
-                    {/* Home Abbr (Compact only) */}
-                    {hideClubNames && (
-                        <Link href={`/topic/${fixture.homeTeam.slug}`} className="group/abbr">
-                            <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 w-[22px] text-right block group-hover/home:text-emerald-600 dark:group-hover/home:text-emerald-400 transition-colors">
-                                {fixture.homeTeam.abbreviation || fixture.homeTeam.title.slice(0, 3).toUpperCase()}
-                            </span>
-                        </Link>
-                    )}
+            {/* Centered: VS only when names are shown (logos are in team links) */}
+            {!hideClubNames && (
+                <span className="text-[10px] font-bold text-slate-300 dark:text-neutral-600 px-1 shrink-0">vs</span>
+            )}
 
-                    <Link href={`/topic/${fixture.homeTeam.slug}`} className="relative">
-                        {/* Hover ring effect to link logo interaction to text */}
+            {/* Compact mode: Home Badge + VS + Away Badge centered */}
+            {hideClubNames && (
+                <div className="flex items-center gap-1 shrink-0 flex-1 justify-center">
+                    <Link href={`/topic/${fixture.homeTeam.slug}`} className="flex items-center gap-1.5 group/home">
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 w-[22px] text-right group-hover/home:text-emerald-600 dark:group-hover/home:text-emerald-400 transition-colors">
+                            {fixture.homeTeam.abbreviation || fixture.homeTeam.title.slice(0, 3).toUpperCase()}
+                        </span>
                         <div className="relative w-6 h-6 shrink-0 transition-transform group-hover/home:scale-110">
                             {fixture.homeTeam.badgeUrl ? (
                                 <NextImage
@@ -96,12 +109,10 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
                             )}
                         </div>
                     </Link>
-                </div>
 
-                <span className="text-[10px] font-bold text-slate-300 dark:text-neutral-600 px-0.5">vs</span>
+                    <span className="text-[10px] font-bold text-slate-300 dark:text-neutral-600 px-0.5">vs</span>
 
-                <div className="flex items-center gap-1.5 group/away">
-                    <Link href={`/topic/${fixture.awayTeam.slug}`} className="relative">
+                    <Link href={`/topic/${fixture.awayTeam.slug}`} className="flex items-center gap-1.5 group/away">
                         <div className="relative w-6 h-6 shrink-0 transition-transform group-hover/away:scale-110">
                             {fixture.awayTeam.badgeUrl ? (
                                 <NextImage
@@ -117,26 +128,35 @@ const FixtureRow = memo(({ fixture, hideClubNames }: { fixture: MatchCenterFixtu
                                 </div>
                             )}
                         </div>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 w-[22px] text-left group-hover/away:text-emerald-600 dark:group-hover/away:text-emerald-400 transition-colors">
+                            {fixture.awayTeam.abbreviation || fixture.awayTeam.title.slice(0, 3).toUpperCase()}
+                        </span>
                     </Link>
-
-                    {/* Away Abbr (Compact only) */}
-                    {hideClubNames && (
-                        <Link href={`/topic/${fixture.awayTeam.slug}`} className="group/abbr">
-                            <span className="text-[10px] font-bold text-slate-500 dark:text-neutral-400 w-[22px] text-left block group-hover/away:text-emerald-600 dark:group-hover/away:text-emerald-400 transition-colors">
-                                {fixture.awayTeam.abbreviation || fixture.awayTeam.title.slice(0, 3).toUpperCase()}
-                            </span>
-                        </Link>
-                    )}
                 </div>
-            </div>
+            )}
 
             {/* Away Team Name - Hidden if compact */}
             {!hideClubNames && (
                 <Link
                     href={`/topic/${fixture.awayTeam.slug}`}
-                    className="flex-1 min-w-0 group"
+                    className="flex-1 min-w-0 flex items-center gap-2 group/away"
                 >
-                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
+                    <div className="relative w-6 h-6 shrink-0 transition-transform group-hover/away:scale-110">
+                        {fixture.awayTeam.badgeUrl ? (
+                            <NextImage
+                                src={fixture.awayTeam.badgeUrl}
+                                alt={fixture.awayTeam.title}
+                                fill
+                                className="object-contain"
+                                sizes="24px"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded flex items-center justify-center">
+                                <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                            </div>
+                        )}
+                    </div>
+                    <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover/away:text-emerald-600 dark:group-hover/away:text-emerald-400 transition-colors truncate">
                         {fixture.awayTeam.title}
                     </span>
                 </Link>

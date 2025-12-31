@@ -92,7 +92,7 @@ export function Navbar() {
     return (
         <>
             <nav
-                className={`fixed top-0 z-50 w-full bg-white dark:bg-neutral-900 border-b transition-all duration-500 pt-[env(safe-area-inset-top)] ${isOnboardingOpen ? 'border-transparent' : 'border-slate-300 dark:border-neutral-800'
+                className={`fixed top-0 z-50 w-full bg-white dark:bg-neutral-900 lg:bg-white/90 lg:dark:bg-neutral-900/90 lg:backdrop-blur-md border-b transition-all duration-500 pt-[env(safe-area-inset-top)] ${isOnboardingOpen ? 'border-transparent' : 'border-slate-300 dark:border-neutral-800'
                     }`}
             >
                 {/* Loading Bar */}

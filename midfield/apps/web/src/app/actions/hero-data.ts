@@ -194,10 +194,7 @@ const FALLBACK_ENTITIES: HeroEntity[] = [
 ];
 
 function getDisplayName(title: string, type: string): string {
-    if (type === 'player') {
-        const parts = title.split(' ');
-        return parts.length > 1 ? parts[parts.length - 1] : title;
-    }
+    // For players, use full name (no longer extracting family name only)
     if (title.includes('English Premier')) return 'Premier League';
     if (title.includes('Spanish La Liga')) return 'La Liga';
     return title;

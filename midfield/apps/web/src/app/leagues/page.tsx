@@ -35,35 +35,45 @@ export default async function LeaguesPage() {
 
   return (
     <div className="w-full">
-      {/* Hero Banner - Inline, naturally delimited by grid */}
+      {/* Hero Banner - Elegant radial style matching homepage */}
       <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
-        {/* Grid Background with visible discrete border */}
+        {/* Discrete emerald spotlight - top-left corner */}
         <div
-          className="absolute inset-0 pointer-events-none rounded-md border border-slate-200 dark:border-neutral-800"
+          className="absolute pointer-events-none"
           style={{
-            zIndex: 0
-          }}
-        >
-          <div
-            className="absolute inset-0 opacity-[0.06] dark:opacity-[0.03] rounded-md"
-            style={{
-              backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
-              backgroundSize: '24px 24px',
-              maskImage: 'linear-gradient(to bottom, black 95%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 95%, transparent 100%)'
-            }}
-          />
-        </div>
-        {/* Green-tinted grid accent (soft spotlights with heavy fade) */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.4] dark:opacity-[0.3] rounded-md overflow-hidden"
-          style={{
-            backgroundImage: `linear-gradient(to right, rgb(16, 185, 129) 1px, transparent 1px), linear-gradient(to bottom, rgb(16, 185, 129) 1px, transparent 1px)`,
-            backgroundSize: '24px 24px',
-            maskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(circle 400px at 85% 0%, black 0%, transparent 80%), radial-gradient(circle 400px at 15% 100%, black 0%, transparent 80%)',
+            top: '-10%',
+            left: '5%',
+            width: '400px',
+            height: '400px',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
+            filter: 'blur(40px)',
           }}
         />
+
+        {/* Discrete emerald spotlight - bottom-right corner */}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: '-5%',
+            right: '10%',
+            width: '350px',
+            height: '350px',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+            filter: 'blur(50px)',
+          }}
+        />
+
+        {/* Fading grid background - simple radial mask */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
+            backgroundSize: '24px 24px',
+            maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 70%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 70%)'
+          }}
+        />
+
         <div className="relative z-10 px-6 py-10 sm:px-8 sm:py-12 max-w-7xl mx-auto">
           {/* Beta Badge - Small, top right corner */}
           <div className="absolute top-4 right-4 sm:top-6 sm:right-8 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100/80 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wide">
@@ -131,9 +141,9 @@ export default async function LeaguesPage() {
                     {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                   </h3>
 
-                  {/* Country Flag & Club Count */}
-                  <div className="flex items-center justify-center gap-3">
-                    {/* Country Flag - Smaller radius */}
+                  {/* Country Flag & Club Count - Stacked to avoid wrap */}
+                  <div className="flex flex-col items-center gap-2">
+                    {/* Country Flag */}
                     {countryFlagImg && (
                       <img
                         src={countryFlagImg}
@@ -142,8 +152,8 @@ export default async function LeaguesPage() {
                       />
                     )}
 
-                    {/* Club Count with Text - rounded-md */}
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-neutral-800 rounded-md text-xs font-semibold text-slate-700 dark:text-neutral-300">
+                    {/* Club Count */}
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-neutral-800 rounded-md text-xs font-semibold text-slate-600 dark:text-neutral-400">
                       <Shield className="w-3.5 h-3.5" />
                       <span>{league.clubCount} clubs</span>
                     </div>

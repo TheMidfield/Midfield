@@ -9,29 +9,37 @@ export function Logo({ className, ...props }: SVGProps<SVGSVGElement>) {
             className={className}
             {...props}
         >
-            {/* Minimalist Pitch Center / Lens Concept */}
-            {/* Left Bracket */}
+            {/* Enhanced Pitch Center / Lens Concept */}
+            {/* Left Bracket - thicker, more refined curve */}
             <path
-                d="M8 4C4.5 6 2 9.5 2 12C2 14.5 4.5 18 8 20"
-                className="stroke-emerald-600 dark:stroke-emerald-400"
-                strokeWidth="2.5"
+                d="M7.5 3.5C4 5.8 2 9.2 2 12C2 14.8 4 18.2 7.5 20.5"
+                className="stroke-emerald-500 dark:stroke-emerald-400"
+                strokeWidth="2"
                 strokeLinecap="round"
             />
 
             {/* Right Bracket */}
             <path
-                d="M16 4C19.5 6 22 9.5 22 12C22 14.5 19.5 18 16 20"
-                className="stroke-emerald-600 dark:stroke-emerald-400"
-                strokeWidth="2.5"
+                d="M16.5 3.5C20 5.8 22 9.2 22 12C22 14.8 20 18.2 16.5 20.5"
+                className="stroke-emerald-500 dark:stroke-emerald-400"
+                strokeWidth="2"
                 strokeLinecap="round"
             />
 
-            {/* Center Dot (Kickoff / Focus) */}
+            {/* Center Dot (Kickoff / Focus) - with subtle ring */}
             <circle
                 cx="12"
                 cy="12"
-                r="3"
+                r="3.5"
                 className="fill-slate-900 dark:fill-white"
+            />
+            <circle
+                cx="12"
+                cy="12"
+                r="5"
+                className="stroke-slate-900/20 dark:stroke-white/20"
+                strokeWidth="1"
+                fill="none"
             />
         </svg>
     );

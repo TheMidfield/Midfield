@@ -14,16 +14,6 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
             className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible"
             style={{ width: '100%' }}
         >
-            {/* Subtle radial gradient background - gives the hero a premium feel */}
-            <div
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                    background: 'radial-gradient(ellipse 70% 60% at 50% 30%, rgba(16, 185, 129, 0.03) 0%, transparent 60%)',
-                    maskImage: 'radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 80%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 80%)'
-                }}
-            />
-
             {/* Discrete emerald spotlight - top-left corner */}
             <div
                 className="absolute pointer-events-none"
@@ -32,7 +22,7 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
                     left: '5%',
                     width: '400px',
                     height: '400px',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
                     filter: 'blur(40px)',
                 }}
             />
@@ -45,19 +35,19 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
                     right: '10%',
                     width: '350px',
                     height: '350px',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%)',
+                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
                     filter: 'blur(50px)',
                 }}
             />
 
-            {/* Fading grid background - uses radial mask to fade edges */}
+            {/* Fading grid background - simple radial mask */}
             <div
                 className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
                 style={{
                     backgroundImage: `linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)`,
                     backgroundSize: '24px 24px',
-                    maskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)',
-                    WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 40%, black 20%, transparent 70%)'
+                    maskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 70%)',
+                    WebkitMaskImage: 'radial-gradient(ellipse 80% 70% at 50% 50%, black 20%, transparent 70%)'
                 }}
             />
 

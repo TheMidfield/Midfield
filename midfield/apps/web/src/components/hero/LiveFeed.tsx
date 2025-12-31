@@ -214,13 +214,12 @@ export function LiveFeed() {
         };
     }, [mutate]);
 
-    // Parallax scroll effect
+    // Parallax scroll effect (simple translateY only)
     useEffect(() => {
         const handleScroll = () => setScrollY(window.scrollY);
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
-
     const col1Takes = takes.filter(t => t.column === 1);
     const col2Takes = takes.filter(t => t.column === 2);
 
@@ -285,7 +284,7 @@ export function LiveFeed() {
                 <div
                     className="flex-1 flex flex-col"
                     style={{
-                        transform: `translateY(${scrollY * 0.08}px)`,
+                        transform: `translateY(${scrollY * 0.04}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >
@@ -318,11 +317,11 @@ export function LiveFeed() {
                     </AnimatePresence>
                 </div>
 
-                {/* Column 2 - Faster parallax + offset */}
+                {/* Column 2 - Faster parallax for depth */}
                 <div
                     className="flex-1 flex flex-col pt-8 sm:pt-12 pb-48"
                     style={{
-                        transform: `translateY(${scrollY * 0.15}px)`,
+                        transform: `translateY(${scrollY * 0.12}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >

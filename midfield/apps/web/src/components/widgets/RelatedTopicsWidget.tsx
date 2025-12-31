@@ -110,7 +110,7 @@ export function RelatedTopicsWidget({ slug }: { slug?: string }) {
                                             {entity.title}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Badge variant="secondary" className="text-[9px] px-1 h-4 bg-slate-100 dark:bg-neutral-800 text-slate-500 dark:text-neutral-400 border-none">
+                                            <Badge variant="secondary" className="text-[9px] px-1 h-4 capitalize">
                                                 {entity.type}
                                             </Badge>
                                             <span className="text-[10px] text-slate-400 dark:text-neutral-500 truncate">

@@ -84,7 +84,7 @@ const SimilarItem = memo(({ entity }: { entity: SimilarEntity }) => {
                             </Badge>
                         )}
                         {isClub && entity.subtitle && (
-                            <Badge variant="secondary" className="text-[8px] px-1.5 h-4 bg-slate-100 dark:bg-neutral-800 text-slate-600 dark:text-neutral-400 truncate max-w-[120px]">
+                            <Badge variant="secondary" className="text-[8px] px-1.5 h-4 truncate max-w-[120px]">
                                 {entity.subtitle}
                             </Badge>
                         )}
