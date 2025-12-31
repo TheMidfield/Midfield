@@ -38,8 +38,7 @@ SkeletonFixture.displayName = 'SkeletonFixture';
 const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: MatchCenterFixture & { homeScore?: number; awayScore?: number }, showScore?: boolean, hideClubNames?: boolean }) => {
     const { dayMonth, time, fullDateTime } = formatMatchDate(fixture.date);
 
-    const homeWin = showScore && fixture.homeScore! > fixture.awayScore!;
-    const awayWin = showScore && fixture.awayScore! > fixture.homeScore!;
+    const isLive = fixture.status === 'LIVE' || fixture.status === 'HT';
 
     return (
         <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50">
@@ -79,11 +78,11 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                 <div className="flex flex-col items-center justify-center px-2">
                     {showScore ? (
                         <>
-                            <span className="text-xs font-bold text-slate-600 dark:text-neutral-300 whitespace-nowrap leading-tight">
+                            <span className={`text-xs font-bold whitespace-nowrap leading-tight ${isLive ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-600 dark:text-neutral-300'}`}>
                                 {fixture.homeScore}–{fixture.awayScore}
                             </span>
-                            <span className="text-[10px] font-medium text-slate-500 dark:text-neutral-400 whitespace-nowrap leading-tight">
-                                {dayMonth}
+                            <span className={`text-[10px] font-medium whitespace-nowrap leading-tight ${isLive ? 'text-emerald-600 dark:text-emerald-500 animate-pulse' : 'text-slate-500 dark:text-neutral-400'}`}>
+                                {isLive ? (fixture.status === 'HT' ? 'HT' : 'LIVE') : dayMonth}
                             </span>
                         </>
                     ) : (
@@ -145,18 +144,30 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
     // Split fixtures
     const now = new Date();
 
-    // Results: Show last 6 finished matches
+    // Results: Show finished AND live matches
+    // Sort: Live matches FIRST, then by date descending
     const results = fixtures
-        ?.filter(f => f.status === 'FT' && new Date(f.date) < now)
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        ?.filter(f => f.status === 'FT' || f.status === 'LIVE' || f.status === 'HT')
+        .sort((a, b) => {
+            const isLiveA = a.status === 'LIVE' || a.status === 'HT';
+            const isLiveB = b.status === 'LIVE' || b.status === 'HT';
+
+            if (isLiveA && !isLiveB) return -1;
+            if (!isLiveA && isLiveB) return 1;
+
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+        })
         .slice(0, 6) || [];
 
 
-    // Upcoming: Next 6 matches chronologically
+    // Upcoming: Exclude FT, LIVE, HT
     const upcoming = fixtures
-        ?.filter(f => f.status !== 'FT')
+        ?.filter(f => f.status === 'NS' || f.status === 'PST')
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 6) || [];
+
+    // Check for any currently live matches
+    const hasLiveMatches = fixtures?.some(f => f.status === 'LIVE' || f.status === 'HT');
 
     const displayFixtures = activeTab === 'upcoming' ? upcoming : results;
 
@@ -184,7 +195,15 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
                         : 'text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300'
                         }`}
                 >
-                    <Trophy className="w-4 h-4" />
+                    <div className="relative">
+                        <Trophy className="w-4 h-4" />
+                        {hasLiveMatches && (
+                            <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                        )}
+                    </div>
                     Results
                 </button>
             </div>
