@@ -42,6 +42,10 @@ export async function createTake(topicId: string, content: string) {
         return { success: false, error: 'You must be signed in to post' };
     }
 
+    if (content.length > 1000) {
+        return { success: false, error: 'Take exceeds 1000 character limit' };
+    }
+
     return await createTakeLogic(supabase, topicId, user.id, content);
 }
 

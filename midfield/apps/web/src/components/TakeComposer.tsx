@@ -84,7 +84,7 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
     };
 
     const charCount = content.length;
-    const maxChars = 500;
+    const maxChars = 1000;
     const isOverLimit = charCount > maxChars;
     const isNearLimit = charCount > maxChars * 0.8;
 

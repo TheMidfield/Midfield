@@ -27,7 +27,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
 
     // Validate and check username availability
     const validateUsername = async (value: string) => {
-        const cleaned = value.trim().toLowerCase();
+        const cleaned = value.trim();
 
         if (!cleaned) {
             setError("Username is required");
@@ -39,7 +39,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
             return false;
         }
 
-        if (!/^[a-z0-9_]+$/.test(cleaned)) {
+        if (!/^[a-zA-Z0-9_]+$/.test(cleaned)) {
             setError("Only letters, numbers, and underscores allowed");
             return false;
         }
@@ -49,7 +49,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
         const { data: existing } = await supabase
             .from('users')
             .select('id')
-            .eq('username', cleaned)
+            .ilike('username', cleaned)
             .neq('id', userId) // exclude current user if reusing logic
             .maybeSingle();
 
@@ -177,7 +177,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                             type="text"
                                             value={username}
                                             onChange={(e) => {
-                                                const val = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+                                                const val = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
                                                 setUsername(val);
                                                 if (error) setError(null);
                                             }}
