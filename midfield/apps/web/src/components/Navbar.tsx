@@ -113,7 +113,7 @@ export function Navbar() {
                     >
                         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
                             <Logo className="h-[34px] w-[34px] sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110" />
-                            <span className="font-extralight text-xl sm:text-xl md:text-2xl tracking-tight text-slate-900 dark:text-neutral-100">
+                            <span className="font-display font-light text-xl sm:text-xl md:text-2xl tracking-tight text-slate-900 dark:text-neutral-100">
                                 Midfield
                             </span>
                         </Link>

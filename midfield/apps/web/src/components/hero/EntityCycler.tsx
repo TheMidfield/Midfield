@@ -22,25 +22,25 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
     const posInfo = isPlayer && entity.position ? getPositionInfo(entity.position) : null;
 
     return (
-        <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all min-w-[240px]" style={{ width: '100%' }}>
-            {/* Avatar */}
+        <Card variant="interactive" className="p-3.5 sm:p-2.5 flex items-center gap-3 group hover:border-emerald-500/30 transition-all" style={{ width: '100%' }}>
+            {/* Avatar - Larger on mobile for better visual balance */}
             {isPlayer ? (
-                <div className="relative w-8 h-8 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
+                <div className="relative w-11 h-11 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
                     {entity.imageUrl ? (
                         <NextImage
                             src={entity.imageUrl}
                             alt={entity.title}
                             fill
-                            sizes="40px"
+                            sizes="44px"
                             priority={true}
                             {...PLAYER_IMAGE_STYLE}
                         />
                     ) : (
-                        <Shield className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                        <Shield className="w-5 h-5 text-slate-400 dark:text-neutral-500" />
                     )}
                 </div>
             ) : (
-                <div className="relative w-8 h-8 sm:w-9 sm:h-9 shrink-0">
+                <div className="relative w-10 h-10 sm:w-9 sm:h-9 shrink-0">
                     {entity.imageUrl ? (
                         <NextImage
                             src={entity.imageUrl}
@@ -58,27 +58,27 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-sm sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {entity.displayName}
                 </h3>
-                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                <div className="flex items-center gap-1.5 mt-1 sm:mt-0.5 flex-wrap">
                     {isPlayer && posInfo && (
-                        <Badge variant="secondary" className={`text-[8px] px-1 h-4 ${posInfo.color}`}>
+                        <Badge variant="secondary" className={`text-[9px] sm:text-[8px] px-1.5 sm:px-1 h-5 sm:h-4 ${posInfo.color}`}>
                             {posInfo.abbr}
                         </Badge>
                     )}
                     {isPlayer && entity.rating && (
-                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 py-0 font-bold gap-0.5 flex items-center">
+                        <Badge variant="secondary" className="text-[10px] sm:text-[9px] h-5 sm:h-4 px-2 sm:px-1.5 py-0 font-bold gap-0.5 flex items-center">
                             <span className={`font-black ${getRatingColor(entity.rating)}`}>{entity.rating}</span>
                         </Badge>
                     )}
                     {isClub && entity.subtitle && (
-                        <Badge variant="secondary" className="text-[8px] px-1.5 h-4 truncate max-w-[120px]">
+                        <Badge variant="secondary" className="text-[9px] sm:text-[8px] px-2 sm:px-1.5 h-5 sm:h-4 truncate max-w-[140px] sm:max-w-[120px]">
                             {entity.subtitle}
                         </Badge>
                     )}
                     {!isPlayer && !entity.subtitle && (
-                        <Badge variant="secondary" className="text-[8px] px-1 h-4 capitalize">
+                        <Badge variant="secondary" className="text-[9px] sm:text-[8px] px-1.5 sm:px-1 h-5 sm:h-4 capitalize">
                             {entity.type}
                         </Badge>
                     )}
@@ -183,19 +183,20 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                 context={authModalContext}
             />
             <div style={{ maxWidth: '520px' }}>
-                {/* Title - Larger & Bolder */}
-                <h1 className="font-extrabold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-12 leading-[1.1]">
+                {/* Title - Desktop original, smaller on mobile only */}
+                <h1 className="font-bold tracking-tight text-slate-900 dark:text-white text-3xl sm:text-5xl lg:text-6xl mb-8 sm:mb-12 leading-[1.1]">
                     Everyone has a <br />
                     <span className="text-emerald-600 dark:text-emerald-500">football take.</span>
                 </h1>
 
                 {/* "What's your take on" + cycling card */}
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-16">
-                    <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-3 sm:gap-4 mb-10 sm:mb-16">
+                    <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-lg sm:text-xl">
                         What's your take on...
                     </span>
 
-                    <div className="relative h-14" style={{ minWidth: '240px' }}>
+                    {/* Mobile: taller card container to fit larger card, Desktop: original */}
+                    <div className="relative h-[72px] sm:h-14" style={{ minWidth: '240px' }}>
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentEntity.id}
@@ -214,7 +215,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                     </div>
                 </div>
 
-                {/* CTA - Matches navbar style */}
+                {/* CTA */}
                 <Button
                     variant="default"
                     size="sm"
@@ -242,7 +243,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                 <p className="text-slate-500 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
                     Discuss players, clubs, and leagues with fans worldwide.
                 </p>
-            </div>
+            </div >
         </>
     );
 }

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { SplitHero } from "@/components/hero/SplitHero";
 import { HomeTrendingSection } from "@/components/hero/HomeTrendingSection";
+import { MobileTakeFeed } from "@/components/hero/MobileTakeFeed";
 import { MatchCenterWidget } from "@/components/widgets/MatchCenterWidget";
 import { createClient } from "@/lib/supabase/server";
 import { getHeroEntities } from "@/app/actions/hero-data";
@@ -108,16 +109,23 @@ export default async function Home() {
             <section className="mb-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                     <HomeTrendingSection />
-                    <div style={{ maxWidth: '512px', margin: '0 auto', width: '100%', paddingTop: '100px' }}>
+                    {/* Desktop only: with offset for visual interest */}
+                    <div className="hidden lg:block" style={{ maxWidth: '512px', margin: '0 auto', width: '100%', paddingTop: '100px' }}>
                         <MatchCenterWidget />
                     </div>
                 </div>
             </section>
 
+            {/* Mobile: Match Center + Take Feed (stacked, no extra spacing) */}
+            <section className="lg:hidden mb-10 space-y-8">
+                <MatchCenterWidget />
+                <MobileTakeFeed />
+            </section>
+
             {/* Featured Clubs */}
             <section className="mb-12">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h2 className="font-display text-xl sm:text-2xl font-semibold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
                         <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         Featured Clubs
                     </h2>
@@ -129,23 +137,23 @@ export default async function Home() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4">
                     {featuredClubs.map((club) => (
                         <Link key={club.id} href={`/topic/${club.slug}`}>
-                            <Card variant="interactive" className="p-4 sm:p-5 flex items-center gap-3 sm:gap-4 group">
+                            <Card variant="interactive" className="p-3 sm:p-5 flex items-center gap-3 sm:gap-4 group">
                                 {club.badgeUrl && (
                                     <img
                                         src={club.badgeUrl}
                                         alt={club.title}
-                                        className="w-14 h-14 sm:w-16 sm:h-16 object-contain shrink-0"
+                                        className="w-12 h-12 sm:w-16 sm:h-16 object-contain shrink-0"
                                     />
                                 )}
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
+                                    <h3 className="text-sm sm:text-lg font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
                                         {club.title}
                                     </h3>
                                     {club.league && (
-                                        <Badge variant="secondary" className="text-[10px] mt-1.5">
+                                        <Badge variant="secondary" className="text-[10px] mt-1 sm:mt-1.5">
                                             {club.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                         </Badge>
                                     )}
@@ -158,9 +166,9 @@ export default async function Home() {
 
             {/* Top Leagues */}
             <section className="mb-12">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
-                        <Trophy className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h2 className="font-display text-xl sm:text-2xl font-semibold flex items-center gap-2 text-slate-900 dark:text-neutral-100">
+                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
                         Top Leagues
                     </h2>
                     <Link href="/leagues">
@@ -171,14 +179,14 @@ export default async function Home() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
                     {leagues.map((league) => {
                         const countryFlagImg = COUNTRY_FLAG_IMAGES[league.country || ""];
 
                         return (
                             <Link key={league.id} href={`/topic/${league.slug}`}>
-                                <Card variant="interactive" className="group p-4 text-center">
-                                    <div className="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                                <Card variant="interactive" className="group p-3 sm:p-4 text-center">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 flex items-center justify-center">
                                         {league.logoUrl ? (
                                             <>
                                                 <img
@@ -193,12 +201,12 @@ export default async function Home() {
                                                 />
                                             </>
                                         ) : countryFlagImg ? (
-                                            <img src={countryFlagImg} alt={league.country} className="w-10 h-10 object-cover rounded" />
+                                            <img src={countryFlagImg} alt={league.country} className="w-8 h-8 sm:w-10 sm:h-10 object-cover rounded" />
                                         ) : (
-                                            <Trophy className="w-10 h-10 text-slate-300 dark:text-neutral-600" />
+                                            <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-slate-300 dark:text-neutral-600" />
                                         )}
                                     </div>
-                                    <h3 className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
+                                    <h3 className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
                                         {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                                     </h3>
                                 </Card>

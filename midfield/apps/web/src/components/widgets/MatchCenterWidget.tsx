@@ -182,11 +182,11 @@ export function MatchCenterWidget({ hideClubNames }: { hideClubNames?: boolean }
     ) : [];
 
     return (
-        <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-4 sm:p-5 shadow-sm">
+        <div className="bg-white dark:bg-neutral-900 border border-slate-200 dark:border-neutral-800 rounded-lg p-3 sm:p-5 shadow-sm">
             {/* Header - More discrete, centered */}
-            <div className="flex items-center justify-center gap-1.5 mb-4">
+            <div className="flex items-center justify-center gap-1.5 mb-3 sm:mb-4">
                 <Calendar className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
-                <h3 className="font-bold text-sm text-slate-600 dark:text-neutral-400">
+                <h3 className="font-display font-semibold text-sm text-slate-600 dark:text-neutral-400">
                     Upcoming Matches
                 </h3>
             </div>

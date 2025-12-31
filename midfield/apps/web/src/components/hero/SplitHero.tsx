@@ -7,6 +7,8 @@ import type { HeroEntity } from "@/app/actions/hero-data";
 /**
  * Split Hero - Homepage hero section
  * Now receives entities via SSR for instant loading
+ * Desktop: EntityCycler + LiveFeed side-by-side (UNCHANGED)
+ * Mobile: EntityCycler only (MobileTakeFeed is rendered in page.tsx)
  */
 export function SplitHero({ entities }: { entities: HeroEntity[] }) {
     return (
@@ -51,24 +53,24 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
                 }}
             />
 
+            {/* Desktop layout: UNCHANGED from original */}
             <div
                 className="relative z-10 flex flex-col lg:flex-row justify-between"
                 style={{ gap: '80px', maxWidth: '1280px', margin: '0 auto' }}
             >
-                {/* Left Column - Determines section height */}
+                {/* Left Column - EntityCycler */}
                 <div className="flex-1 flex flex-col justify-center" style={{ maxWidth: '480px' }}>
                     <EntityCycler entities={entities} />
                 </div>
 
-                {/* Right Column - Absolutely positioned, extends slightly beyond left */}
+                {/* Right Column - LiveFeed (Desktop only, UNCHANGED) */}
                 <div
                     className="hidden lg:block absolute right-0 top-0"
                     style={{
-                        width: 'calc(50% - 40px)', // Half width minus half gap
+                        width: 'calc(50% - 40px)',
                         maxWidth: '600px',
                         height: '480px',
                         overflow: 'hidden',
-                        // Simple clean fade - stays solid for 75%, then fades quickly
                         maskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 95%)',
                         WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 75%, transparent 95%)'
                     }}

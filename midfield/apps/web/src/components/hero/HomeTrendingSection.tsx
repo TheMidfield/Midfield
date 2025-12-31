@@ -32,7 +32,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
     return (
         <Link
             href={`/topic/${item.slug}`}
-            className="flex items-center gap-3 sm:gap-4 py-3 pl-6 pr-0 group hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors border border-slate-200 dark:border-neutral-800 rounded-md mb-2 last:mb-0"
+            className="flex items-center gap-2.5 sm:gap-4 py-2.5 sm:py-3 pl-4 sm:pl-6 pr-0 group hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors border border-slate-200 dark:border-neutral-800 rounded-md mb-2 last:mb-0"
         >
             {/* Rank - Top 3 highlighted */}
             <span className={`text-sm font-bold w-6 tabular-nums shrink-0 ${item.rank <= 3
@@ -108,9 +108,9 @@ export function HomeTrendingSection() {
     return (
         <div className="w-full">
             {/* Header */}
-            <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
-                <h2 className="font-extrabold text-xl text-slate-900 dark:text-neutral-100">
+            <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 dark:text-emerald-400" />
+                <h2 className="font-display font-semibold text-lg sm:text-xl text-slate-900 dark:text-neutral-100">
                     Trending
                 </h2>
             </div>

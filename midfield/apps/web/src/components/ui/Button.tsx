@@ -5,23 +5,23 @@ import { cn } from "@/lib/utils"
 import { LucideIcon } from "lucide-react"
 
 const buttonVariants = cva(
-    "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+    "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] lg:active:scale-100",
     {
         variants: {
             variant: {
-                default: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-650 dark:hover:bg-emerald-550 transition-colors cursor-pointer",
-                destructive: "bg-red-600 text-white hover:bg-red-500 dark:bg-red-650 dark:hover:bg-red-550 transition-colors cursor-pointer",
-                outline: "border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 hover:border-slate-400 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all cursor-pointer",
-                secondary: "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer",
-                ghost: "text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 transition-all cursor-pointer",
-                "ghost-dark": "text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 transition-all cursor-pointer",
+                default: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-650 dark:hover:bg-emerald-550 active:bg-emerald-700 transition-colors cursor-pointer",
+                destructive: "bg-red-600 text-white hover:bg-red-500 dark:bg-red-650 dark:hover:bg-red-550 active:bg-red-700 transition-colors cursor-pointer",
+                outline: "border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 hover:border-slate-400 dark:hover:border-neutral-600 hover:bg-slate-50 dark:hover:bg-neutral-800 active:bg-slate-100 dark:active:bg-neutral-700 transition-all cursor-pointer",
+                secondary: "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 active:bg-slate-300 dark:active:bg-neutral-600 transition-colors cursor-pointer",
+                ghost: "text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 active:bg-slate-200 dark:active:bg-neutral-700 transition-all cursor-pointer",
+                "ghost-dark": "text-slate-500 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 hover:text-slate-900 dark:hover:text-neutral-100 active:bg-slate-200 dark:active:bg-neutral-700 transition-all cursor-pointer",
                 link: "text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 underline-offset-4 hover:underline transition-colors cursor-pointer",
-                subtle: "bg-slate-50 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-700 hover:text-slate-900 dark:hover:text-neutral-100 transition-all cursor-pointer",
-                feature: "bg-slate-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-slate-700 dark:hover:bg-neutral-200 transition-colors cursor-pointer",
-                stroke: "border-2 border-slate-300 dark:border-neutral-700 bg-transparent text-slate-900 dark:text-neutral-100 hover:border-slate-900 dark:hover:border-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all cursor-pointer",
-                pill: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-650 dark:hover:bg-emerald-550 transition-colors cursor-pointer",
-                "pill-outline": "border-2 border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all cursor-pointer",
-                "pill-secondary": "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer",
+                subtle: "bg-slate-50 dark:bg-neutral-800 text-slate-700 dark:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-700 hover:text-slate-900 dark:hover:text-neutral-100 active:bg-slate-200 dark:active:bg-neutral-600 transition-all cursor-pointer",
+                feature: "bg-slate-900 dark:bg-neutral-100 text-white dark:text-neutral-900 hover:bg-slate-700 dark:hover:bg-neutral-200 active:bg-slate-950 dark:active:bg-neutral-300 transition-colors cursor-pointer",
+                stroke: "border-2 border-slate-300 dark:border-neutral-700 bg-transparent text-slate-900 dark:text-neutral-100 hover:border-slate-900 dark:hover:border-neutral-300 hover:bg-slate-50 dark:hover:bg-neutral-800 active:bg-slate-100 dark:active:bg-neutral-700 transition-all cursor-pointer",
+                pill: "bg-emerald-600 text-white hover:bg-emerald-500 dark:bg-emerald-650 dark:hover:bg-emerald-550 active:bg-emerald-700 transition-colors cursor-pointer",
+                "pill-outline": "border-2 border-slate-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 active:bg-slate-100 dark:active:bg-neutral-700 transition-all cursor-pointer",
+                "pill-secondary": "bg-slate-100 dark:bg-neutral-800 text-slate-900 dark:text-neutral-100 hover:bg-slate-200 dark:hover:bg-neutral-700 active:bg-slate-300 dark:active:bg-neutral-600 transition-colors cursor-pointer",
             },
             size: {
                 default: "h-10 px-4 py-2 rounded-md",
