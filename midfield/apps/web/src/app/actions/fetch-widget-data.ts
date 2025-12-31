@@ -114,10 +114,9 @@ export async function getTrendingTopicsData() {
             .from('topics')
             .select('id')
             .eq('is_active', true)
-            .eq('type', 'player')
-            .not('fc26_data', 'is', null)
+            .order('post_count', { ascending: false }) // Prioritize topics with most discussion
             .order('follower_count', { ascending: false })
-            .limit(6);
+            .limit(10);
 
         const existingIds = new Set(sortedTopicIds);
         (fallbackTopics || []).forEach(t => {

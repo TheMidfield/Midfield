@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/Input";
 import NextImage from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
+
 export interface Club {
     id: string;
     title: string;
@@ -27,19 +29,24 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedClubId, setSelectedClubId] = useState<string | null>(initialClubId || null);
     const [isLoading, setIsLoading] = useState(true);
+    const [visibleCount, setVisibleCount] = useState(30);
 
     useEffect(() => {
         const fetchClubs = async () => {
             const supabase = createClient();
+
+            // Generate dynamic filter string from centralized constant
+            const leagueFilter = ALLOWED_LEAGUES.map(league => `metadata->>league.eq."${league}"`).join(',');
+
             const { data } = await supabase
                 .from('topics')
                 .select('id, title, slug, metadata')
                 .eq('type', 'club')
                 .eq('is_active', true)
-                // Filter for Top 5 Leagues only
-                .or(`metadata->>league.eq."English Premier League",metadata->>league.eq."Spanish La Liga",metadata->>league.eq."German Bundesliga",metadata->>league.eq."Italian Serie A",metadata->>league.eq."French Ligue 1"`)
+                // Filter for allowed leagues from constant
+                .or(leagueFilter)
                 .order('title', { ascending: true })
-                .limit(200); // 96 clubs total, 200 is safe buffer
+                .limit(200); // Buffer for safety
 
             if (data) {
                 setClubs(data as Club[]);
@@ -57,6 +64,11 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
         }
     }, [initialClubId]);
 
+    // Reset visible count on search
+    useEffect(() => {
+        setVisibleCount(30);
+    }, [searchQuery]);
+
     const filteredClubs = clubs.filter(club =>
         club.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         club.metadata?.league?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,6 +78,16 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
         const newId = club.id === selectedClubId ? null : club.id;
         setSelectedClubId(newId);
         onSelect(newId ? club : null);
+    };
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        // Load more when user is near bottom (e.g. 100px away)
+        if (scrollHeight - scrollTop <= clientHeight + 100) {
+            if (visibleCount < filteredClubs.length) {
+                setVisibleCount((prev) => Math.min(prev + 30, filteredClubs.length));
+            }
+        }
     };
 
     if (isLoading) {
@@ -96,10 +118,13 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
             </div>
 
             {/* Clubs Grid */}
-            <div className="max-h-[320px] overflow-y-auto -mx-2 px-2 custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]">
+            <div
+                className="max-h-[320px] overflow-y-auto -mx-2 px-2 custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]"
+                onScroll={handleScroll}
+            >
                 {filteredClubs.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 py-6">
-                        {filteredClubs.slice(0, 30).map((club) => {
+                        {filteredClubs.slice(0, visibleCount).map((club) => {
                             const isSelected = selectedClubId === club.id;
 
                             return (

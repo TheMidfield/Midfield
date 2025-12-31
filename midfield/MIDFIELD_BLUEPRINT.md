@@ -139,6 +139,20 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - `SplitHero` runs client-side fetching to avoid RSC serialization depth limits.
 4.  **Rating Integrity**: Removed "Default 88" bug.
 5.  **Blueprint Authority**: This file is the single source of truth.
+6.  **Centralized League Control**:
+    - `packages/logic/src/constants.ts` (`ALLOWED_LEAGUES`) is the SINGLE source of truth.
+    - Frontend selectors (e.g. `FavoriteClubSelector`) MUST dynamically import this list to prevent out-of-bounds selection.
+7.  **Auth Profile Safety**:
+    - `auth/callback` MUST use `ignoreDuplicates: true` on user upsert.
+    - Prevents OAuth providers (Google) from overwriting user-uploaded avatars on subsequent logins.
+8.  **Profile Resilience**:
+    - `getUserProfile` (Server) uses `maybeSingle()` + `try/catch` to preventing hangs on missing data.
+    - `ProfileClient` (Client) auto-initializes from Auth metadata if DB row is missing.
+9.  **Live Match Distinction**:
+    - Live matches display in "Results" tab (Top billing).
+    - Pulsing Emerald Indicators for "LIVE" status.
+10. **Visual Consistency (Placeholders)**:
+    - No Gradients for empty states. Use solid `slate-100`/`neutral-800` to match Navbar.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS

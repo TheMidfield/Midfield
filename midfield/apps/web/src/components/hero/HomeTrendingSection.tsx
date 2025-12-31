@@ -32,7 +32,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
     return (
         <Link
             href={`/topic/${item.slug}`}
-            className="flex items-center gap-2.5 sm:gap-4 py-2.5 sm:py-3 pl-4 sm:pl-6 pr-0 group hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors border border-slate-200 dark:border-neutral-800 rounded-md mb-2 last:mb-0"
+            className="flex items-center gap-2.5 sm:gap-4 py-2.5 sm:py-3 pl-4 sm:pl-6 pr-4 group hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors border border-slate-200 dark:border-neutral-800 rounded-md mb-2 last:mb-0"
         >
             {/* Rank - Top 3 highlighted */}
             <span className={`text-sm font-bold w-6 tabular-nums shrink-0 ${item.rank <= 3
@@ -87,16 +87,16 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
                             {item.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                         </Badge>
                     )}
-
-                    {/* Take count */}
-                    {item.takeCount > 0 && (
-                        <Badge variant="secondary" className="text-[9px] h-4 px-1.5 flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
-                            <MessageSquare className="w-2.5 h-2.5" />
-                            {item.takeCount}
-                        </Badge>
-                    )}
                 </div>
             </div>
+
+            {/* Take count - End of row */}
+            {item.takeCount > 0 && (
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors shrink-0 ml-auto">
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium tabular-nums">{item.takeCount}</span>
+                </div>
+            )}
         </Link>
     );
 });

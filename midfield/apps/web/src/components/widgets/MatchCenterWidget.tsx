@@ -19,15 +19,15 @@ function formatMatchDate(dateStr: string): { dayMonth: string; time: string; ful
 }
 
 // Skeleton for loading state
-const SkeletonFixture = memo(() => (
+const SkeletonFixture = memo(({ hideClubNames }: { hideClubNames?: boolean }) => (
     <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 animate-pulse">
-        <div className="flex-1 flex items-center gap-2">
+        <div className={`flex-1 flex items-center gap-2 ${hideClubNames ? 'justify-center' : 'justify-end'}`}>
             <div className="w-6 h-6 bg-slate-200 dark:bg-neutral-700 rounded" />
-            <div className="h-3 bg-slate-200 dark:bg-neutral-700 rounded w-24" />
+            {!hideClubNames && <div className="h-3 bg-slate-200 dark:bg-neutral-700 rounded w-24" />}
         </div>
         <div className="w-16 h-6 bg-slate-200 dark:bg-neutral-700 rounded" />
-        <div className="flex-1 flex items-center gap-2 justify-end">
-            <div className="h-3 bg-slate-200 dark:bg-neutral-700 rounded w-24" />
+        <div className={`flex-1 flex items-center gap-2 ${hideClubNames ? 'justify-center' : ''}`}>
+            {!hideClubNames && <div className="h-3 bg-slate-200 dark:bg-neutral-700 rounded w-24" />}
             <div className="w-6 h-6 bg-slate-200 dark:bg-neutral-700 rounded" />
         </div>
     </div>
@@ -79,7 +79,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                     {showScore ? (
                         <>
                             <span className={`text-xs font-bold whitespace-nowrap leading-tight ${isLive ? 'text-emerald-600 dark:text-emerald-500' : 'text-slate-600 dark:text-neutral-300'}`}>
-                                {fixture.homeScore}–{fixture.awayScore}
+                                {fixture.homeScore ?? 0}–{fixture.awayScore ?? 0}
                             </span>
                             <span className={`text-[10px] font-medium whitespace-nowrap leading-tight ${isLive ? 'text-emerald-600 dark:text-emerald-500 animate-pulse' : 'text-slate-500 dark:text-neutral-400'}`}>
                                 {isLive ? (fixture.status === 'HT' ? 'HT' : 'LIVE') : dayMonth}
@@ -141,13 +141,12 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
     const { data: fixtures, isLoading } = useMatchCenter();
     const [activeTab, setActiveTab] = useState<'upcoming' | 'results'>('upcoming');
 
-    // Split fixtures
-    const now = new Date();
+    // Split fixtures safely
+    const fixturesArray = fixtures || [];
 
     // Results: Show finished AND live matches
-    // Sort: Live matches FIRST, then by date descending
-    const results = fixtures
-        ?.filter(f => f.status === 'FT' || f.status === 'LIVE' || f.status === 'HT')
+    const results = fixturesArray
+        .filter(f => f.status === 'FT' || f.status === 'LIVE' || f.status === 'HT')
         .sort((a, b) => {
             const isLiveA = a.status === 'LIVE' || a.status === 'HT';
             const isLiveB = b.status === 'LIVE' || b.status === 'HT';
@@ -157,17 +156,17 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
 
             return new Date(b.date).getTime() - new Date(a.date).getTime();
         })
-        .slice(0, 6) || [];
+        .slice(0, 6);
 
 
     // Upcoming: Exclude FT, LIVE, HT
-    const upcoming = fixtures
-        ?.filter(f => f.status === 'NS' || f.status === 'PST')
+    const upcoming = fixturesArray
+        .filter(f => f.status === 'NS' || f.status === 'PST')
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 6) || [];
+        .slice(0, 6);
 
     // Check for any currently live matches
-    const hasLiveMatches = fixtures?.some(f => f.status === 'LIVE' || f.status === 'HT');
+    const hasLiveMatches = fixturesArray.some(f => f.status === 'LIVE' || f.status === 'HT');
 
     const displayFixtures = activeTab === 'upcoming' ? upcoming : results;
 
@@ -212,12 +211,12 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
             <div className="space-y-1.5">
                 {isLoading ? (
                     <>
-                        <SkeletonFixture />
-                        <SkeletonFixture />
-                        <SkeletonFixture />
-                        <SkeletonFixture />
-                        <SkeletonFixture />
-                        <SkeletonFixture />
+                        <SkeletonFixture hideClubNames={hideClubNames} />
+                        <SkeletonFixture hideClubNames={hideClubNames} />
+                        <SkeletonFixture hideClubNames={hideClubNames} />
+                        <SkeletonFixture hideClubNames={hideClubNames} />
+                        <SkeletonFixture hideClubNames={hideClubNames} />
+                        <SkeletonFixture hideClubNames={hideClubNames} />
                     </>
                 ) : displayFixtures.length > 0 ? (
                     displayFixtures.map((fixture) => (

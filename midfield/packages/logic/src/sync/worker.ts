@@ -139,6 +139,8 @@ export async function processSyncJobs(
                             birth_date: p.dateBorn,
                             height: p.strHeight,
                             weight: p.strWeight,
+                            birth_location: p.strBirthLocation,
+                            side: p.strSide,
                             jersey_number: p.strNumber ? parseInt(p.strNumber) : null
                         },
                         is_active: true
@@ -199,6 +201,8 @@ export async function processSyncJobs(
                         height: playerDetails.strHeight || null,
                         weight: playerDetails.strWeight || null,
                         nationality: playerDetails.strNationality || null,
+                        birth_location: playerDetails.strBirthLocation || null,
+                        side: playerDetails.strSide || null,
                         jersey_number: playerDetails.strNumber ? parseInt(playerDetails.strNumber) : null,
                     };
 

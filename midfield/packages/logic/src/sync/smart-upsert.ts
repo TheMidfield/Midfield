@@ -19,25 +19,49 @@ export async function smartUpsertTopic(
     // 1. Check existence by JSONB query (metadata->external->thesportsdb_id)
     const { data: existing } = await supabase
         .from('topics')
-        .select('id, slug')
+        .select('id, slug, metadata, fc26_data, follower_count, post_count')
         .eq('type', type)
         .filter('metadata->external->>thesportsdb_id', 'eq', thesportsdbId)
         .maybeSingle();
 
     if (existing) {
-        // UPDATE: Exclude slug and id from update
-        const { slug, id, ...updatePayload } = topic;
+        // UPDATE: Merge metadata to preserve enriched fields (height, weight, etc.)
+        const existingMetadata = (existing.metadata || {}) as Record<string, any>;
+        const newMetadata = (topic.metadata || {}) as Record<string, any>;
+
+        // Merge: New values overwrite existing, but missing keys are preserved
+        const mergedMetadata = {
+            ...existingMetadata,
+            ...newMetadata,
+            // Deep overwrite only the "external" object to keep it clean
+            external: {
+                ...(existingMetadata.external || {}),
+                ...(newMetadata.external || {})
+            }
+        };
+
+        // Exclude slug and protected root-level columns from update
+        const {
+            slug,
+            id,
+            follower_count,
+            post_count,
+            fc26_data,
+            thesportsdb_id,
+            ...updatePayload
+        } = topic as any;
 
         return await supabase
             .from('topics')
-            .update(updatePayload)
+            .update({
+                ...updatePayload,
+                metadata: mergedMetadata
+            })
             .eq('id', existing.id)
             .select()
             .single();
     } else {
-        // INSERT: Use the provided payload (includes generated slug)
-        // Note: If slug collides here, Postgres constraint will fail, 
-        // but our import script handles slug uniqueness generation before calling this.
+        // INSERT: Use the provided payload
         return await supabase
             .from('topics')
             .insert(topic)

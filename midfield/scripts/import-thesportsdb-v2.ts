@@ -2,6 +2,7 @@ import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@midfield/types/supabase';
 import { createHash } from 'crypto';
+import { smartUpsertTopic, syncPlayerForClub } from '../packages/logic/src/sync/smart-upsert';
 
 // Load environment variables
 loadEnv();
@@ -407,9 +408,12 @@ async function upsertClubOnly(team: any, dryRun: boolean) {
     };
 
     if (!dryRun) {
-        const { error: clubError } = await supabase
-            .from('topics')
-            .upsert(clubTopic, { onConflict: 'id' });
+        const { error: clubError } = await smartUpsertTopic(
+            supabase,
+            clubTopic as any,
+            'club',
+            team.idTeam
+        );
 
         if (clubError) {
             console.error(`   ❌ Error upserting ${team.strTeam}:`, clubError);
@@ -479,7 +483,7 @@ async function processTeamFixtures(clubUuid: string, tsdbTeamId: string, teamNam
                 away_team_id: awayTeamUuid,
                 competition_id: competitionUuid,
                 date: f.dateEvent + (f.strTime ? `T${f.strTime}` : ''),
-                status: f.intHomeScore ? 'completed' : 'scheduled',
+                status: f.intHomeScore ? 'FT' : 'NS',
                 home_score: f.intHomeScore ? parseInt(f.intHomeScore) : null,
                 away_score: f.intAwayScore ? parseInt(f.intAwayScore) : null,
                 venue: f.strVenue,
@@ -589,9 +593,12 @@ async function processTeamDetails(team: any, dryRun: boolean) {
             console.warn(`      ⚠️ Failed to fetch full details for ${team.strTeam}`, err);
         }
 
-        // v2 endpoint: /list/players/{teamId}
-        const playersData = await fetchV2<{ list: any[] }>(`/list/players/${team.idTeam}`);
-        const players = playersData.list || [];
+        // v1 endpoint: /lookup_all_players.php?id={teamId}
+        // V1 for premium keys is unlimited and provides MUCH richer bio-data than V2
+        const v1PlayersUrl = `https://www.thesportsdb.com/api/v1/json/${apiKey}/lookup_all_players.php?id=${team.idTeam}`;
+        const playersRes = await fetch(v1PlayersUrl);
+        const playersData = await playersRes.json();
+        const players = playersData.player || [];
 
         // console.log(`   Players found: ${players.length} (v2 API - UNLIMITED!)`);
 
@@ -625,25 +632,35 @@ async function processTeamDetails(team: any, dryRun: boolean) {
                     birth_date: player.dateBorn,
                     height: player.strHeight,
                     weight: player.strWeight,
+                    side: player.strSide,
+                    birth_location: player.strBirthLocation,
                     jersey_number: player.strNumber ? parseInt(player.strNumber) : null
                 },
-                is_active: true,
-                follower_count: 0,
-                post_count: 0
+                is_active: true
             };
 
             if (!dryRun) {
-                // Upsert player
-                const { error: playerError } = await supabase
-                    .from('topics')
-                    .upsert(playerTopic, { onConflict: 'id' });
+                // Upsert player using Smart logic
+                const { data: upsertedPlayer, error: playerError } = await (smartUpsertTopic(
+                    supabase,
+                    playerTopic as any,
+                    'player',
+                    player.idPlayer
+                ) as any);
 
                 if (playerError) {
                     console.error(`      ❌ Error upserting player ${player.strPlayer}:`, playerError);
-                    stats.errors++;
                     continue;
                 }
                 stats.playersInserted++;
+
+                // Sync player for club (creates/updates relationship)
+                // syncPlayerForClub(supabase, playerId, clubId)
+                const syncResult = await (syncPlayerForClub(supabase, playerId, clubId) as any);
+                if (syncResult?.error) {
+                    console.error(`      ❌ Error syncing player ${player.strPlayer} for club ${team.strTeam}:`, syncResult.error);
+                    stats.errors++;
+                }
             }
 
             playerCount++;

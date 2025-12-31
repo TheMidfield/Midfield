@@ -51,7 +51,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             let pos = (player.metadata as any)?.position || "Other";
             const normalized = pos.toLowerCase();
 
-            if (normalized.includes("manager") || normalized.includes("coach")) pos = "Manager";
+            if (normalized.includes("manager") || normalized.includes("coach")) pos = "Staff";
             else if (normalized.includes("goalkeeper")) pos = "Goalkeepers";
             else if (normalized.includes("back") || normalized.includes("defender")) pos = "Defenders";
             else if (normalized.includes("midfield")) pos = "Midfielders";
