@@ -35,7 +35,7 @@ export async function GET(request: Request) {
                 .upsert({
                     id: data.user.id,
                     username: null, // Will be set during onboarding
-                    avatar_url: data.user.user_metadata?.avatar_url || null,
+                    avatar_url: null, // Strictly prevent social avatars. User must upload their own.
                     display_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || null,
                     onboarding_completed: false
                 }, {

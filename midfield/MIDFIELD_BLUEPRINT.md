@@ -169,6 +169,7 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - `packages/logic/src/constants.ts` (`ALLOWED_LEAGUES`) is the SINGLE source of truth.
 7.  **Auth Profile Safety**:
     - `auth/callback` MUST use `ignoreDuplicates: true` on user upsert to protect custom avatars.
+    - **Social Avatar Ban**: user `avatar_url` MUST be initialized as `null`. We DO NOT sync images from OAuth providers (Google/GitHub).
 8.  **Profile Resilience**:
     - `getUserProfile` (Server) uses `maybeSingle()` + `try/catch` to preventing hangs on missing data.
 9.  **Live Match Distinction**:
