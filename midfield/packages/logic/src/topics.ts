@@ -7,15 +7,18 @@ import { getClubAbbreviation } from "./club-abbreviations";
 export { getClubAbbreviation };
 
 /**
- * Get all topics
+ * Get all topics (Paginated)
  */
-export const getTopics = async (): Promise<Topic[]> => {
+export const getTopics = async (page = 1, limit = 50): Promise<Topic[]> => {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+
     const { data, error } = await supabase
         .from('topics')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false })
-        .limit(2000); // Override Supabase default of 1000
+        .range(from, to);
 
     if (error) {
         console.error('Error fetching topics:', error);

@@ -9,6 +9,11 @@ UPDATE LOG (Jan 1, 2026):
 - **Rich Player Metadata**: Implemented V1 + V2 Hybrid lookup for high-fidelity player profiles (Birth Location, Preferred Foot, Clean Weight strings).
 - **Match Center Stability**: Added sort-on-null safety and loading skeleton overflow fixes for the Sidebar widget.
 - **Design Alignment**: Added 10px standard left-padding to nested metadata rows to align icons with parent button text.
+- **Scalability Breakthroughs**: 
+  - **Topic Page**: Eliminated waterfall (6+ seq calls) -> Parallel `Promise.all` execution.
+  - **Trending Widget**: Implemented `unstable_cache` (ISR, 5m) to prevent 5x table scans per request.
+  - **Sync Engine**: Converted Livescore N+1 updates to Single Batch Upsert.
+
 -->
 
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
@@ -49,6 +54,7 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Frontend**: Next.js 16 (App Router), React 19, Tailwind v4.
 - **Backend**: Supabase (Postgres, Auth, Edge Functions).
 - **Repo**: Turborepo (apps/web, packages/logic, packages/ui).
+- **Logic Law**: ALL business logic (scoring, formatting, algorithms) MUST live in `packages/logic`. `apps/web` is for UI and data fetching ONLY.
 - **Images**: next/image ONLY. External domains configured in next.config.
 
 ──────────────────────────────────────────────────────────────────────────────
@@ -68,6 +74,9 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - NEVER use `font-extrabold` or `font-black`. 
     - Even for primary hero titles, `font-bold` is the absolute maximum weight allowed. 
     - This ensures the typography remains sharp and premium, avoiding an "over-weighted" or bulky aesthetic.
+7.  **Icon Consistency**:
+    - **CornerDownLeft**: ALWAYS use this icon for reply actions (main + nested). Do not mix with MessageCircle (chat context only).
+    - **Visibility**: Icons must always be visible; text can be hidden on mobile (xs).
 
 ──────────────────────────────────────────────────────────────────────────────
 4) COMPONENT ARCHETYPES (CANONICAL)
@@ -95,8 +104,10 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Images**: Square user avatars (`rounded-md`), Grid view for entities.
 
 **D) SHARE CARDS (Server-Side)**
-- **Tech**: `/api/share-card` using `next/og`.
-- **Design**: 1:1 Square. Mirrors app UI. Server-side rendering purely.
+- **Tech**: `/api/share-card` using `next/og` (Satori). Bypasses CORS by server-fetching images.
+- **Design**: 1:1 Square (1080px). Mirrors app UI exactly (EntityHeader + TakeCard).
+- **Font Stack**: System fonts only (Apple System, Inter-like) to prevent Satori loading crashes.
+- **Dynamic Sizing**: Font size must scale inversely with content length.
 
 ──────────────────────────────────────────────────────────────────────────────
 5) DATA PIPELINES (THE ENGINE ROOM)
@@ -134,9 +145,13 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 6) RESPONSIVE PERFECTION LAW
 ──────────────────────────────────────────────────────────────────────────────
 - **The Web IS The Mobile App**.
-- Test 320px, 375px, 768px, 1024px.
+- **Desktop Sanctity**: If a layout looks amazing on Desktop, DO NOT regress it to fix Mobile. Use specific breakpoints (`md:`, `lg:`) to adapt logic. Desktop is the "Gold Standard".
+- **Responsive Audit Checklist**:
+  - No horizontal scroll.
+  - No "collapsed" or cramped density; elements must breathe.
+  - Tap targets > 44px.
+  - Long text truncates gracefully (`min-w-0`).
 - **Layout Collisions**: Use `min-w-0`, `truncate`, and `flex-wrap` defensively.
-- **Touch Targets**: 44px min height for mobile interactions.
 
 ──────────────────────────────────────────────────────────────────────────────
 7) RECENT CRITICAL DECISIONS (JAN 2026)
@@ -185,6 +200,14 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - **Free Tier Awareness**: Vercel Free = 10GB Fast Origin Transfer/month.
       - Monitor usage in Vercel Dashboard → Analytics → Fast Origin Transfer.
       - Set alert at 8GB/month (80% threshold).
+    - **Scalability Standards** (Critical - Jan 1, 2026):
+      - **No Waterfalls**: Independent data fetches MUST run in parallel using `Promise.all()`.
+      - **Batch Writes**: Sync jobs must use atomic `upsert()` arrays. N+1 database writes are strictly forbidden.
+      - **Widget Caching**: Heavy global widgets (Trending, Match Center, Similar Recs) MUST use `unstable_cache` (ISR) with tagged revalidation (e.g. 300s).
+      - **NO COOKIES IN ISR**: `unstable_cache` creates a GLOBAL static cache. You MUST NOT use `cookies()`, `headers()`, or standard Supabase client inside it.
+        - SOLUTION: Use `createSupabaseClient` (direct from `@supabase/supabase-js`) with `process.env` keys inside the cached function scope.
+      - **JSONB Indexing**: Filters on metadata fields (e.g., `metadata->>league`) MUST have a corresponding GIN/Expression index to prevent full table scans.
+      - **Pagination**: Use standard offset/limit pagination for large datasets. Fixed limits (e.g., 2000) are banned for core data fetchers to prevent silent data loss.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
@@ -196,6 +219,9 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
   - **Compression**: Avatars must be resized Client-Side (Max 500x500px, JPEG 80%) *before* upload to save bandwidth & storage.
   - **Text Limits**: Posts (2000 chars), Bios (500 chars) enforced by DB constraints.
 - **Wildcards Forbidden**: `select('*')` is banned in API routes & Server Actions. Explicitly select ALL fields (e.g. `id, title, metadata`) to prevent hidden payload bloat.
-
+- **Protocol Security**:
+  - **Secure Crons**: All cron endpoints (e.g., `/api/cron/*`) MUST validate `Authorization: Bearer <CRON_SECRET>`.
+  - **Efficient RLS**: RLS policies MUST wrap auth calls in subqueries: `(select auth.uid())`. Never use bare `auth.uid()`. This prevents N+1 execution per row (InitPlan optimization).
+  - **RLS Bypass Hardening**: If a Postgres function MUST bypass RLS (e.g. for Cron jobs), it must be `security definer` AND explicitly set `SET search_path = public` to prevent pathjacking.
 
 END OF DOCTRINE.

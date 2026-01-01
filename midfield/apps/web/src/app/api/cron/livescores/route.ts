@@ -5,6 +5,11 @@ import { updateLivescores } from "@midfield/logic/src/sync/simple-fixture-sync";
 
 // Secure cron endpoint
 export async function GET(request: Request) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return new Response('Unauthorized', { status: 401 });
+    }
+
     try {
         const supabase = await createClient();
         const apiClient = new TheSportsDBClient(process.env.THESPORTSDB_API_KEY!);

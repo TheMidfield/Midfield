@@ -6,12 +6,10 @@ import { syncDailySchedules } from "@midfield/logic/src/sync/simple-fixture-sync
 // Secure cron endpoint - check for secret if needed (Vercel uses CRON_SECRET)
 export async function GET(request: Request) {
     // Optional: Check for Vercel Cron header
-    /*
     const authHeader = request.headers.get('authorization');
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return new Response('Unauthorized', { status: 401 });
     }
-    */
 
     try {
         const supabase = await createClient();

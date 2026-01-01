@@ -4,18 +4,33 @@ import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
 import { getTakes } from "@/app/actions";
 import { getUserProfile } from "@/app/profile/actions";
+import { cache } from "react";
+
+// Cached wrappers for request-level deduplication
+const cachedGetTopicBySlug = cache(getTopicBySlug);
+const cachedGetPlayersByClub = cache(getPlayersByClub);
+const cachedGetPlayerClub = cache(getPlayerClub);
+const cachedGetClubsByLeague = cache(getClubsByLeague);
+const cachedGetLeagueByTitle = cache(getLeagueByTitle);
+const cachedGetClubFixtures = cache(getClubFixtures);
+const cachedGetLeagueTable = cache(getLeagueTable);
+const cachedGetClubStanding = cache(getClubStanding);
+const cachedGetContinentalLeagueFixtures = cache(getContinentalLeagueFixtures);
 
 export default async function TopicPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;
-    const topic = await getTopicBySlug(slug);
+    const topic = await cachedGetTopicBySlug(slug);
 
     if (!topic) {
         return notFound();
     }
 
     // VISIBILITY CHECK (Top 5 Leagues Only)
+    // Safe to cast metadata as any since we generated it
+    const metadata = topic.metadata as any;
+
     if (topic.type === 'club') {
-        const league = (topic.metadata as any)?.league;
+        const league = metadata?.league;
         if (!ALLOWED_LEAGUES.includes(league)) return notFound();
     } else if (topic.type === 'league') {
         const isContinental = isContinentalLeague(topic);
@@ -23,9 +38,9 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         if (!isContinental && !isAllowedNational) return notFound();
     }
 
-    const isClub = topic.type === 'club';
-    const isPlayer = topic.type === 'player';
-    const isLeague = topic.type === 'league';
+    const { type, id, title } = topic;
+
+    // Initialize empty state
     let squad: any[] = [];
     let groupedSquad: Record<string, any[]> = {};
     let playerClub: any = null;
@@ -33,97 +48,131 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     let fixtures: any[] = [];
     let standings: any[] = [];
     let clubStanding: any = null;
-
     let leagueSlug: string | undefined;
 
-    if (isClub) {
-        // Resolve valid league slug for navigation
-        const leagueName = (topic.metadata as any)?.league;
+    // Parallel Fetching Promises
+    const parallelFetches: Promise<void>[] = [];
+
+    // 1. Fetches for CLUBS
+    if (type === 'club') {
+        // A. League Slug (for nav)
+        const leagueName = metadata?.league;
         if (leagueName) {
-            const leagueTopic = await getLeagueByTitle(leagueName);
-            if (leagueTopic) leagueSlug = leagueTopic.slug;
+            parallelFetches.push((async () => {
+                const leagueTopic = await cachedGetLeagueByTitle(leagueName);
+                if (leagueTopic) leagueSlug = leagueTopic.slug;
+            })());
         }
 
-        squad = await getPlayersByClub(topic.id);
+        // B. Squad & Grouping
+        parallelFetches.push((async () => {
+            squad = await cachedGetPlayersByClub(id);
+            groupedSquad = squad.reduce((acc, player) => {
+                let pos = (player.metadata as any)?.position || "Other";
+                const normalized = pos.toLowerCase();
 
-        // Group players by position
-        groupedSquad = squad.reduce((acc, player) => {
-            let pos = (player.metadata as any)?.position || "Other";
-            const normalized = pos.toLowerCase();
+                if (normalized.includes("manager") || normalized.includes("coach")) pos = "Staff";
+                else if (normalized.includes("goalkeeper")) pos = "Goalkeepers";
+                else if (normalized.includes("back") || normalized.includes("defender")) pos = "Defenders";
+                else if (normalized.includes("midfield")) pos = "Midfielders";
+                else if (normalized.includes("forward") || normalized.includes("wing") || normalized.includes("striker")) pos = "Forwards";
+                else pos = "Other";
 
-            if (normalized.includes("manager") || normalized.includes("coach")) pos = "Staff";
-            else if (normalized.includes("goalkeeper")) pos = "Goalkeepers";
-            else if (normalized.includes("back") || normalized.includes("defender")) pos = "Defenders";
-            else if (normalized.includes("midfield")) pos = "Midfielders";
-            else if (normalized.includes("forward") || normalized.includes("wing") || normalized.includes("striker")) pos = "Forwards";
-            else pos = "Other";
+                if (!acc[pos]) acc[pos] = [];
+                acc[pos].push(player);
+                return acc;
+            }, {} as Record<string, any[]>);
+        })());
 
-            if (!acc[pos]) acc[pos] = [];
-            acc[pos].push(player);
-            return acc;
-        }, {} as Record<string, any[]>);
+        // C. Fixtures
+        parallelFetches.push((async () => {
+            fixtures = await cachedGetClubFixtures(id);
+        })());
 
-        // Fetch fixtures for club
-        fixtures = await getClubFixtures(topic.id);
-
-        // Fetch club standing
-        clubStanding = await getClubStanding(topic.id);
+        // D. Standing
+        parallelFetches.push((async () => {
+            clubStanding = await cachedGetClubStanding(id);
+        })());
     }
 
-    if (isPlayer) {
-        // Fetch the player's club
-        playerClub = await getPlayerClub(topic.id);
+    // 2. Fetches for PLAYERS
+    if (type === 'player') {
+        parallelFetches.push((async () => {
+            // Must fetch club first to know context
+            const pClub = await cachedGetPlayerClub(id);
+            playerClub = pClub;
 
-        // VISIBILITY CHECK: Only show players from Allowed Clubs
-        if (playerClub) {
-            const leagueName = (playerClub.metadata as any)?.league;
-            if (!ALLOWED_LEAGUES.includes(leagueName)) return notFound();
+            if (!pClub) {
+                // Logic handled after await
+                return;
+            }
 
-            // Resolve valid league slug
-            if (leagueName) {
-                const leagueTopic = await getLeagueByTitle(leagueName);
-                if (leagueTopic) {
-                    leagueSlug = leagueTopic.slug;
+            const leagueName = (pClub.metadata as any)?.league;
+            if (ALLOWED_LEAGUES.includes(leagueName)) {
+                // League Slug
+                const leagueTopic = await cachedGetLeagueByTitle(leagueName);
+                if (leagueTopic) leagueSlug = leagueTopic.slug;
 
-                    // For managers: fetch league standings
-                    const position = (topic.metadata as any)?.position?.toLowerCase() || '';
-                    if (position.includes('manager') || position.includes('coach')) {
-                        fixtures = await getClubFixtures(playerClub.id);
-                        clubStanding = await getClubStanding(playerClub.id);
-                        standings = await getLeagueTable(leagueTopic.id);
-                    }
+                // Manager special case
+                const position = metadata?.position?.toLowerCase() || '';
+                if (position.includes('manager') || position.includes('coach')) {
+                    // Parallel sub-fetches for manager
+                    const managerPromises = [
+                        cachedGetClubFixtures(pClub.id).then(res => { fixtures = res; }),
+                        cachedGetClubStanding(pClub.id).then(res => { clubStanding = res; }),
+                        (leagueTopic ? cachedGetLeagueTable(leagueTopic.id).then(res => { standings = res; }) : Promise.resolve())
+                    ];
+                    await Promise.all(managerPromises);
                 }
             }
-        } else {
-            // If player has NO club (e.g. Free Agent or data issue), hide them?
-            // User said "only players from the 96 clubs".
-            // So safe to hide.
-            return notFound();
-        }
+        })());
     }
 
-    if (isLeague) {
-        // Check if this is a continental competition (Champions League, Europa League)
-        const isContinental = isContinentalLeague(topic);
-
-        if (isContinental) {
-            // For continental leagues: fetch fixtures by competition_id
-            // Do NOT fetch clubs (they belong to their national leagues)
-            fixtures = await getContinentalLeagueFixtures(topic.id);
-            leagueClubs = []; // No club list for continental competitions
-            standings = []; // No standings table for continental competitions
-        } else {
-            // For national leagues: fetch clubs and standings as usual
-            leagueClubs = await getClubsByLeague(topic.title);
-            standings = await getLeagueTable(topic.id);
-        }
+    // 3. Fetches for LEAGUES
+    if (type === 'league') {
+        parallelFetches.push((async () => {
+            const isContinental = isContinentalLeague(topic);
+            if (isContinental) {
+                fixtures = await cachedGetContinentalLeagueFixtures(id);
+            } else {
+                const [clubsRes, tableRes] = await Promise.all([
+                    cachedGetClubsByLeague(title),
+                    cachedGetLeagueTable(id)
+                ]);
+                leagueClubs = clubsRes;
+                standings = tableRes;
+            }
+        })());
     }
 
-    // Fetch takes (posts) for this topic
-    const posts = await getTakes(topic.id);
+    // 4. Common fetches (Takes, User Profile)
+    // We can also parallelize these!
+    let posts: any[] = [];
+    let userData: any = null;
 
-    // Fetch current user for composer avatar
-    const userData = await getUserProfile();
+    parallelFetches.push((async () => {
+        posts = await getTakes(id);
+    })());
+
+    parallelFetches.push((async () => {
+        userData = await getUserProfile();
+    })());
+
+    // EXECUTE ALL FETCHES
+    await Promise.all(parallelFetches);
+
+    // Post-fetch Checks
+    if (type === 'player' && !playerClub) {
+        // As per original logic: hide player if no club found (or not in allowed leagues, checked inside)
+        // Check "only show players from Allowed Clubs"
+        return notFound();
+    }
+
+    // Check player allowed league AFTER fetch (since we need playerClub to know)
+    if (type === 'player' && playerClub) {
+        const leagueName = (playerClub.metadata as any)?.league;
+        if (!ALLOWED_LEAGUES.includes(leagueName)) return notFound();
+    }
 
     return (
         <TopicPageClient
@@ -145,4 +194,3 @@ export default async function TopicPage({ params }: { params: { slug: string } }
         />
     );
 }
-

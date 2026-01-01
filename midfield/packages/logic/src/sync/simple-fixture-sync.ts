@@ -66,17 +66,29 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
                 if (e.idAwayTeam) teamTsdbIds.add(e.idAwayTeam);
             });
 
-            // Create Stubs for missing teams
+            // Create Stubs for missing teams (Parallelized)
             const missingIds = Array.from(teamTsdbIds).filter(id => !clubMap.has(id));
             if (missingIds.length > 0) {
                 console.log(`Found ${missingIds.length} missing teams in league ${leagueId}. Creating stubs...`);
-                for (const missingId of missingIds) {
+
+                // Process stubs in parallel to avoid timeouts
+                const newIds = await Promise.all(missingIds.map(async (missingId) => {
                     const ev = events.find((e: any) => e.idHomeTeam === missingId || e.idAwayTeam === missingId);
                     const name = ev?.idHomeTeam === missingId ? ev.strHomeTeam : ev.strAwayTeam;
 
-                    const newId = await createStub(supabase, missingId, name);
-                    if (newId) clubMap.set(missingId, newId);
-                }
+                    try {
+                        const newId = await createStub(supabase, missingId, name);
+                        if (newId) return { id: missingId, uuid: newId };
+                    } catch (err) {
+                        console.error(`Failed to create stub for ${name} (${missingId})`, err);
+                    }
+                    return null;
+                }));
+
+                // Update map
+                newIds.forEach(item => {
+                    if (item) clubMap.set(item.id, item.uuid);
+                });
             }
 
             // Prepare Payloads
@@ -148,9 +160,28 @@ export async function updateLivescores(supabase: SupabaseClient, apiClient: TheS
         try {
             const livescores = await apiClient.getLivescores(leagueId);
 
-            if (livescores.events) {
-                for (const event of livescores.events) {
-                    await updateFixtureStatus(supabase, event);
+            if (livescores.events && livescores.events.length > 0) {
+                // Batch updates into a single Upsert payload
+                const updates = livescores.events
+                    .filter((event: any) => event.idEvent)
+                    .map((event: any) => ({
+                        id: parseInt(event.idEvent),
+                        status: normalizeStatus(event.strStatus),
+                        home_score: event.intHomeScore ? parseInt(event.intHomeScore) : null,
+                        away_score: event.intAwayScore ? parseInt(event.intAwayScore) : null,
+                        updated_at: new Date().toISOString() // Track when we last saw it alive
+                    }));
+
+                if (updates.length > 0) {
+                    const { error } = await supabase
+                        .from('fixtures')
+                        .upsert(updates, { onConflict: 'id', ignoreDuplicates: false });
+
+                    if (error) {
+                        console.error(`Error batch updating fixtures for league ${leagueId}:`, error);
+                    } else {
+                        console.log(`Updated ${updates.length} livescores for league ${leagueId}`);
+                    }
                 }
             }
         } catch (err) {
