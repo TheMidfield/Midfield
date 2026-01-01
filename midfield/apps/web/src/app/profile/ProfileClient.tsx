@@ -388,7 +388,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
 
                     {/* Username */}
                     {/* Username */}
-                    <div style={{ borderTop: '1px solid', paddingTop: '16px' }} className="border-slate-200 dark:border-neutral-800">
+                    <div style={{ borderTop: '1px solid', paddingTop: '24px', marginTop: '12px', opacity: 0.5 }} className="border-slate-200 dark:border-neutral-700">
                         <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2">Username</p>
                         {isEditingUsername ? (
                             <div>
@@ -432,16 +432,16 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mb-2">Available</p>
                                 ) : null}
 
-                                <div style={{ display: 'flex', gap: '6px' }}>
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '12px' }}>
+                                    <Button onClick={handleUsernameCancel} variant="ghost" size="sm" disabled={isPending}>
+                                        Cancel
+                                    </Button>
                                     <Button
                                         onClick={handleUsernameSave}
                                         size="sm"
                                         disabled={isPending || username === profile.username || usernameAvailable === false || isCheckingUsername}
                                     >
-                                        {isPending ? "..." : "Save"}
-                                    </Button>
-                                    <Button onClick={handleUsernameCancel} variant="outline" size="sm" disabled={isPending}>
-                                        Cancel
+                                        {isPending ? "..." : "Save Changes"}
                                     </Button>
                                 </div>
                             </div>
@@ -617,7 +617,8 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                         onClick={() => setSelectedBadge(badge)}
                                         onMouseEnter={() => setHoveredBadgeTitle(info.title)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
-                                        className={`group relative w-10 h-10 rounded-xl ${info.bg} border ${info.border} flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
+                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
+                                        style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         title={info.title}
                                     >
                                         <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-12`} strokeWidth={1.5} />
@@ -705,13 +706,15 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 </Card>
 
                 {/* Sign Out Card */}
-                <Card className="col-span-6" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
-                    <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">Current Session</p>
+                <Card className="col-span-6" style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
+                    <div className="flex flex-col">
+                        <p className="text-sm font-bold text-slate-900 dark:text-neutral-100">Sign Out</p>
+                        <p className="text-xs text-slate-500 dark:text-neutral-400">End your current session</p>
+                    </div>
                     <Button
                         onClick={handleSignOut}
-                        variant="ghost"
+                        variant="destructive"
                         size="sm"
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                     >
                         Sign out
                     </Button>
