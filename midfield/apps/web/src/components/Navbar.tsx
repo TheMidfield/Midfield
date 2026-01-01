@@ -9,11 +9,13 @@ import { IconButton } from "./ui/IconButton";
 import { NavbarSearch } from "./NavbarSearch";
 import { useEffect, useState } from "react";
 import { useOnboarding } from "./OnboardingProvider";
+import { useSearch } from "@/context/SearchContext";
 import { Logo } from "@/components/Logo";
 
 export function Navbar() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const { closeSearch } = useSearch();
     const [userAvatar, setUserAvatar] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -120,10 +122,10 @@ export function Navbar() {
 
                         {/* Desktop Nav */}
                         <div className={`hidden lg:flex items-center gap-1 transition-all duration-500 ${isOnboardingOpen ? 'opacity-0 w-0 overflow-hidden pointer-events-none' : 'opacity-100 w-auto'}`}>
-                            <NavLink href="/" active={isActive("/")}>Home</NavLink>
-                            <NavLink href="/players" active={isActive("/players")}>Players</NavLink>
-                            <NavLink href="/clubs" active={isActive("/clubs")}>Clubs</NavLink>
-                            <NavLink href="/leagues" active={isActive("/leagues")}>Leagues</NavLink>
+                            <NavLink href="/" active={isActive("/")} onClick={closeSearch}>Home</NavLink>
+                            <NavLink href="/players" active={isActive("/players")} onClick={closeSearch}>Players</NavLink>
+                            <NavLink href="/clubs" active={isActive("/clubs")} onClick={closeSearch}>Clubs</NavLink>
+                            <NavLink href="/leagues" active={isActive("/leagues")} onClick={closeSearch}>Leagues</NavLink>
                         </div>
                     </div>
 
@@ -224,10 +226,11 @@ export function Navbar() {
     );
 }
 
-function NavLink({ href, children, active }: { href: string; children: React.ReactNode; active?: boolean }) {
+function NavLink({ href, children, active, onClick }: { href: string; children: React.ReactNode; active?: boolean; onClick?: () => void }) {
     return (
         <Link
             href={href}
+            onClick={onClick}
             className={`
                 px-4 py-2 rounded-full text-sm font-semibold transition-colors duration-200
                 ${active

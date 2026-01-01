@@ -20,7 +20,7 @@ export function SearchResults() {
                         Found {results.length} matches
                     </p>
                 </div>
-                <Button variant="ghost" icon={X} onClick={closeSearch}>
+                <Button variant="outline" icon={X} onClick={closeSearch}>
                     Close Search
                 </Button>
             </div>

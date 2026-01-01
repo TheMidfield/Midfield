@@ -127,8 +127,8 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
             text: 'text-emerald-600 dark:text-emerald-400'
         },
         'original-10': {
-            title: 'Original XI',
-            description: 'Legendary status. You were one of the first 10 users to join Midfield.',
+            title: 'Starting XI',
+            description: 'Legendary status. You were one of the first 11 users to join Midfield.',
             icon: Crown,
             color: 'amber',
             bg: 'bg-amber-100 dark:bg-amber-900/30',

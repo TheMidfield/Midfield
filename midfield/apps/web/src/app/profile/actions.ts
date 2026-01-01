@@ -172,7 +172,7 @@ export async function getUserProfile() {
         const badges: string[] = []
 
         // Rank Badges (Mutually exclusive tiers)
-        if (userRank <= 10) badges.push('original-10')
+        if (userRank <= 11) badges.push('original-10')
         else if (userRank <= 100) badges.push('club-100')
         else if (userRank <= 1000) badges.push('club-1000')
 
