@@ -2,6 +2,7 @@
 
 import { memo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { MessageCircle } from "lucide-react";
 import type { HeroTake } from "@/app/actions/hero-data";
 
@@ -48,10 +49,12 @@ export const HeroTakeCard = memo(({ take }: { take: HeroTake }) => {
                                 style={{ width: '24px', height: '24px' }}
                             >
                                 {take.author.avatarUrl ? (
-                                    <img
+                                    <Image
                                         src={take.author.avatarUrl}
-                                        alt=""
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        alt={take.author.username}
+                                        width={24}
+                                        height={24}
+                                        className="object-cover w-full h-full"
                                     />
                                 ) : (
                                     <span className="text-slate-400" style={{ fontSize: '10px', fontWeight: 700 }}>
