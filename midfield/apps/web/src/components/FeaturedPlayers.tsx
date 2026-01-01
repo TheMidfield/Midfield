@@ -77,6 +77,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                     alt={player.title}
                                                     fill
                                                     sizes="96px"
+                                                    unoptimized={true}
                                                     {...PLAYER_IMAGE_STYLE}
                                                 />
                                             ) : (
@@ -125,6 +126,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                                     alt={clubName}
                                                                     fill
                                                                     sizes="16px"
+                                                                    unoptimized={true}
                                                                     className="object-contain"
                                                                 />
                                                             </div>
@@ -174,6 +176,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                         alt={player.title}
                                                         fill
                                                         sizes="56px"
+                                                        unoptimized={true}
                                                         {...PLAYER_IMAGE_STYLE}
                                                     />
                                                 ) : (
@@ -225,6 +228,7 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                         alt={clubName}
                                                         fill
                                                         sizes="16px"
+                                                        unoptimized={true}
                                                         className="object-contain"
                                                     />
                                                 </div>

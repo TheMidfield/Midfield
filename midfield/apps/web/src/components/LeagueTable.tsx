@@ -62,6 +62,7 @@ export function LeagueTable({ standings }: LeagueTableProps) {
                                                     src={row.team.metadata.badge_url}
                                                     alt={row.team.title}
                                                     fill
+                                                    unoptimized={true}
                                                     className="object-contain"
                                                     sizes="20px"
                                                 />

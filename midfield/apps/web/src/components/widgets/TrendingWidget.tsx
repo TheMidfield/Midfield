@@ -43,16 +43,16 @@ const TrendingItem = memo(({ item }: { item: TrendingTopic }) => {
             <div className="flex items-center gap-3 py-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 -mx-2 px-2">
                 {/* Rank number - centered with fixed width */}
                 <span className={`text-sm font-bold w-5 tabular-nums text-center transition-colors ${item.rank <= 3
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-slate-400 dark:text-neutral-500'
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-slate-400 dark:text-neutral-500'
                     }`}>
                     {item.rank}
                 </span>
 
                 {/* Avatar - consistent styling for all entity types */}
                 <div className={`relative w-8 h-8 shrink-0 flex items-center justify-center ${isPlayer
-                        ? 'bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border border-slate-200 dark:border-neutral-700'
-                        : ''
+                    ? 'bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border border-slate-200 dark:border-neutral-700'
+                    : ''
                     }`}>
                     {item.imageUrl ? (
                         <NextImage
@@ -60,6 +60,7 @@ const TrendingItem = memo(({ item }: { item: TrendingTopic }) => {
                             alt={item.title}
                             fill
                             sizes="32px"
+                            unoptimized={true}
                             className={isPlayer ? '' : 'object-contain'}
                             {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
                         />

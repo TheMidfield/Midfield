@@ -59,6 +59,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                                     src={fixture.homeTeam.badgeUrl}
                                     alt={fixture.homeTeam.title}
                                     fill
+                                    unoptimized={true}
                                     className="object-contain p-0.5"
                                     sizes="24px"
                                 />
@@ -105,6 +106,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                                     src={fixture.awayTeam.badgeUrl}
                                     alt={fixture.awayTeam.title}
                                     fill
+                                    unoptimized={true}
                                     className="object-contain p-0.5"
                                     sizes="24px"
                                 />
@@ -147,6 +149,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                                 src={fixture.homeTeam.badgeUrl}
                                 alt={fixture.homeTeam.title}
                                 fill
+                                unoptimized={true}
                                 className="object-contain p-0.5"
                                 sizes="24px"
                             />
@@ -193,6 +196,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                                 src={fixture.awayTeam.badgeUrl}
                                 alt={fixture.awayTeam.title}
                                 fill
+                                unoptimized={true}
                                 className="object-contain p-0.5"
                                 sizes="24px"
                             />

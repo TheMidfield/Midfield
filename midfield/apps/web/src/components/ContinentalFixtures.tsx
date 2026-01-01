@@ -83,7 +83,7 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
                 <div className={`flex items-center gap-2 min-w-0 ${alignRight ? 'flex-row-reverse text-right' : ''}`}>
                     <div className="relative w-5 h-5 sm:w-6 sm:h-6 shrink-0">
                         {badge ? (
-                            <NextImage src={badge} alt={name} fill className="object-contain" sizes="24px" />
+                            <NextImage src={badge} alt={name} fill unoptimized={true} className="object-contain" sizes="24px" />
                         ) : (
                             <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                                 <Shield className="w-3 h-3 text-slate-400 dark:text-neutral-500" />
@@ -102,7 +102,7 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
                         <div className={`flex items-center gap-2 min-w-0 ${alignRight ? 'flex-row-reverse text-right' : ''}`}>
                             <div className="relative w-5 h-5 sm:w-6 sm:h-6 shrink-0 group-hover/team:scale-110 transition-transform duration-300">
                                 {badge ? (
-                                    <NextImage src={badge} alt={name} fill className="object-contain" sizes="24px" />
+                                    <NextImage src={badge} alt={name} fill unoptimized={true} className="object-contain" sizes="24px" />
                                 ) : (
                                     <div className="w-full h-full bg-slate-100 dark:bg-neutral-700 rounded-full flex items-center justify-center">
                                         <Shield className="w-3 h-3 text-slate-400 dark:text-neutral-500" />

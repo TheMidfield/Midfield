@@ -150,6 +150,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                         src={opponentBadge}
                                         alt={opponentName}
                                         fill
+                                        unoptimized={true}
                                         className="object-contain"
                                         sizes="24px"
                                     />
@@ -167,6 +168,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                     src={opponentBadge}
                                     alt={opponentName}
                                     fill
+                                    unoptimized={true}
                                     className="object-contain"
                                     sizes="24px"
                                 />
@@ -251,6 +253,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                                             src={opponentBadge}
                                                             alt=""
                                                             fill
+                                                            unoptimized={true}
                                                             className="object-contain"
                                                             sizes="28px"
                                                         />
@@ -324,6 +327,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                                                             src={opponentBadge}
                                                                             alt={opponentName}
                                                                             fill
+                                                                            unoptimized={true}
                                                                             className="object-contain"
                                                                             sizes="24px"
                                                                         />
@@ -348,6 +352,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                                                         src={opponentBadge}
                                                                         alt={opponentName}
                                                                         fill
+                                                                        unoptimized={true}
                                                                         className="object-contain"
                                                                         sizes="24px"
                                                                     />

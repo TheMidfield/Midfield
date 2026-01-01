@@ -45,6 +45,7 @@ const SimilarItem = memo(({ entity }: { entity: SimilarEntity }) => {
                                 alt={entity.title}
                                 fill
                                 sizes="40px"
+                                unoptimized={true}
                                 {...PLAYER_IMAGE_STYLE}
                             />
                         ) : (
@@ -59,6 +60,7 @@ const SimilarItem = memo(({ entity }: { entity: SimilarEntity }) => {
                                 alt={entity.title}
                                 fill
                                 sizes="36px"
+                                unoptimized={true}
                                 className="object-contain"
                             />
                         ) : (
