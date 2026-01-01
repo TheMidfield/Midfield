@@ -614,7 +614,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     <button
                                         key={badge}
                                         onClick={() => setSelectedBadge(badge)}
-                                        className={`w-10 h-10 rounded-md ${info.bg} border ${info.border} flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer`}
+                                        className={`w-10 h-10 rounded-xl ${info.bg} border ${info.border} flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer`}
                                         title={info.title}
                                     >
                                         <Icon className={`w-5 h-5 ${info.text} ${badge === 'original-10' ? 'fill-current' : ''}`} />
@@ -636,7 +636,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     <DialogContent>
                         {selectedBadge && BADGE_INFO[selectedBadge] && (
                             <div className="flex flex-col items-center text-center p-4">
-                                <div className={`w-20 h-20 rounded-full ${BADGE_INFO[selectedBadge].bg} flex items-center justify-center mb-6 ring-4 ring-offset-4 ring-offset-white dark:ring-offset-neutral-900 ${BADGE_INFO[selectedBadge].border.replace('border', 'ring')}`}>
+                                <div className={`w-20 h-20 rounded-2xl ${BADGE_INFO[selectedBadge].bg} flex items-center justify-center mb-6 ring-4 ring-offset-4 ring-offset-white dark:ring-offset-neutral-900 ${BADGE_INFO[selectedBadge].border.replace('border', 'ring')}`}>
                                     {(() => {
                                         const Icon = BADGE_INFO[selectedBadge].icon;
                                         return <Icon className={`w-10 h-10 ${BADGE_INFO[selectedBadge].text}`} strokeWidth={1.5} />;

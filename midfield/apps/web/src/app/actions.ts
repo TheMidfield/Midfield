@@ -72,7 +72,26 @@ export async function createReply(rootPostId: string, parentPostId: string, topi
  */
 export async function getTakes(topicId: string) {
     const supabase = await createClient();
-    return await getTakesLogic(supabase, topicId);
+    const posts = await getTakesLogic(supabase, topicId);
+
+    // Enrich with user reaction
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && posts.length > 0) {
+        const { data: reactions } = await supabase
+            .from('reactions')
+            .select('post_id, reaction_type')
+            .eq('user_id', user.id)
+            .in('post_id', posts.map((p: any) => p.id));
+
+        if (reactions) {
+            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
+            posts.forEach((p: any) => {
+                p.userReaction = reactionMap.get(p.id) || null;
+            });
+        }
+    }
+
+    return posts;
 }
 
 /**
@@ -83,7 +102,26 @@ export async function getTakesPaginated(
     options?: { cursor?: string; limit?: number }
 ) {
     const supabase = await createClient();
-    return await getTakesPaginatedLogic(supabase, topicId, options);
+    const result = await getTakesPaginatedLogic(supabase, topicId, options);
+
+    // Enrich with user reaction
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && result.posts.length > 0) {
+        const { data: reactions } = await supabase
+            .from('reactions')
+            .select('post_id, reaction_type')
+            .eq('user_id', user.id)
+            .in('post_id', result.posts.map((p: any) => p.id));
+
+        if (reactions) {
+            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
+            result.posts.forEach((p: any) => {
+                p.userReaction = reactionMap.get(p.id) || null;
+            });
+        }
+    }
+
+    return result;
 }
 
 /**
@@ -91,7 +129,26 @@ export async function getTakesPaginated(
  */
 export async function getReplies(rootPostId: string) {
     const supabase = await createClient();
-    return await getRepliesLogic(supabase, rootPostId);
+    const replies = await getRepliesLogic(supabase, rootPostId);
+
+    // Enrich with user reaction
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user && replies.length > 0) {
+        const { data: reactions } = await supabase
+            .from('reactions')
+            .select('post_id, reaction_type')
+            .eq('user_id', user.id)
+            .in('post_id', replies.map((p: any) => p.id));
+
+        if (reactions) {
+            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
+            replies.forEach((p: any) => {
+                p.userReaction = reactionMap.get(p.id) || null;
+            });
+        }
+    }
+
+    return replies;
 }
 
 /**

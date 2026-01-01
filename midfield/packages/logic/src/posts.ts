@@ -152,7 +152,7 @@ export async function getRepliesLogic(supabase: any, rootPostId: string) {
         .from('posts')
         .select(`
             *,
-            author:users(username, avatar_url, display_name),
+            author:users(username, avatar_url, display_name, favorite_club:topics!favorite_club_id(title, slug, metadata)),
             reply_to:reply_to_post_id(
                 id,
                 content,
@@ -170,7 +170,7 @@ export async function getRepliesLogic(supabase: any, rootPostId: string) {
             .from('posts')
             .select(`
                 *,
-                author:users(username, avatar_url, display_name)
+                author:users(username, avatar_url, display_name, favorite_club:topics!favorite_club_id(title, slug, metadata))
             `)
             .eq('root_post_id', rootPostId)
             .eq('is_deleted', false)

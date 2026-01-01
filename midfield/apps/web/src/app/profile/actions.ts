@@ -183,6 +183,7 @@ export async function getUserProfile() {
         return {
             user,
             profile: {
+                ...profile,
                 user_rank: userRank,
                 badges,
                 activity_stats: activityStats || { reactions_received: 0, topics_interacted: 0 }
