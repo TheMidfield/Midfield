@@ -261,6 +261,7 @@ export function EntityHeader({
                                     objectPosition: 'center',
                                     transformOrigin: 'center'
                                 }}
+                                unoptimized={true}
                             />
                         </div>
                     )}
@@ -280,6 +281,7 @@ export function EntityHeader({
                                                 className="object-contain object-bottom"
                                                 sizes="(max-width: 640px) 96px, (max-width: 768px) 112px, 144px"
                                                 priority
+                                                unoptimized={true}
                                             />
                                         ) : (
                                             <div
@@ -325,6 +327,7 @@ export function EntityHeader({
                                                     className="object-contain p-1 sm:p-1.5"
                                                     sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, 112px"
                                                     priority
+                                                    unoptimized={true}
                                                 />
                                             )
                                         )}
@@ -389,6 +392,7 @@ export function EntityHeader({
                                                                     alt=""
                                                                     fill
                                                                     className="object-contain"
+                                                                    unoptimized={true}
                                                                 />
                                                             </div>
                                                         )}

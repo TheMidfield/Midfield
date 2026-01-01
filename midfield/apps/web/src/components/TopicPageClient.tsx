@@ -189,6 +189,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                 fill
                                 sizes="40px"
                                 {...PLAYER_IMAGE_STYLE}
+                                unoptimized={true}
                             />
                         ) : (
                             <div
@@ -630,6 +631,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                                                         fill
                                                                                         sizes="36px"
                                                                                         className="object-contain"
+                                                                                        unoptimized={true}
                                                                                     />
                                                                                 )}
                                                                             </div>

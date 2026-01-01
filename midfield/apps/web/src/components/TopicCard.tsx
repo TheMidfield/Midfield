@@ -152,6 +152,7 @@ export function TopicCard({ topic }: { topic: any }) {
                             alt=""
                             fill
                             className="object-contain"
+                            unoptimized={true}
                         />
                     </div>
                 )}
@@ -173,6 +174,7 @@ export function TopicCard({ topic }: { topic: any }) {
                                         className={isClub ? 'object-contain p-1' : PLAYER_IMAGE_STYLE.className}
                                         {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
                                         sizes="56px"
+                                        unoptimized={true}
                                     />
                                 ) : (
                                     isClub ? (
@@ -223,6 +225,7 @@ export function TopicCard({ topic }: { topic: any }) {
                                                         fill
                                                         sizes="18px"
                                                         className="object-contain"
+                                                        unoptimized={true}
                                                     />
                                                 </div>
                                             ) : (

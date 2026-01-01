@@ -1,7 +1,8 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.5)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.6)
 
 <!--
 UPDATE LOG (Jan 1, 2026):
+- **Image Optimization Law**: Documented Vercel 402 quota crisis. External CDN images MUST use `unoptimized={true}` to prevent quota exhaustion. User uploads stay optimized for SEO/perf.
 - **Smart Upsert Hardening**: Implemented "Safety Locks" in `smartUpsertTopic` to protect `fc26_data`, `follower_count`, and `post_count` from accidental overwrite.
 - **Metadata Merging**: Sync jobs now shallow-merge `metadata` JSONB. Enriched fields (Height, Weight, Foot) are preserved even if simpler syncs run later.
 - **Rich Player Metadata**: Implemented V1 + V2 Hybrid lookup for high-fidelity player profiles (Birth Location, Preferred Foot, Clean Weight strings).
@@ -159,6 +160,16 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - Pulsing Emerald Indicators for "LIVE" status.
 10. **Visual Consistency (Placeholders)**:
     - No Gradients for empty states. Use solid `slate-100`/`neutral-800` to match Navbar.
+11. **Image Optimization Law** (Critical - Jan 1, 2026):
+    - **External CDN Images**: ALWAYS add `unoptimized={true}` to TheSportsDB images.
+      - Rationale: TheSportsDB serves pre-optimized PNGs (~6-8k images). Re-optimizing via Vercel exhausts quota (402 errors) with zero benefit.
+      - Example: `<NextImage src={tsdbImageUrl} unoptimized={true} />`
+    - **User-Uploaded Content**: NEVER add `unoptimized` to Supabase Storage avatars.
+      - Rationale: User uploads vary in format/size. Vercel optimization is essential for SEO/LCP.
+      - Example: `<NextImage src={user.avatar_url} />` (no unoptimized prop)
+    - **Above-Fold Critical Images**: Selectively optimize with `priority={true}` for LCP.
+      - Use sparingly: Homepage hero, entity headers only.
+    - **Crisis Reference**: See `image-optimization-audit.md` for full incident report.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
