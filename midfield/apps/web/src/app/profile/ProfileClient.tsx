@@ -634,7 +634,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </div>
 
                     {/* Elegant footer text reveal */}
-                    <div className="mt-4 flex flex-col items-center justify-center h-6 border-t border-slate-100 dark:border-neutral-800 pt-4">
+                    <div className="mt-1 flex flex-col items-center justify-center h-6">
                         <p className={`text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-300 ${hoveredBadgeTitle ? 'text-slate-900 dark:text-neutral-100 scale-105' : 'text-slate-400 dark:text-neutral-600'}`}>
                             {hoveredBadgeTitle || `${profile?.badges?.length || 0} BADGES`}
                         </p>
