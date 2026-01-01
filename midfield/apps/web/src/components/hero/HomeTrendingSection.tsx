@@ -32,7 +32,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
     return (
         <Link
             href={`/topic/${item.slug}`}
-            className="flex items-center gap-2.5 sm:gap-4 py-2.5 sm:py-3 pl-4 sm:pl-6 pr-4 group hover:bg-slate-50 dark:hover:bg-neutral-800/30 transition-colors border border-slate-200 dark:border-neutral-800 rounded-md mb-2 last:mb-0"
+            className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.96] cursor-pointer mb-2 last:mb-0"
         >
             {/* Rank - Top 3 highlighted */}
             <span className={`text-sm font-bold w-6 tabular-nums shrink-0 ${item.rank <= 3

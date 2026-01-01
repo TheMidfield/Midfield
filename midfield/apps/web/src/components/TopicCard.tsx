@@ -61,7 +61,7 @@ export function TopicCard({ topic }: { topic: any }) {
         return (
 
             <Link href={`/topic/${topic.slug}`}>
-                <Card className={`group relative p-4 sm:p-5 h-[185px] flex flex-col overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.98] lg:active:scale-100 ${hoverBorderClass} ${hoverBgClass}`}>
+                <Card className={`group relative p-4 sm:p-5 h-[185px] flex flex-col overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.96] lg:active:scale-100 ${hoverBorderClass} ${hoverBgClass}`}>
                     {/* Trophy Watermark */}
                     {trophyUrl && (
                         <div className="absolute -right-8 -bottom-8 w-48 h-48 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-500 grayscale pointer-events-none select-none rotate-12">

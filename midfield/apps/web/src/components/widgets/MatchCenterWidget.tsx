@@ -42,18 +42,18 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
 
     if (hideClubNames) {
         return (
-            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.96] cursor-pointer">
                 {/* Home Team - Full width on left */}
                 <div className="flex-1 min-w-0 flex items-center justify-end gap-2 group">
                     <Link
                         href={`/topic/${fixture.homeTeam.slug}`}
-                        className="truncate"
+                        className="truncate active:scale-95 transition-transform"
                     >
                         <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
                             {getClubAbbreviation(fixture.homeTeam.slug, fixture.homeTeam.title)}
                         </span>
                     </Link>
-                    <Link href={`/topic/${fixture.homeTeam.slug}`}>
+                    <Link href={`/topic/${fixture.homeTeam.slug}`} className="active:scale-95 transition-transform">
                         <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
                             {fixture.homeTeam.badgeUrl ? (
                                 <NextImage
@@ -100,7 +100,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
 
                 {/* Away Team - Full width on right */}
                 <div className="flex-1 min-w-0 flex items-center gap-2 group">
-                    <Link href={`/topic/${fixture.awayTeam.slug}`}>
+                    <Link href={`/topic/${fixture.awayTeam.slug}`} className="active:scale-95 transition-transform">
                         <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
                             {fixture.awayTeam.badgeUrl ? (
                                 <NextImage
@@ -120,7 +120,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                     </Link>
                     <Link
                         href={`/topic/${fixture.awayTeam.slug}`}
-                        className="truncate"
+                        className="truncate active:scale-95 transition-transform"
                     >
                         <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
                             {getClubAbbreviation(fixture.awayTeam.slug, fixture.awayTeam.title)}
@@ -132,18 +132,18 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
     }
 
     return (
-        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
+        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.96] cursor-pointer">
             {/* Home Team - Full width on left */}
             <div className="flex-1 min-w-0 flex items-center justify-end gap-2 group">
                 <Link
                     href={`/topic/${fixture.homeTeam.slug}`}
-                    className="truncate"
+                    className="truncate active:scale-95 transition-transform"
                 >
                     <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
                         {fixture.homeTeam.title}
                     </span>
                 </Link>
-                <Link href={`/topic/${fixture.homeTeam.slug}`}>
+                <Link href={`/topic/${fixture.homeTeam.slug}`} className="active:scale-95 transition-transform">
                     <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
                         {fixture.homeTeam.badgeUrl ? (
                             <NextImage
@@ -190,7 +190,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
 
             {/* Away Team - Full width on right */}
             <div className="flex-1 min-w-0 flex items-center gap-2 group">
-                <Link href={`/topic/${fixture.awayTeam.slug}`}>
+                <Link href={`/topic/${fixture.awayTeam.slug}`} className="active:scale-95 transition-transform">
                     <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
                         {fixture.awayTeam.badgeUrl ? (
                             <NextImage
@@ -210,7 +210,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                 </Link>
                 <Link
                     href={`/topic/${fixture.awayTeam.slug}`}
-                    className="truncate"
+                    className="truncate active:scale-95 transition-transform"
                 >
                     <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
                         {fixture.awayTeam.title}
@@ -274,7 +274,7 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
             <div className={`flex items-center justify-center mb-5 ${hideClubNames ? 'gap-3' : 'gap-4'}`}>
                 <button
                     onClick={() => setActiveTab('upcoming')}
-                    className={`flex items-center gap-2 font-bold transition-all cursor-pointer ${hideClubNames ? 'text-[13px]' : 'text-sm'} ${activeTab === 'upcoming'
+                    className={`flex items-center gap-2 font-bold transition-all cursor-pointer active:scale-90 ${hideClubNames ? 'text-[13px]' : 'text-sm'} ${activeTab === 'upcoming'
                         ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300'
                         }`}
@@ -287,7 +287,7 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
 
                 <button
                     onClick={() => setActiveTab('results')}
-                    className={`flex items-center gap-2 font-bold transition-all cursor-pointer ${hideClubNames ? 'text-[13px]' : 'text-sm'} ${activeTab === 'results'
+                    className={`flex items-center gap-2 font-bold transition-all cursor-pointer active:scale-90 ${hideClubNames ? 'text-[13px]' : 'text-sm'} ${activeTab === 'results'
                         ? 'text-emerald-600 dark:text-emerald-400'
                         : 'text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300'
                         }`}

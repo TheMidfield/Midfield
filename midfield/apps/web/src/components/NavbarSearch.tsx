@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearch } from "@/context/SearchContext";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRef, useState, useEffect } from "react";
 
@@ -74,17 +74,32 @@ export function NavbarSearch({ onSearchStart }: NavbarSearchProps = {}) {
                     className="flex-1 min-w-0 bg-transparent py-2 text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none dark:text-neutral-100 dark:placeholder:text-neutral-500"
                 />
 
-                {/* Badges - hidden on mobile in hamburger menu context */}
-                <div className="mr-1.5 hidden sm:flex items-center">
-                    {(isFocused || query) ? (
-                        <div className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400 min-w-[34px] text-center">
-                            ESC
-                        </div>
-                    ) : (
-                        <div className="text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
-                            /
-                        </div>
-                    )}
+                {/* Clear button for mobile / ESC badge for desktop */}
+                <div className="mr-1.5 flex items-center">
+                    {query ? (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setQuery("");
+                                inputRef.current?.focus();
+                            }}
+                            className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-neutral-700 text-slate-400 dark:text-neutral-500 transition-colors sm:hidden"
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </button>
+                    ) : null}
+
+                    <div className="hidden sm:flex">
+                        {(isFocused || query) ? (
+                            <div className="text-[10px] font-bold px-2 py-1 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400 min-w-[34px] text-center">
+                                ESC
+                            </div>
+                        ) : (
+                            <div className="text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
+                                /
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

@@ -254,7 +254,7 @@ export default async function Home() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {featuredPlayers.map((player) => (
                         <TopicCard key={player.id} topic={player} />
                     ))}
@@ -276,7 +276,7 @@ export default async function Home() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {featuredClubs.map((club) => (
                         <TopicCard key={club.id} topic={club} />
                     ))}
@@ -298,7 +298,7 @@ export default async function Home() {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {enrichedLeagues.map((league: any) => (
                         <TopicCard key={league.id} topic={league} />
                     ))}

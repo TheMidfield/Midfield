@@ -85,6 +85,8 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
     const [replyingTo, setReplyingTo] = useState<{ id: string; username: string; content?: string } | null>(null);
     const [replyContent, setReplyContent] = useState("");
     const [replies, setReplies] = useState<Reply[]>([]);
+    const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
+    const [counts, setCounts] = useState((post as any).post_stats?.[0] || { upvotes: 0, downvotes: 0, reply_count: 0 });
     const [localReplyCount, setLocalReplyCount] = useState(post.reply_count || 0);
     const [isLoadingReplies, setIsLoadingReplies] = useState(false);
     const [toastState, setToastState] = useState<{ message: string | null; type: 'success' | 'error' }>({ message: null, type: 'success' });
@@ -331,7 +333,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                             <img
                                 src={post.author.avatar_url}
                                 alt={authorHandle}
-                                className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md object-cover hover:opacity-90 transition-opacity cursor-pointer z-10 bg-white dark:bg-neutral-900"
+                                className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md object-cover hover:opacity-90 transition-all cursor-pointer z-10 bg-white dark:bg-neutral-900 active:scale-90"
                             />
                         ) : (
                             <div className="w-8 h-8 xs:w-9 xs:h-9 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center z-10">
@@ -357,7 +359,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                         className="w-5 h-5 object-contain mr-1.5 flex-shrink-0"
                                     />
                                 )}
-                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer mr-0.5">{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2">•</span><span className="text-[10px] xs:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs xs:text-sm sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-95 cursor-pointer mr-0.5">{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-[11px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2">•</span><span className="text-[11px] xs:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
                             </div>
                             {isOwner && !isEditing && (
                                 <div className="flex items-center flex-shrink-0">
@@ -445,7 +447,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 </div>
                             </div>
                         ) : (
-                            <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-[13px] xs:text-sm sm:text-[15px] whitespace-pre-wrap mb-2 sm:mb-3 break-words overflow-hidden max-w-full">
+                            <p className="text-slate-800 dark:text-neutral-200 leading-relaxed text-sm xs:text-[15px] sm:text-[15px] whitespace-pre-wrap mb-2 sm:mb-3 break-words overflow-hidden max-w-full">
                                 {localContent}
                             </p>
                         )}
@@ -456,35 +458,36 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 postId={post.id}
                                 initialCounts={reactionCounts}
                                 userReaction={userReaction}
+                                onPickerToggle={setIsReactionPickerOpen}
                             />
 
 
-                            <div className="flex items-center gap-1 sm:gap-2">
+                            <div className={`flex items-center gap-1 sm:gap-2 transition-all duration-300 ${isReactionPickerOpen ? 'hidden xs:flex opacity-0 pointer-events-none w-0 sm:w-auto overflow-hidden sm:overflow-visible' : 'flex opacity-100'}`}>
                                 <button
                                     onClick={handleReplyClick}
-                                    className="h-7 sm:h-8 px-1.5 sm:px-2 flex items-center justify-center gap-1 sm:gap-1.5 rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="h-8 sm:h-8 px-2 sm:px-2 flex items-center justify-center gap-1.5 sm:gap-1.5 rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-90 cursor-pointer"
                                 >
-                                    <CornerDownLeft className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                                    <span className="text-[10px] xs:text-xs sm:text-xs font-medium">
+                                    <CornerDownLeft className="w-4 sm:w-4 h-4 sm:h-4 transition-transform group-active:scale-110" />
+                                    <span className="text-[11px] xs:text-xs sm:text-xs font-medium">
                                         Reply{localReplyCount > 0 && ` (${localReplyCount})`}
                                     </span>
                                 </button>
 
                                 <button
                                     onClick={handleBookmark}
-                                    className={`w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md transition-colors cursor-pointer ${bookmarked
-                                        ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
+                                    className={`w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-md transition-all active:scale-90 cursor-pointer ${bookmarked
+                                        ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50'
                                         : 'text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
                                         }`}
                                 >
-                                    <Bookmark className={`w-3.5 sm:w-4 h-3.5 sm:h-4 ${bookmarked ? 'fill-current' : ''}`} />
+                                    <Bookmark className={`w-4 sm:w-4 h-4 sm:h-4 transition-transform ${bookmarked ? 'fill-current scale-110' : ''}`} />
                                 </button>
 
                                 <button
                                     onClick={() => setShowShareModal(true)}
-                                    className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                                    className="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-90 cursor-pointer"
                                 >
-                                    <Share className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                    <Share className="w-4 sm:w-4 h-4 sm:h-4" />
                                 </button>
                             </div>
                         </div>
@@ -546,20 +549,20 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                         className="w-4 h-4 object-contain mr-1 flex-shrink-0"
                                                     />
                                                 )}
-                                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[10px] xs:text-[11px] sm:text-xs truncate">
+                                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[11px] xs:text-xs sm:text-xs truncate">
                                                     {reply.author?.username || 'anon'}
                                                 </span>
-                                                <span className="text-slate-300 dark:text-neutral-600 text-[9px] xs:text-[10px] sm:text-xs flex-shrink-0">•</span>
-                                                <span className="text-slate-400 dark:text-neutral-500 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0">
+                                                <span className="text-slate-300 dark:text-neutral-600 text-[10px] xs:text-[11px] sm:text-xs flex-shrink-0">•</span>
+                                                <span className="text-slate-400 dark:text-neutral-500 text-[10px] xs:text-[11px] sm:text-xs whitespace-nowrap flex-shrink-0">
                                                     {formatDate(new Date(reply.created_at))}
                                                 </span>
 
                                                 {/* Reply button - always visible on mobile, hover on desktop */}
                                                 <button
                                                     onClick={() => handleReplyToComment(reply.id, reply.author?.username || 'anon', reply.content)}
-                                                    className="ml-auto opacity-60 sm:opacity-0 sm:group-hover:opacity-100 h-5 sm:h-6 px-1 sm:px-1.5 flex items-center gap-0.5 sm:gap-1 rounded-md text-[10px] xs:text-[11px] sm:text-[11px] font-medium transition-all cursor-pointer text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:text-emerald-600 dark:active:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 active:bg-slate-50 dark:active:bg-neutral-800 shrink-0"
+                                                    className="ml-auto opacity-60 sm:opacity-0 sm:group-hover:opacity-100 h-6 sm:h-6 px-1.5 sm:px-1.5 flex items-center gap-1 sm:gap-1 rounded-md text-[11px] xs:text-xs sm:text-[11px] font-medium transition-all cursor-pointer text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:text-emerald-600 dark:active:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 active:bg-slate-50 dark:active:bg-neutral-800 shrink-0 active:scale-90"
                                                 >
-                                                    <CornerDownLeft className="w-3 h-3" />
+                                                    <CornerDownLeft className="w-3.5 h-3.5" />
                                                     <span className="hidden sm:inline">Reply</span>
                                                 </button>
                                             </div>
@@ -570,9 +573,9 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                     <button
                                                         onClick={() => reply.reply_to?.id && scrollAndHighlightReply(reply.reply_to.id)}
                                                         data-reply-preview
-                                                        className="w-full pl-2 sm:pl-2.5 py-0.5 sm:py-1 border-l-2 border-slate-300/80 dark:border-neutral-700/80 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-200 cursor-pointer group text-left"
+                                                        className="w-full pl-2 sm:pl-2.5 py-0.5 sm:py-1 border-l-2 border-slate-300/80 dark:border-neutral-700/80 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-200 cursor-pointer group text-left active:scale-[0.98]"
                                                     >
-                                                        <p className="text-[10px] xs:text-[11px] sm:text-[11px] line-clamp-2 text-slate-400 dark:text-neutral-500">
+                                                        <p className="text-[11px] xs:text-xs sm:text-[11px] line-clamp-2 text-slate-400 dark:text-neutral-500">
                                                             <span className="font-medium text-slate-500 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                                                                 {reply.reply_to.author.username}
                                                             </span>
@@ -587,7 +590,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                 </div>
                                             )}
 
-                                            <p className="text-slate-700 dark:text-neutral-300 text-[11px] xs:text-xs sm:text-sm leading-relaxed pb-1.5 sm:pb-2">
+                                            <p className="text-slate-700 dark:text-neutral-300 text-[13px] xs:text-sm sm:text-sm leading-relaxed pb-1.5 sm:pb-2">
                                                 {reply.content}
                                             </p>
                                         </div>
@@ -626,15 +629,15 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                         {replyingTo && (
                                             <div className="mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2 pl-2 sm:pl-2.5 py-1 sm:py-1.5 border-l-2 border-slate-200 dark:border-neutral-800 w-full min-w-0">
                                                 <div className="flex-1 min-w-0 flex items-center gap-1 sm:gap-1.5">
-                                                    <span className="text-[10px] xs:text-[11px] sm:text-[11px] font-medium text-slate-500 dark:text-neutral-400 flex-shrink-0">
+                                                    <span className="text-[11px] xs:text-xs sm:text-[11px] font-medium text-slate-500 dark:text-neutral-400 flex-shrink-0">
                                                         Replying to {replyingTo.username}
                                                     </span>
                                                     {replyingTo.content && (
                                                         <>
-                                                            <span className="text-[10px] xs:text-[11px] sm:text-[11px] text-slate-300 dark:text-neutral-600 flex-shrink-0">·</span>
+                                                            <span className="text-[11px] xs:text-xs sm:text-[11px] text-slate-300 dark:text-neutral-600 flex-shrink-0">·</span>
                                                             <span
                                                                 onClick={() => scrollAndHighlightReply(replyingTo.id)}
-                                                                className="text-[10px] xs:text-[11px] sm:text-[11px] text-slate-400 dark:text-neutral-500 truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                                                className="text-[11px] xs:text-xs sm:text-[11px] text-slate-400 dark:text-neutral-500 truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer active:scale-[0.98]"
                                                             >
                                                                 {replyingTo.content}
                                                             </span>
@@ -643,7 +646,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                 </div>
                                                 <button
                                                     onClick={() => setReplyingTo(null)}
-                                                    className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center justify-center text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors cursor-pointer"
+                                                    className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-800 flex items-center justify-center text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors cursor-pointer active:scale-90"
                                                 >
                                                     <svg className="w-2.5 sm:w-3 h-2.5 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

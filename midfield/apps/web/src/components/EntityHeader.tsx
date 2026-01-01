@@ -237,18 +237,18 @@ export function EntityHeader({
                         {getMobileBreadcrumbs().map((crumb, idx) => (
                             <div key={idx} className="flex items-center gap-0.5 shrink-0">
                                 {idx > 0 && (
-                                    <ChevronRight className="w-2 h-2 text-slate-300 dark:text-neutral-600 shrink-0" />
+                                    <ChevronRight className="w-3 h-3 text-slate-300 dark:text-neutral-600 shrink-0" />
                                 )}
                                 {crumb.isEllipsis ? (
-                                    <span className="px-1 text-slate-400 dark:text-neutral-500 text-[9px]">...</span>
+                                    <span className="px-1 text-slate-400 dark:text-neutral-500 text-[11px]">...</span>
                                 ) : crumb.href ? (
                                     <Link href={crumb.href}>
-                                        <Button variant="ghost" size="sm" className="h-5 px-1 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[9px] whitespace-nowrap transition-colors">
+                                        <Button variant="ghost" size="sm" className="h-6 px-1.5 text-slate-500 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 text-[11px] whitespace-nowrap transition-colors">
                                             {crumb.label}
                                         </Button>
                                     </Link>
                                 ) : (
-                                    <span className="px-1 font-semibold text-slate-900 dark:text-neutral-100 text-[10px] truncate max-w-[100px]">
+                                    <span className="px-1.5 font-semibold text-slate-900 dark:text-neutral-100 text-xs truncate max-w-[120px]">
                                         {crumb.label}
                                     </span>
                                 )}
@@ -382,7 +382,7 @@ export function EntityHeader({
                                     </h1>
 
                                     {/* Share Button - Square */}
-                                    <Button onClick={handleShare} variant="ghost" size="sm" className="w-8 h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-md transition-colors shrink-0">
+                                    <Button onClick={handleShare} variant="ghost" size="sm" className="w-8 h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-md transition-all active:scale-90 shrink-0">
                                         <Share className="w-4 h-4" />
                                     </Button>
                                 </div>
@@ -525,7 +525,7 @@ export function EntityHeader({
                                     e.stopPropagation();
                                     handleVote('upvote');
                                 }}
-                                className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'upvote'
+                                className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer active:scale-95 ${userVote === 'upvote'
                                     ? 'border-emerald-500 dark:border-emerald-500 bg-emerald-100 dark:bg-emerald-950/30'
                                     : 'border-emerald-200 dark:border-emerald-900/50 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/20 dark:to-neutral-900 hover:border-emerald-500 dark:hover:border-emerald-500'
                                     }`}
@@ -545,7 +545,7 @@ export function EntityHeader({
                                     e.stopPropagation();
                                     handleVote('downvote');
                                 }}
-                                className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer ${userVote === 'downvote'
+                                className={`group flex items-center gap-1.5 px-3 py-2 rounded-md border-2 transition-all cursor-pointer active:scale-95 ${userVote === 'downvote'
                                     ? 'border-red-500 dark:border-red-500 bg-red-100 dark:bg-red-950/30'
                                     : 'border-red-200 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-neutral-900 hover:border-red-500 dark:hover:border-red-500'
                                     }`}
