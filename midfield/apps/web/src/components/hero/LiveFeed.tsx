@@ -140,19 +140,20 @@ export function LiveFeed() {
     useEffect(() => {
         if (!swrTakes || swrTakes.length < 2) return;
 
-        // Always assign columns: latest → column 1 (left), second → column 2 (right)
-        const [latest, secondLatest, ...rest] = swrTakes;
+        // STABLE COLUMN ASSIGNMENT
+        // We use a hash of the ID to ensure a take ALWAYS belongs to the same column.
+        // This prevents the "reshuffle flash" when new items are added.
+        const getStableColumn = (id: string): 1 | 2 => {
+            const sum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return (sum % 2 === 0) ? 1 : 2;
+        };
 
-        const staggered: TakeWithColumn[] = [
-            { ...latest, column: 1 },
-            { ...secondLatest, column: 2 },
-            ...rest.map((take, i) => ({
-                ...take,
-                column: ((i % 2) === 0 ? 1 : 2) as 1 | 2
-            }))
-        ];
+        const stableTakes: TakeWithColumn[] = swrTakes.map(take => ({
+            ...take,
+            column: getStableColumn(take.id)
+        }));
 
-        setTakes(staggered);
+        setTakes(stableTakes);
 
         // Logic to handling the intro animation vs live updates:
         // If the intro animation hasn't run yet, we trigger the delayed sequence.
