@@ -142,8 +142,7 @@ export async function getUserProfile() {
                 favorite_club_id, 
                 created_at, 
                 favorite_club:topics!favorite_club_id(id, title, slug, metadata),
-                posts:posts(count),
-                reactions:reactions(count)
+                posts:posts(count)
             `)
             .eq('id', user.id)
             .maybeSingle()
@@ -166,6 +165,10 @@ export async function getUserProfile() {
         const { data: hasSeeded } = await supabase
             .rpc('has_seeded_topic' as any, { user_id: user.id })
 
+        // Get Activity Stats (Reactions Received, Topics Interacted)
+        const { data: activityStats } = await supabase
+            .rpc('get_user_activity_stats' as any, { target_user_id: user.id })
+
         const badges: string[] = []
 
         // Rank Badges (Mutually exclusive tiers)
@@ -180,9 +183,9 @@ export async function getUserProfile() {
         return {
             user,
             profile: {
-                ...profile,
                 user_rank: userRank,
-                badges
+                badges,
+                activity_stats: activityStats || { reactions_received: 0, topics_interacted: 0 }
             }
         }
     } catch (error) {

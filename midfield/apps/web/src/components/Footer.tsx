@@ -14,24 +14,28 @@ export function Footer() {
                     <nav className="flex items-center gap-6">
                         <Link
                             href="/about"
+                            prefetch={false}
                             className="text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                         >
                             About
                         </Link>
                         <Link
                             href="/privacy"
+                            prefetch={false}
                             className="text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                         >
                             Privacy
                         </Link>
                         <Link
                             href="/terms"
+                            prefetch={false}
                             className="text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                         >
                             Terms
                         </Link>
                         <Link
                             href="/contact"
+                            prefetch={false}
                             className="text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                         >
                             Contact

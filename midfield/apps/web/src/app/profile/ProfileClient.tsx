@@ -113,6 +113,46 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const usernameInputRef = useRef<HTMLInputElement>(null);
+    const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
+
+    const BADGE_INFO: Record<string, { title: string, description: string, icon: any, color: string, bg: string, border: string, text: string }> = {
+        'trendsetter': {
+            title: 'Trendsetter',
+            description: 'You started the conversation! Awarded for being the first to post a take on any topic.',
+            icon: Leaf,
+            color: 'emerald',
+            bg: 'bg-emerald-100 dark:bg-emerald-900/30',
+            border: 'border-emerald-200 dark:border-emerald-800',
+            text: 'text-emerald-600 dark:text-emerald-400'
+        },
+        'original-10': {
+            title: 'Original XI',
+            description: 'Legendary status. You were one of the first 10 users to join Midfield.',
+            icon: Star,
+            color: 'amber',
+            bg: 'bg-amber-100 dark:bg-amber-900/30',
+            border: 'border-amber-200 dark:border-amber-800',
+            text: 'text-amber-600 dark:text-amber-400'
+        },
+        'club-100': {
+            title: 'Club 100',
+            description: 'Early adopter. You were among the first 100 users on the platform.',
+            icon: Sparkles,
+            color: 'purple',
+            bg: 'bg-purple-100 dark:bg-purple-900/30',
+            border: 'border-purple-200 dark:border-purple-800',
+            text: 'text-purple-600 dark:text-purple-400'
+        },
+        'club-1000': {
+            title: 'Club 1k',
+            description: 'Founding Member. You joined with the first 1000 users.',
+            icon: Flame,
+            color: 'blue',
+            bg: 'bg-blue-100 dark:bg-blue-900/30',
+            border: 'border-blue-200 dark:border-blue-800',
+            text: 'text-blue-600 dark:text-blue-400'
+        }
+    };
 
     const showToast = (message: string, type: 'success' | 'error') => {
         setToastMessage(message);
@@ -423,24 +463,33 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 {/* Stats Card */}
                 <Card className="col-span-6 md:col-span-4" style={{ padding: '20px' }}>
                     <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-4">Activity</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                         <div style={{ textAlign: 'center' }}>
                             <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-2">
                                 <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">
+                            <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-neutral-100">
                                 {profile?.posts?.[0]?.count ?? 0}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-400">Takes Posted</p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400 mt-1">Takes Posted</p>
+                        </div>
+                        <div style={{ textAlign: 'center' }}>
+                            <div className="w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mx-auto mb-2">
+                                <Hash className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                            </div>
+                            <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-neutral-100">
+                                {profile?.activity_stats?.topics_interacted ?? 0}
+                            </p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400 mt-1">Discussions</p>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <div className="w-10 h-10 rounded-md bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-2">
                                 <Heart className="w-5 h-5 text-rose-500 dark:text-rose-400" />
                             </div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">
-                                {profile?.reactions?.[0]?.count ?? 0}
+                            <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-neutral-100">
+                                {profile?.activity_stats?.reactions_received ?? 0}
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-400">Likes Given</p>
+                            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-neutral-400 mt-1">Reactions Received</p>
                         </div>
                     </div>
                 </Card>
@@ -557,35 +606,20 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
                         {profile?.badges && profile.badges.length > 0 ? (
                             profile.badges.map((badge: string) => {
-                                if (badge === 'trendsetter') {
-                                    return (
-                                        <div key={badge} title="Trendsetter: Seeded a topic" className="w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center">
-                                            <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                        </div>
-                                    )
-                                }
-                                if (badge === 'original-10') {
-                                    return (
-                                        <div key={badge} title="Original XI: First 10 Users" className="w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 flex items-center justify-center">
-                                            <Star className="w-5 h-5 text-amber-600 dark:text-amber-400 fill-current" />
-                                        </div>
-                                    )
-                                }
-                                if (badge === 'club-100') {
-                                    return (
-                                        <div key={badge} title="Club 100: First 100 Users" className="w-10 h-10 rounded-md bg-purple-100 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-800 flex items-center justify-center">
-                                            <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                        </div>
-                                    )
-                                }
-                                if (badge === 'club-1000') {
-                                    return (
-                                        <div key={badge} title="Club 1000: First 1000 Users" className="w-10 h-10 rounded-md bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
-                                            <Flame className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                                        </div>
-                                    )
-                                }
-                                return null;
+                                const info = BADGE_INFO[badge];
+                                if (!info) return null;
+                                const Icon = info.icon;
+
+                                return (
+                                    <button
+                                        key={badge}
+                                        onClick={() => setSelectedBadge(badge)}
+                                        className={`w-10 h-10 rounded-md ${info.bg} border ${info.border} flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer`}
+                                        title={info.title}
+                                    >
+                                        <Icon className={`w-5 h-5 ${info.text} ${badge === 'original-10' ? 'fill-current' : ''}`} />
+                                    </button>
+                                );
                             })
                         ) : (
                             // Empty State
@@ -596,6 +630,31 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </div>
                     <p className="text-[10px] text-slate-400 dark:text-neutral-500">Earn badges by being an early adopter or seeding new topics.</p>
                 </Card>
+
+                {/* Badge Detail Modal */}
+                <Dialog open={!!selectedBadge} onOpenChange={(open) => !open && setSelectedBadge(null)}>
+                    <DialogContent>
+                        {selectedBadge && BADGE_INFO[selectedBadge] && (
+                            <div className="flex flex-col items-center text-center p-4">
+                                <div className={`w-20 h-20 rounded-full ${BADGE_INFO[selectedBadge].bg} flex items-center justify-center mb-6 ring-4 ring-offset-4 ring-offset-white dark:ring-offset-neutral-900 ${BADGE_INFO[selectedBadge].border.replace('border', 'ring')}`}>
+                                    {(() => {
+                                        const Icon = BADGE_INFO[selectedBadge].icon;
+                                        return <Icon className={`w-10 h-10 ${BADGE_INFO[selectedBadge].text}`} strokeWidth={1.5} />;
+                                    })()}
+                                </div>
+                                <DialogHeader className="items-center space-y-3 mb-6">
+                                    <DialogTitle className="text-2xl">{BADGE_INFO[selectedBadge].title}</DialogTitle>
+                                    <DialogDescription className="text-center text-base max-w-xs mx-auto">
+                                        {BADGE_INFO[selectedBadge].description}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Button onClick={() => setSelectedBadge(null)} size="lg" className="w-full sm:w-auto min-w-[140px]">
+                                    Nice!
+                                </Button>
+                            </div>
+                        )}
+                    </DialogContent>
+                </Dialog>
 
                 {/* Account Info Card */}
                 <Card className="col-span-6 sm:col-span-3 md:col-span-3" style={{ padding: '16px' }}>
