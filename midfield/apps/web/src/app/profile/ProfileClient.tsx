@@ -643,25 +643,37 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
 
                 {/* Badge Detail Modal */}
                 <Dialog open={!!selectedBadge} onOpenChange={(open) => !open && setSelectedBadge(null)}>
-                    <DialogContent style={{ width: '100%', maxWidth: '400px' }}>
+                    <DialogContent>
                         {selectedBadge && BADGE_INFO[selectedBadge] && (
-                            <div className="flex flex-col items-center text-center p-4" style={{ width: '100%' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%', maxWidth: '100%' }}>
                                 <div
-                                    className={`rounded-xl ${BADGE_INFO[selectedBadge].bg} border ${BADGE_INFO[selectedBadge].border} flex items-center justify-center mb-6`}
-                                    style={{ width: '80px', height: '80px' }}
+                                    className={`${BADGE_INFO[selectedBadge].bg} border ${BADGE_INFO[selectedBadge].border}`}
+                                    style={{
+                                        width: '80px',
+                                        height: '80px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginBottom: '24px',
+                                        borderRadius: '24px' // Softer radius for larger size
+                                    }}
                                 >
                                     {(() => {
                                         const Icon = BADGE_INFO[selectedBadge].icon;
                                         return <Icon className={`w-10 h-10 ${BADGE_INFO[selectedBadge].text}`} strokeWidth={1.5} />;
                                     })()}
                                 </div>
-                                <DialogHeader className="items-center space-y-3 mb-6" style={{ width: '100%' }}>
-                                    <DialogTitle className="text-2xl font-bold">{BADGE_INFO[selectedBadge].title}</DialogTitle>
-                                    <DialogDescription className="text-center text-base max-w-xs mx-auto">
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '24px', width: '100%' }}>
+                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">{BADGE_INFO[selectedBadge].title}</h2>
+                                    <p className="text-base text-slate-500 dark:text-neutral-400" style={{ maxWidth: '280px', lineHeight: '1.5' }}>
                                         {BADGE_INFO[selectedBadge].description}
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <Button onClick={() => setSelectedBadge(null)} size="lg" className="w-full sm:w-auto min-w-[140px]">
+                                    </p>
+                                </div>
+                                <Button
+                                    onClick={() => setSelectedBadge(null)}
+                                    size="lg"
+                                    style={{ width: '100%', maxWidth: '200px' }}
+                                >
                                     Nice!
                                 </Button>
                             </div>
