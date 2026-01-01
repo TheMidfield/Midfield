@@ -617,11 +617,11 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                         onClick={() => setSelectedBadge(badge)}
                                         onMouseEnter={() => setHoveredBadgeTitle(info.title)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
-                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
+                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
                                         style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         title={info.title}
                                     >
-                                        <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-12`} strokeWidth={1.5} />
+                                        <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-6`} strokeWidth={1.5} />
                                     </button>
                                 );
                             })
@@ -643,17 +643,20 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
 
                 {/* Badge Detail Modal */}
                 <Dialog open={!!selectedBadge} onOpenChange={(open) => !open && setSelectedBadge(null)}>
-                    <DialogContent>
+                    <DialogContent style={{ width: '100%', maxWidth: '400px' }}>
                         {selectedBadge && BADGE_INFO[selectedBadge] && (
-                            <div className="flex flex-col items-center text-center p-4">
-                                <div className={`w-20 h-20 rounded-2xl ${BADGE_INFO[selectedBadge].bg} flex items-center justify-center mb-6 ring-4 ring-offset-4 ring-offset-white dark:ring-offset-neutral-900 ${BADGE_INFO[selectedBadge].border.replace('border', 'ring')}`}>
+                            <div className="flex flex-col items-center text-center p-4" style={{ width: '100%' }}>
+                                <div
+                                    className={`rounded-xl ${BADGE_INFO[selectedBadge].bg} border ${BADGE_INFO[selectedBadge].border} flex items-center justify-center mb-6`}
+                                    style={{ width: '80px', height: '80px' }}
+                                >
                                     {(() => {
                                         const Icon = BADGE_INFO[selectedBadge].icon;
                                         return <Icon className={`w-10 h-10 ${BADGE_INFO[selectedBadge].text}`} strokeWidth={1.5} />;
                                     })()}
                                 </div>
-                                <DialogHeader className="items-center space-y-3 mb-6">
-                                    <DialogTitle className="text-2xl">{BADGE_INFO[selectedBadge].title}</DialogTitle>
+                                <DialogHeader className="items-center space-y-3 mb-6" style={{ width: '100%' }}>
+                                    <DialogTitle className="text-2xl font-bold">{BADGE_INFO[selectedBadge].title}</DialogTitle>
                                     <DialogDescription className="text-center text-base max-w-xs mx-auto">
                                         {BADGE_INFO[selectedBadge].description}
                                     </DialogDescription>
