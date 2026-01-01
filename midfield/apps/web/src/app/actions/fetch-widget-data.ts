@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getTopicsByType } from "@midfield/logic/src/topics";
+import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getTopicsByType, getClubAbbreviation } from "@midfield/logic/src/topics";
 
 export type WidgetEntity = {
     id: string;
@@ -757,14 +757,14 @@ export async function getMatchCenterData(limit = 12): Promise<MatchCenterFixture
                 title: homeTeam.title,
                 slug: homeTeam.slug,
                 badgeUrl: (homeTeam.metadata as any)?.badge_url,
-                abbreviation: (homeTeam.metadata as any)?.abbreviation,
+                abbreviation: (homeTeam.metadata as any)?.abbreviation || getClubAbbreviation(homeTeam.slug, homeTeam.title),
             },
             awayTeam: {
                 id: awayTeam.id,
                 title: awayTeam.title,
                 slug: awayTeam.slug,
                 badgeUrl: (awayTeam.metadata as any)?.badge_url,
-                abbreviation: (awayTeam.metadata as any)?.abbreviation,
+                abbreviation: (awayTeam.metadata as any)?.abbreviation || getClubAbbreviation(awayTeam.slug, awayTeam.title),
             },
             competition: {
                 id: competition.id,
@@ -972,14 +972,14 @@ export async function getRecentResultsData(limit = 6): Promise<RecentResult[]> {
             title: f.homeTeam.title,
             slug: f.homeTeam.slug,
             badgeUrl: (f.homeTeam.metadata as any)?.badge_url,
-            abbreviation: (f.homeTeam.metadata as any)?.abbreviation,
+            abbreviation: (f.homeTeam.metadata as any)?.abbreviation || getClubAbbreviation(f.homeTeam.slug, f.homeTeam.title),
         },
         awayTeam: {
             id: f.awayTeam.id,
             title: f.awayTeam.title,
             slug: f.awayTeam.slug,
             badgeUrl: (f.awayTeam.metadata as any)?.badge_url,
-            abbreviation: (f.awayTeam.metadata as any)?.abbreviation,
+            abbreviation: (f.awayTeam.metadata as any)?.abbreviation || getClubAbbreviation(f.awayTeam.slug, f.awayTeam.title),
         },
         competition: {
             id: f.competition.id,

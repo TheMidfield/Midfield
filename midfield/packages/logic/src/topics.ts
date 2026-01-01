@@ -1,6 +1,10 @@
 import { supabase } from "./supabase";
 import type { Topic, TopicType } from "@midfield/types";
 import { ALLOWED_LEAGUES } from "./constants";
+import { getClubAbbreviation } from "./club-abbreviations";
+
+// Re-export for convenience
+export { getClubAbbreviation };
 
 /**
  * Get all topics

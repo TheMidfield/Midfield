@@ -4,10 +4,11 @@ import { useState, useRef, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield } from "lucide-react";
+import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield, Loader2 } from "lucide-react";
 import { uploadAvatar, updateProfile } from "./actions";
 import { FavoriteClubSelector, type Club } from "@/components/onboarding/FavoriteClubSelector";
 import { signOut } from "@/app/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 
 interface ProfileClientProps {
     initialData: {
@@ -53,7 +54,7 @@ function Toast({ message, type }: { message: string | null; type: 'success' | 'e
             style={{
                 position: 'fixed',
                 top: '96px',
-                right: '96px',
+                right: '24px',
                 zIndex: 50,
                 display: 'flex',
                 alignItems: 'center',
@@ -72,7 +73,11 @@ function Toast({ message, type }: { message: string | null; type: 'success' | 'e
                 style={{ width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
                 className={isSuccess ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50'}
             >
-                {isSuccess ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
+                {isSuccess ? (
+                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                    <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                )}
             </div>
             <p className="text-sm font-medium text-slate-700 dark:text-neutral-200" style={{ whiteSpace: 'nowrap' }}>{currentMessage}</p>
         </div>
@@ -93,6 +98,8 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
     const [isEditingClub, setIsEditingClub] = useState(false);
     const [favoriteClubId, setFavoriteClubId] = useState(profile?.favorite_club_id || null);
     const [usernameError, setUsernameError] = useState<string | null>(null);
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
     const [isPending, startTransition] = useTransition();
@@ -199,9 +206,47 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
         }
     };
 
+    // Check username availability with debouncing
+    useEffect(() => {
+        if (!isEditingUsername || username === profile.username) {
+            setUsernameAvailable(null);
+            return;
+        }
+
+        const trimmed = username.trim();
+
+        // Validate format first
+        if (trimmed.length < 3 || trimmed.length > 20 || !/^[a-zA-Z0-9_]+$/.test(trimmed)) {
+            setUsernameError("3-20 characters, letters/numbers/underscores only");
+            setUsernameAvailable(null);
+            return;
+        }
+
+        setUsernameError(null);
+        const timeoutId = setTimeout(async () => {
+            setIsCheckingUsername(true);
+            const supabase = createClient();
+            const { data: existing } = await supabase
+                .from('users')
+                .select('id')
+                .ilike('username', trimmed)
+                .neq('id', initialData.user.id)
+                .maybeSingle();
+
+            setIsCheckingUsername(false);
+            setUsernameAvailable(!existing);
+            if (existing) {
+                setUsernameError("Username is already taken");
+            }
+        }, 500); // Debounce 500ms
+
+        return () => clearTimeout(timeoutId);
+    }, [username, isEditingUsername, profile.username, initialData.user.id]);
+
     const handleUsernameEdit = () => {
         setUsername(profile.username);
         setUsernameError(null);
+        setUsernameAvailable(null);
         setIsEditingUsername(true);
         setTimeout(() => usernameInputRef.current?.focus(), 50);
     };
@@ -217,6 +262,11 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
             return;
         }
 
+        if (usernameAvailable === false) {
+            setUsernameError("Username is already taken");
+            return;
+        }
+
         startTransition(async () => {
             const result = await updateProfile({ username });
 
@@ -224,6 +274,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 showToast("Username updated", 'success');
                 setProfile((prev: any) => ({ ...prev, username }));
                 setIsEditingUsername(false);
+                setUsernameAvailable(null);
                 router.refresh();
             } else {
                 setUsernameError(result.error || "Update failed");
@@ -234,6 +285,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
     const handleUsernameCancel = () => {
         setUsername(profile.username);
         setUsernameError(null);
+        setUsernameAvailable(null);
         setIsEditingUsername(false);
     };
 
@@ -243,7 +295,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
     };
 
     return (
-        <div style={{ width: '100%', maxWidth: '600px' }}>
+        <div style={{ width: '100%', maxWidth: '560px', margin: '0 auto', padding: '32px 16px' }}>
             <Toast message={toastMessage} type={toastType} />
 
             {/* Page Header */}
@@ -257,9 +309,16 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div style={{ position: 'relative', flexShrink: 0 }}>
                         {profile?.avatar_url ? (
-                            <img src={profile.avatar_url} alt="Profile" style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} />
+                            <img 
+                                src={profile.avatar_url} 
+                                alt="Profile" 
+                                style={{ width: '80px', height: '80px', borderRadius: '8px', objectFit: 'cover' }} 
+                            />
                         ) : (
-                            <div style={{ width: '80px', height: '80px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700">
+                            <div 
+                                style={{ width: '80px', height: '80px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                                className="bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700"
+                            >
                                 <User className="w-8 h-8 text-slate-400 dark:text-neutral-500" />
                             </div>
                         )}
@@ -271,7 +330,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </div>
                     <div style={{ flex: 1 }}>
                         <p className="text-sm font-medium text-slate-900 dark:text-neutral-100 mb-1">Profile photo</p>
-                        <p className="text-xs text-slate-500 dark:text-neutral-400 mb-3">JPG, PNG or GIF. Max 2MB.</p>
+                        <p className="text-xs text-slate-500 dark:text-neutral-400 mb-3">JPG, PNG or GIF. Max 5MB.</p>
                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
                         <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="sm" icon={Upload} disabled={isUploading || isPending}>
                             {isUploading ? "Uploading..." : "Change photo"}
@@ -282,152 +341,175 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
 
             {/* Username Section */}
             <Card style={{ padding: '24px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
-                    <div style={{ flex: 1 }}>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2">Username</p>
+                <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-3">Username</p>
 
-                        {/* Fixed height container to prevent layout shift */}
-                        <div style={{ minHeight: '80px' }}>
-                            {isEditingUsername ? (
-                                <div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                                        <span className="text-slate-400 dark:text-neutral-500 text-lg">@</span>
-                                        <input
-                                            ref={usernameInputRef}
-                                            type="text"
-                                            value={username}
-                                            onChange={(e) => { setUsername(e.target.value); setUsernameError(null); }}
-                                            style={{ width: '180px', height: '36px', padding: '0 10px' }}
-                                            className={`text-sm font-medium bg-white dark:bg-neutral-800 border-2 rounded-md text-slate-900 dark:text-neutral-100 focus:outline-none transition-colors ${usernameError ? 'border-red-400 dark:border-red-600' : 'border-emerald-500'}`}
-                                            disabled={isPending}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') handleUsernameSave();
-                                                if (e.key === 'Escape') handleUsernameCancel();
-                                            }}
-                                        />
+                <div style={{ minHeight: '70px' }}>
+                    {isEditingUsername ? (
+                        <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <span className="text-emerald-600 dark:text-emerald-400 text-base font-bold">@</span>
+                                <div style={{ position: 'relative', flex: 1, maxWidth: '220px' }}>
+                                    <input
+                                        ref={usernameInputRef}
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => { setUsername(e.target.value); setUsernameError(null); }}
+                                        className={`h-10 px-3 pr-10 text-sm font-medium bg-white dark:bg-neutral-800 border-2 rounded-md text-slate-900 dark:text-neutral-100 focus:outline-none transition-colors ${usernameError
+                                                ? 'border-red-400 dark:border-red-600 focus:border-red-500'
+                                                : usernameAvailable === true
+                                                    ? 'border-emerald-400 dark:border-emerald-600 focus:border-emerald-500'
+                                                    : 'border-slate-300 dark:border-neutral-700 focus:border-emerald-500'
+                                            }`}
+                                        style={{ width: '100%' }}
+                                        disabled={isPending}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleUsernameSave();
+                                            if (e.key === 'Escape') handleUsernameCancel();
+                                        }}
+                                        maxLength={20}
+                                    />
+                                    <div style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)' }}>
+                                        {isCheckingUsername ? (
+                                            <Loader2 className="w-4 h-4 text-slate-400 dark:text-neutral-500 animate-spin" />
+                                        ) : usernameAvailable === true && username !== profile.username ? (
+                                            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                        ) : usernameAvailable === false || usernameError ? (
+                                            <X className="w-4 h-4 text-red-500" />
+                                        ) : null}
                                     </div>
-                                    {usernameError && (
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                                            <AlertCircle className="w-3.5 h-3.5 text-red-500" style={{ flexShrink: 0 }} />
-                                            <span className="text-xs text-red-500">{usernameError}</span>
-                                        </div>
-                                    )}
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <Button onClick={handleUsernameSave} size="sm" disabled={isPending || username === profile.username}>
-                                            {isPending ? "Saving..." : "Save"}
-                                        </Button>
-                                        <Button onClick={handleUsernameCancel} variant="outline" size="sm" disabled={isPending}>
-                                            Cancel
-                                        </Button>
-                                    </div>
+                                </div>
+                            </div>
+
+                            {usernameError ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                    <AlertCircle className="w-3.5 h-3.5 text-red-500" style={{ flexShrink: 0 }} />
+                                    <span className="text-xs text-red-500 font-medium">{usernameError}</span>
+                                </div>
+                            ) : usernameAvailable === true && username !== profile.username ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" style={{ flexShrink: 0 }} />
+                                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Username available</span>
                                 </div>
                             ) : (
-                                <div>
-                                    <p className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-3">@{profile.username}</p>
-                                    <Button onClick={handleUsernameEdit} variant="outline" size="sm" icon={Pencil}>
-                                        Edit username
-                                    </Button>
-                                </div>
+                                <p className="text-xs text-slate-500 dark:text-neutral-500 mb-2">
+                                    3-20 characters • Letters, numbers, underscores
+                                </p>
                             )}
+
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                <Button
+                                    onClick={handleUsernameSave}
+                                    size="sm"
+                                    disabled={isPending || username === profile.username || usernameAvailable === false || isCheckingUsername}
+                                >
+                                    {isPending ? "Saving..." : "Save"}
+                                </Button>
+                                <Button onClick={handleUsernameCancel} variant="outline" size="sm" disabled={isPending}>
+                                    Cancel
+                                </Button>
+                            </div>
                         </div>
-                    </div>
+                    ) : (
+                        <div>
+                            <p className="text-base font-semibold text-slate-900 dark:text-neutral-100 mb-3">@{profile.username}</p>
+                            <Button onClick={handleUsernameEdit} variant="outline" size="sm" icon={Pencil}>
+                                Edit username
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </Card>
 
             {/* Favorite Club Section */}
             <Card style={{ padding: '24px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
-                    <div style={{ flex: 1 }}>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2">Favorite Club</p>
+                <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-3">Favorite Club</p>
 
-                        {!isEditingClub ? (
-                            <div className="space-y-3">
-                                {profile?.favorite_club ? (
-                                    <>
-                                        <div className="flex items-center gap-3 p-3 rounded-md bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700">
-                                            {profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url ? (
-                                                <img
-                                                    src={profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url}
-                                                    alt={profile.favorite_club.title}
-                                                    className="w-8 h-8 object-contain"
-                                                />
-                                            ) : (
-                                                <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                                            )}
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 uppercase tracking-tight">
-                                                    {profile.favorite_club.title}
-                                                </p>
-                                                {profile.favorite_club.metadata?.league_name && (
-                                                    <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider font-semibold">
-                                                        {profile.favorite_club.metadata.league_name}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
-                                            Change Club
-                                        </Button>
-                                    </>
-                                ) : (
+                {!isEditingClub ? (
+                    <div className="space-y-3">
+                        {profile?.favorite_club ? (
+                            <>
+                                <div className="flex items-center gap-3 p-3 rounded-md bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700">
+                                    {profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url ? (
+                                        <img
+                                            src={profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url}
+                                            alt={profile.favorite_club.title}
+                                            className="w-8 h-8 object-contain"
+                                        />
+                                    ) : (
+                                        <Shield className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                    )}
                                     <div>
-                                        <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">No club selected</p>
-                                        <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield}>
-                                            Select Club
-                                        </Button>
+                                        <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 uppercase tracking-tight">
+                                            {profile.favorite_club.title}
+                                        </p>
+                                        {profile.favorite_club.metadata?.league_name && (
+                                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider font-semibold">
+                                                {profile.favorite_club.metadata.league_name}
+                                            </p>
+                                        )}
                                     </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                <FavoriteClubSelector
-                                    initialClubId={favoriteClubId}
-                                    onSelect={(club) => setFavoriteClubId(club?.id || null)}
-                                />
-                                <div className="flex gap-2">
-                                    <Button
-                                        onClick={() => {
-                                            if (favoriteClubId === profile.favorite_club_id) {
-                                                setIsEditingClub(false);
-                                                return;
-                                            }
-                                            startTransition(async () => {
-                                                const result = await updateProfile({ favorite_club_id: favoriteClubId });
-                                                if (result.success) {
-                                                    showToast("Club updated", 'success');
-                                                    setProfile((prev: any) => ({ ...prev, favorite_club_id: favoriteClubId }));
-                                                    setIsEditingClub(false);
-                                                    router.refresh();
-                                                } else {
-                                                    showToast("Update failed", 'error');
-                                                }
-                                            });
-                                        }}
-                                        size="sm"
-                                        disabled={isPending}
-                                    >
-                                        {isPending ? "Saving..." : "Save Club"}
-                                    </Button>
-                                    <Button
-                                        onClick={() => {
-                                            setFavoriteClubId(profile.favorite_club_id);
-                                            setIsEditingClub(false);
-                                        }}
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={isPending}
-                                    >
-                                        Cancel
-                                    </Button>
                                 </div>
+                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
+                                    Change Club
+                                </Button>
+                            </>
+                        ) : (
+                            <div>
+                                <p className="text-sm text-slate-500 dark:text-neutral-400 mb-3">No club selected</p>
+                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield}>
+                                    Select Club
+                                </Button>
                             </div>
                         )}
                     </div>
-                </div>
+                ) : (
+                    <div className="space-y-4">
+                        <FavoriteClubSelector
+                            initialClubId={favoriteClubId}
+                            onSelect={(club) => setFavoriteClubId(club?.id || null)}
+                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <Button
+                                onClick={() => {
+                                    if (favoriteClubId === profile.favorite_club_id) {
+                                        setIsEditingClub(false);
+                                        return;
+                                    }
+                                    startTransition(async () => {
+                                        const result = await updateProfile({ favorite_club_id: favoriteClubId });
+                                        if (result.success) {
+                                            showToast("Club updated", 'success');
+                                            setProfile((prev: any) => ({ ...prev, favorite_club_id: favoriteClubId }));
+                                            setIsEditingClub(false);
+                                            router.refresh();
+                                        } else {
+                                            showToast("Update failed", 'error');
+                                        }
+                                    });
+                                }}
+                                size="sm"
+                                disabled={isPending}
+                            >
+                                {isPending ? "Saving..." : "Save Club"}
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setFavoriteClubId(profile.favorite_club_id);
+                                    setIsEditingClub(false);
+                                }}
+                                variant="outline"
+                                size="sm"
+                                disabled={isPending}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </Card>
 
             {/* Account Info Section */}
-            <Card style={{ padding: '24px', marginBottom: '24px' }}>
+            <Card style={{ padding: '24px', marginBottom: '16px' }}>
                 <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-4">Account</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -450,7 +532,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
             </Card>
 
             {/* Bookmarks Section */}
-            <Card style={{ padding: '0', marginBottom: '24px', overflow: 'hidden' }}>
+            <Card style={{ padding: 0, marginBottom: '24px', overflow: 'hidden' }}>
                 <a
                     href="/profile/bookmarks"
                     className="flex items-center justify-between p-4 hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"

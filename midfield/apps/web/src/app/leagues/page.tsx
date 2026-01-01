@@ -189,43 +189,72 @@ export default async function LeaguesPage() {
               Continental Competitions
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-              {continentalLeagues.map((league: any) => (
-                <Link key={league.id} href={`/topic/${league.slug}`}>
-                  <Card variant="interactive" className="p-6 group h-full relative overflow-hidden border-2 border-amber-200 dark:border-amber-900/50">
-                    {/* Background Gradient Accent - Amber for continental */}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/5 to-transparent rounded-full blur-2xl group-hover:from-amber-500/10 transition-all"></div>
+              {continentalLeagues.map((league: any) => {
+                const isUCL = league.slug.includes("champions-league") || league.title.includes("Champions League");
+                const isEuropa = league.slug.includes("europa-league") || league.title.includes("Europa League");
 
-                    <div className="relative">
-                      {/* League Badge */}
-                      <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
-                        {league.metadata?.badge_url ? (
+                // Dynamic Styling Logic - Europa matches UCL architecture
+                // UCL: Dark Navy (#001A57) Light Mode / Blue-500 (#3b82f6) Dark Mode
+                // Europa: Orange-600 Light Mode / Orange-500 Dark Mode
+
+                const borderClass = isUCL
+                  ? "border-[#001A57]/30 dark:border-[#3b82f6]/30 hover:border-[#001A57] dark:hover:border-[#3b82f6]"
+                  : isEuropa
+                    ? "border-orange-600/30 dark:border-orange-500/30 hover:border-orange-600 dark:hover:border-orange-500"
+                    : "border-amber-200 dark:border-amber-900/50 hover:border-amber-400"; // Fallback
+
+                const textClass = isUCL
+                  ? "group-hover:text-[#001A57] dark:group-hover:text-[#60a5fa]"
+                  : isEuropa
+                    ? "group-hover:text-orange-700 dark:group-hover:text-orange-400"
+                    : "group-hover:text-amber-600 dark:group-hover:text-amber-400";
+
+                const bgGradientClass = isUCL
+                  ? "from-blue-600/5 group-hover:from-blue-600/10"
+                  : isEuropa
+                    ? "from-orange-600/5 group-hover:from-orange-600/10"
+                    : "from-amber-500/5 group-hover:from-amber-500/10";
+
+                return (
+                  <Link key={league.id} href={`/topic/${league.slug}`}>
+                    <Card
+                      className={`p-6 group h-full relative overflow-hidden border-2 cursor-pointer transition-all duration-200 active:scale-[0.98] lg:active:scale-100 ${borderClass} ${isUCL ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20' : isEuropa ? 'hover:bg-orange-50 dark:hover:bg-orange-900/20' : 'hover:bg-amber-50 dark:hover:bg-amber-900/20'}`}
+                    >
+                      {/* Background Gradient Accent */}
+                      <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br to-transparent rounded-full blur-2xl transition-all ${bgGradientClass}`}></div>
+
+                      <div className="relative">
+                        {/* League Badge */}
+                        <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                          {league.metadata?.badge_url ? (
+                            <img
+                              src={league.metadata.badge_url}
+                              alt={league.title}
+                              className="max-w-full max-h-full object-contain"
+                            />
+                          ) : (
+                            <Star className="w-16 h-16 text-amber-300 dark:text-amber-600" />
+                          )}
+                        </div>
+
+                        {/* League Name */}
+                        <h3 className={`text-center text-lg font-bold text-slate-900 dark:text-neutral-100 transition-colors mb-3 ${textClass}`}>
+                          {league.title.replace(/^UEFA\s/, '')}
+                        </h3>
+
+                        {/* Continental Flag (UEFA) */}
+                        <div className="flex justify-center">
                           <img
-                            src={league.metadata.badge_url}
-                            alt={league.title}
-                            className="max-w-full max-h-full object-contain"
+                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/uefa.png"
+                            alt="UEFA"
+                            className="h-5 w-auto object-contain rounded border border-slate-200 dark:border-neutral-700 bg-white"
                           />
-                        ) : (
-                          <Star className="w-16 h-16 text-amber-300 dark:text-amber-600" />
-                        )}
+                        </div>
                       </div>
-
-                      {/* League Name */}
-                      <h3 className="text-center text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors mb-3">
-                        {league.title.replace(/^UEFA\s/, '')}
-                      </h3>
-
-                      {/* Continental Flag (UEFA) */}
-                      <div className="flex justify-center">
-                        <img
-                          src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/uefa.png"
-                          alt="UEFA"
-                          className="h-5 w-auto object-contain rounded border border-slate-200 dark:border-neutral-700 bg-white"
-                        />
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              ))}
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}

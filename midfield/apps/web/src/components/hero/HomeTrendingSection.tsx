@@ -109,8 +109,8 @@ export function HomeTrendingSection() {
         <div className="w-full">
             {/* Header */}
             <div className="flex items-center gap-2 mb-3 sm:mb-4">
-                <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 dark:text-emerald-400" />
-                <h2 className="font-display font-semibold text-lg sm:text-xl text-slate-900 dark:text-neutral-100">
+                <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+                <h2 className="font-display text-xl sm:text-2xl font-semibold text-slate-900 dark:text-neutral-100">
                     Trending
                 </h2>
             </div>

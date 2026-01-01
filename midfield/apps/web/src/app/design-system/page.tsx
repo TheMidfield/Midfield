@@ -16,6 +16,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { PlayerCard } from "@/components/ui/PlayerCard";
 import { ClubCard } from "@/components/ui/ClubCard";
 import { ModalShowcase } from "@/components/design-system/ModalShowcase";
+import { DevUtilities } from "@/components/design-system/DevUtilities";
 import { TrendingWidget } from "@/components/widgets/TrendingWidget";
 import { SimilarWidget } from "@/components/widgets/SimilarWidget";
 import {
@@ -38,13 +39,19 @@ export default function DesignSystemPage() {
                     </div>
                     <ThemeToggle />
                 </div>
-                <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">Design System</h1>
+                <h1 className="text-5xl font-bold tracking-tight text-slate-900 dark:text-neutral-100">Dev Tools</h1>
                 <p className="text-xl text-slate-600 dark:text-neutral-400 leading-relaxed max-w-3xl">
-                    A complete reference of components, patterns, and principles. Every element is intentional, standardized, and accessible.
+                    Development utilities, design system reference, and testing tools. Everything you need for rapid iteration.
                 </p>
             </header>
 
             <Separator />
+
+            {/* Dev Utilities */}
+            <section className="space-y-6">
+                <SectionHeader title="Dev Utilities" description="Testing tools and page previews for development." />
+                <DevUtilities />
+            </section>
 
             {/* Core Design Principles */}
             <section className="space-y-6">

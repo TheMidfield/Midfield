@@ -25,16 +25,16 @@ export function LeagueTable({ standings }: LeagueTableProps) {
             className="squad-scroll pt-3 sm:pt-4 -mr-2 sm:-mr-3 pr-3 sm:pr-4 overflow-y-auto"
             style={{ maxHeight: '420px' }}
         >
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left table-fixed">
                 <thead className="sticky -top-3 sm:-top-4 z-10">
                     <tr className="border-b border-slate-200 dark:border-neutral-700 text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-neutral-500 uppercase tracking-wider bg-white dark:bg-neutral-900">
                         <th className="py-2 pl-2 w-7 text-center bg-white dark:bg-neutral-900">#</th>
                         <th className="py-2 pl-2 bg-white dark:bg-neutral-900">Team</th>
-                        <th className="py-2 text-center w-7 bg-white dark:bg-neutral-900">P</th>
-                        <th className="py-2 text-center w-7 bg-white dark:bg-neutral-900">W</th>
-                        <th className="py-2 text-center w-7 bg-white dark:bg-neutral-900">D</th>
-                        <th className="py-2 text-center w-7 bg-white dark:bg-neutral-900">L</th>
-                        <th className="py-2 text-center w-9 font-bold text-slate-600 dark:text-neutral-300 bg-white dark:bg-neutral-900">Pts</th>
+                        <th className="py-2 text-center w-6 bg-white dark:bg-neutral-900">P</th>
+                        <th className="py-2 text-center w-6 bg-white dark:bg-neutral-900">W</th>
+                        <th className="py-2 text-center w-6 bg-white dark:bg-neutral-900">D</th>
+                        <th className="py-2 text-center w-6 bg-white dark:bg-neutral-900">L</th>
+                        <th className="py-2 text-center w-8 font-bold text-slate-600 dark:text-neutral-300 bg-white dark:bg-neutral-900">Pts</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 dark:divide-neutral-800/50">
@@ -54,8 +54,8 @@ export function LeagueTable({ standings }: LeagueTableProps) {
                                 <td className={cn("py-2 pl-2 text-center text-xs", positionStyle || "text-slate-500 dark:text-neutral-400")}>
                                     {row.position}
                                 </td>
-                                <td className="py-2 pl-2">
-                                    <Link href={`/topic/${row.team?.slug}`} className="flex items-center gap-2 max-w-[140px] sm:max-w-none">
+                                <td className="py-2 pl-2 min-w-0">
+                                    <Link href={`/topic/${row.team?.slug}`} className="flex items-center gap-2 min-w-0">
                                         <div className="relative w-5 h-5 shrink-0">
                                             {row.team?.metadata?.badge_url ? (
                                                 <NextImage
@@ -71,7 +71,7 @@ export function LeagueTable({ standings }: LeagueTableProps) {
                                                 </div>
                                             )}
                                         </div>
-                                        <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-200 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                                        <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-200 truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors min-w-0">
                                             {row.team?.title || "Unknown Team"}
                                         </span>
                                     </Link>
