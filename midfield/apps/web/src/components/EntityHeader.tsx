@@ -304,79 +304,39 @@ export function EntityHeader({
                     )}
 
                     {/* Content - Consistent horizontal layout, smart mobile sizing */}
-                    <div className="relative z-10 pl-2.5 sm:pl-4 md:pl-6 pt-1.5 sm:pt-0">
-                        <div className={`flex gap-3 sm:gap-5 md:gap-7 ${isPlayer ? 'items-end' : 'items-center'}`}>
+                    <div className={`relative z-10 pl-2.5 sm:pl-4 md:pl-6 ${isPlayer ? 'pt-2 sm:pt-0' : 'py-2 sm:py-0'}`}>
+                        <div className={`flex gap-3 sm:gap-5 md:gap-7 ${isPlayer ? 'items-stretch sm:items-end min-h-[130px]' : 'items-center'}`}>
                             {/* Avatar - Unified sizing for both types */}
-                            <div className="shrink-0">
+                            <div className={`shrink-0 ${isPlayer ? 'self-end' : ''}`}>
                                 {isPlayer ? (
-                                    <div className={`relative ${imageUrl ? 'w-24 h-24 sm:w-28 sm:h-28 md:w-28 md:h-28 lg:w-32 lg:h-32' : 'w-28 h-28 sm:w-32 sm:h-32 md:w-32 md:h-32 lg:w-36 lg:h-36'} pl-1 sm:pl-2 md:pl-3 lg:pl-4`}>
-                                        {imageUrl ? (
-                                            <NextImage
-                                                src={imageUrl}
-                                                alt={title}
-                                                fill
-                                                className="object-contain object-bottom"
-                                                sizes="(max-width: 640px) 96px, (max-width: 768px) 112px, 144px"
-                                                priority
-                                                unoptimized={true}
-                                            />
-                                        ) : (
-                                            <div
-                                                className="w-full h-24 sm:h-32 md:h-36 lg:h-44 bg-slate-300 dark:bg-neutral-700 mx-auto"
-                                                style={{
-                                                    mask: "url('/player-silhouette.png') no-repeat bottom center",
-                                                    WebkitMask: "url('/player-silhouette.png') no-repeat bottom center",
-                                                    maskSize: "contain",
-                                                    WebkitMaskSize: "contain"
-                                                }}
-                                            />
-                                        )}
-
+                                    <div className="relative w-[100px] h-[100px] sm:w-[180px] sm:h-[180px] md:w-[220px] md:h-[220px] lg:w-[260px] lg:h-[260px] -mb-px">
+                                        <NextImage
+                                            src={imageUrl || '/placeholder-player.png'}
+                                            alt={title}
+                                            fill
+                                            className="object-contain object-bottom"
+                                            priority
+                                            unoptimized={true}
+                                        />
                                     </div>
                                 ) : (
-                                    // Badge for clubs and leagues
-                                    <div className="pl-1 sm:pl-2 md:pl-3 lg:pl-4 py-4 sm:py-5 md:py-8 lg:py-10 relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-28 lg:h-28">
-                                        {isLeague ? (
-                                            // League - Show logo with theme switching
-                                            <>
-                                                {badgeUrl && (
-                                                    <img
-                                                        src={badgeUrl}
-                                                        alt={title}
-                                                        className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 dark:hidden"
-                                                    />
-                                                )}
-                                                {(badgeUrlDark || badgeUrl) && (
-                                                    <img
-                                                        src={badgeUrlDark || badgeUrl}
-                                                        alt={title}
-                                                        className="absolute inset-0 w-full h-full object-contain p-1 sm:p-1.5 hidden dark:block"
-                                                    />
-                                                )}
-                                            </>
-                                        ) : (
-                                            // Club badge
-                                            badgeUrl && (
-                                                <NextImage
-                                                    src={badgeUrl}
-                                                    alt={title}
-                                                    fill
-                                                    className="object-contain p-1 sm:p-1.5"
-                                                    sizes="(max-width: 640px) 56px, (max-width: 768px) 80px, 112px"
-                                                    priority
-                                                    unoptimized={true}
-                                                />
-                                            )
-                                        )}
+                                    <div className="relative w-16 h-16 sm:w-24 sm:h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 bg-white dark:bg-neutral-800 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-neutral-700 shadow-sm overflow-hidden flex items-center justify-center">
+                                        <NextImage
+                                            src={badgeUrl || '/placeholder-club.png'}
+                                            alt={title}
+                                            fill
+                                            className="object-contain p-2 sm:p-3 md:p-4"
+                                            unoptimized={true}
+                                        />
                                     </div>
                                 )}
                             </div>
 
                             {/* Info - Unified padding for both types */}
-                            <div className="flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 py-3 sm:py-4 md:py-5 flex flex-col justify-center">
+                            <div className={`flex-1 min-w-0 pr-2.5 sm:pr-4 md:pr-6 flex flex-col justify-center ${isPlayer ? 'self-center sm:self-auto sm:py-4 md:py-5' : 'py-2 sm:py-4 md:py-5'}`}>
 
                                 {/* Row 1: Title + Share Button */}
-                                <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1.5 sm:mb-2 md:mb-2.5">
+                                <div className="flex items-center justify-between gap-3 sm:gap-4 mb-1 sm:sm:mb-2 md:mb-2.5">
                                     <h1 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-slate-900 dark:text-neutral-100 leading-tight truncate">
                                         {title}
                                     </h1>
@@ -388,7 +348,7 @@ export function EntityHeader({
                                 </div>
 
                                 {/* Row 2: Badges */}
-                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
+                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1 sm:sm:mb-2 md:mb-2.5">
                                     {/* Show Manager badge if position is Manager/Coach, otherwise show Player badge */}
                                     {isPlayer && (
                                         metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach') ? (
@@ -411,101 +371,198 @@ export function EntityHeader({
                                             {metadata.position}
                                         </Badge>
                                     )}
-
                                 </div>
 
-                                {/* Row 3: Stats */}
-                                {isPlayer && (
-                                    <div className="flex flex-col gap-1.5 sm:gap-2">
-                                        {/* Row 1: Club, Nationality, Age, Kit */}
-                                        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
+                                {/* Row 3: Primary Anchor (Club for Players, League for Clubs) - Mobile Only */}
+                                <div className="flex sm:hidden mb-0.5">
+                                    {isPlayer && metadata?.clubName && (
+                                        <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                            <Button variant="ghost" size="sm" className="h-[22px] px-1.5 gap-1 text-[10px] font-bold bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors border border-slate-200/50 dark:border-neutral-700/50 rounded-md">
+                                                {metadata.clubBadgeUrl && (
+                                                    <div className="relative w-3.5 h-3.5 shrink-0">
+                                                        <NextImage
+                                                            src={metadata.clubBadgeUrl}
+                                                            alt=""
+                                                            fill
+                                                            className="object-contain"
+                                                            unoptimized={true}
+                                                        />
+                                                    </div>
+                                                )}
+                                                <span className="whitespace-nowrap text-slate-700 dark:text-neutral-200">{metadata.clubName}</span>
+                                            </Button>
+                                        </Link>
+                                    )}
+                                    {isClub && metadata?.league && (
+                                        <Link href={`/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                            <Button variant="ghost" size="sm" className="h-[22px] px-1.5 gap-1 text-[10px] font-bold bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors border border-slate-200/50 dark:border-neutral-700/50 rounded-md">
+                                                <Trophy className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                <span className="whitespace-nowrap text-slate-700 dark:text-neutral-200">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>
+                                            </Button>
+                                        </Link>
+                                    )}
+                                </div>
+
+                                {/* Row 3: Stats (Desktop Only) */}
+                                <div className="hidden sm:block">
+                                    {isPlayer && (
+                                        <div className="flex flex-col gap-2">
+                                            {/* Row 1: Club (Full width on mobile) */}
                                             {metadata?.clubName && (
-                                                <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                <div className="flex">
+                                                    <Link href={`/topic/${metadata.clubSlug || metadata.clubName.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                        <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors border border-slate-200/50 dark:border-neutral-800/50">
+                                                            {metadata.clubBadgeUrl && (
+                                                                <div className="relative w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 shrink-0">
+                                                                    <NextImage
+                                                                        src={metadata.clubBadgeUrl}
+                                                                        alt=""
+                                                                        fill
+                                                                        className="object-contain"
+                                                                        unoptimized={true}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                            <span className="whitespace-nowrap">{metadata.clubName}</span>
+                                                        </Button>
+                                                    </Link>
+                                                </div>
+                                            )}
+
+                                            {/* Row 2: Secondary Info Grid for Mobile, Flex for Desktop */}
+                                            <div className="grid grid-cols-2 xs:grid-cols-3 sm:flex sm:flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-2 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
+                                                {metadata?.nationality && (
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Flag className="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                        <span className="whitespace-nowrap font-medium">{metadata.nationality}</span>
+                                                    </div>
+                                                )}
+                                                {metadata?.age && (
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Calendar className="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                        <span className="whitespace-nowrap font-medium">{metadata.age}y</span>
+                                                    </div>
+                                                )}
+                                                {metadata?.kitNumber && (
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Shirt className="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                        <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
+                                                    </div>
+                                                )}
+                                                {metadata?.height && metadata.height.length > 0 && (
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Ruler className="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                        <span className="whitespace-nowrap font-medium">{metadata.height}</span>
+                                                    </div>
+                                                )}
+                                                {metadata?.weight && metadata.weight.length > 0 && (
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Weight className="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                        <span className="whitespace-nowrap font-medium">{metadata.weight.replace(/\s*\(.*?\)/, '')}</span>
+                                                    </div>
+                                                )}
+                                                {metadata?.preferredFoot && (
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <Footprints className="w-3.5 sm:w-3.5 md:w-4 h-3.5 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                        <span className="whitespace-nowrap font-medium capitalize">{metadata.preferredFoot}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {isClub && (
+                                        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
+                                            {metadata?.league && (
+                                                <Link href={`/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
                                                     <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
-                                                        {metadata.clubBadgeUrl && (
-                                                            <div className="relative w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 shrink-0">
-                                                                <NextImage
-                                                                    src={metadata.clubBadgeUrl}
-                                                                    alt=""
-                                                                    fill
-                                                                    className="object-contain"
-                                                                    unoptimized={true}
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        <span className="whitespace-nowrap">{metadata.clubName}</span>
+                                                        <Trophy className="w-3.5 sm:w-4 md:w-4 h-3.5 sm:h-4 md:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                        <span className="whitespace-nowrap">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>
                                                     </Button>
                                                 </Link>
                                             )}
-                                            {metadata?.nationality && (
-                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                    <Flag className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">{metadata.nationality}</span>
+                                            {metadata?.stadium && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                                                    <MapPin className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-medium">{metadata.stadium}</span>
                                                 </div>
                                             )}
-                                            {metadata?.age && (
-                                                <div className="flex items-center gap-1.5 shrink-0">
+                                            {metadata?.founded && (
+                                                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
                                                     <Calendar className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">{metadata.age} years</span>
-                                                </div>
-                                            )}
-                                            {metadata?.kitNumber && (
-                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                    <Shirt className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">#{metadata.kitNumber}</span>
+                                                    <span className="whitespace-nowrap font-medium">Est. {metadata.founded}</span>
                                                 </div>
                                             )}
                                         </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                        {/* Row 2: Height, Weight, Foot */}
-                                        <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-400 dark:text-neutral-500 pl-2 sm:pl-2.5">
-                                            {metadata?.height && metadata.height.length > 0 && (
-                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                    <Ruler className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">{metadata.height}</span>
-                                                </div>
-                                            )}
-                                            {metadata?.weight && metadata.weight.length > 0 && (
-                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                    <Weight className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">{metadata.weight.replace(/\s*\(.*?\)/, '')}</span>
-                                                </div>
-                                            )}
-                                            {metadata?.preferredFoot && (
-                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                    <Footprints className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                    <span className="whitespace-nowrap font-medium">{metadata.preferredFoot} Foot</span>
-                                                </div>
-                                            )}
-                                        </div>
+                    {/* Row 4: Stats (Mobile Only Section) */}
+                    <div className="sm:hidden border-t border-slate-100 dark:border-neutral-800/50 bg-slate-50/50 dark:bg-white/[0.02]">
+                        {isPlayer && (
+                            <div className="flex flex-wrap items-center gap-x-6 sm:gap-x-8 gap-y-2 px-4 py-2.5">
+                                {metadata?.nationality && (
+                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                        <Flag className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                        <span>{metadata.nationality}</span>
                                     </div>
                                 )}
-                                {isClub && (
-                                    <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6 gap-y-1.5 text-[11px] sm:text-xs md:text-sm text-slate-500 dark:text-neutral-400">
-                                        {metadata?.league && (
-                                            <Link href={`/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
-                                                <Button variant="ghost" size="sm" className="h-7 sm:h-8 px-2 sm:px-2.5 gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-semibold hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors">
-                                                    <Trophy className="w-3.5 sm:w-4 md:w-4 h-3.5 sm:h-4 md:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                                    <span className="whitespace-nowrap">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>
-                                                </Button>
-                                            </Link>
-                                        )}
-                                        {metadata?.stadium && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <MapPin className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">{metadata.stadium}</span>
+                                {metadata?.age && (
+                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                        <span>{metadata.age}y</span>
+                                    </div>
+                                )}
+                                {metadata?.kitNumber && (
+                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                        <Shirt className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                        <span>#{metadata.kitNumber}</span>
+                                    </div>
+                                )}
+                                {metadata?.preferredFoot && (
+                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                        <Footprints className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                        <span className="capitalize">{metadata.preferredFoot}</span>
+                                    </div>
+                                )}
+
+                                {/* Physical stats grouped together to wrap as a unit */}
+                                {(metadata?.height || metadata?.weight) && (
+                                    <div className="flex items-center gap-x-6">
+                                        {metadata?.height && metadata.height.length > 0 && (
+                                            <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                                <Ruler className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                                <span>{metadata.height}</span>
                                             </div>
                                         )}
-                                        {metadata?.founded && (
-                                            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                                                <Calendar className="w-3 sm:w-3.5 md:w-4 h-3 sm:h-3.5 md:h-4 text-slate-400 dark:text-neutral-500" />
-                                                <span className="whitespace-nowrap font-medium">Est. {metadata.founded}</span>
+                                        {metadata?.weight && metadata.weight.length > 0 && (
+                                            <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                                <Weight className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                                <span>{metadata.weight.replace(/\s*\(.*?\)/, '')}</span>
                                             </div>
                                         )}
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        )}
+                        {isClub && (
+                            <div className="flex flex-wrap items-center gap-x-6 sm:gap-x-8 gap-y-2 px-4 py-2.5">
+                                {metadata?.stadium && (
+                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                        <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                        <span>{metadata.stadium}</span>
+                                    </div>
+                                )}
+                                {metadata?.founded && (
+                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
+                                        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                                        <span>Est. {metadata.founded}</span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Footer - Opaque background to block watermark */}
@@ -559,7 +616,7 @@ export function EntityHeader({
                         </div>
                     </div>
                 </Card>
-            </div>
+            </div >
         </>
     );
 }
