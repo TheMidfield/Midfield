@@ -356,3 +356,37 @@ export const getVisiblePlayers = async (): Promise<Topic[]> => {
 
     return players || [];
 };
+
+/**
+ * Generate a descriptive share sentence for a topic
+ */
+export const getTopicShareSentence = (topic: any): string => {
+    if (!topic) return "Midfield - The intelligent football platform.";
+
+    const title = topic.title;
+    const type = topic.type;
+    const metadata = topic.metadata as any;
+
+    if (type === 'player') {
+        const clubName = metadata?.clubName;
+        const position = metadata?.position;
+        if (clubName && position) {
+            return `Analyze ${title}, ${clubName}'s ${position.toLowerCase()}, and join the community debate on Midfield.`;
+        }
+        return `Deep dive into ${title}'s career stats and community takes on Midfield.`;
+    }
+
+    if (type === 'club') {
+        const league = metadata?.league;
+        if (league) {
+            return `${title} stats, fixtures, and fan takes from the ${league.replace(/^(English|Spanish|Italian|German|French)\s/, '')} - all on Midfield.`;
+        }
+        return `${title}'s complete match center and community hub on Midfield.`;
+    }
+
+    if (type === 'league') {
+        return `Follow the ${title} live: Standings, fixtures, and tactical takes on Midfield.`;
+    }
+
+    return `Join the conversation about ${title} on Midfield.`;
+};

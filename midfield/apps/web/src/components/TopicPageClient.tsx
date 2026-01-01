@@ -14,6 +14,7 @@ import { ClubFixtures } from "@/components/ClubFixtures";
 import { ContinentalFixtures } from "@/components/ContinentalFixtures";
 import { LeagueTable } from "@/components/LeagueTable";
 import { TopicDescription } from "@/components/TopicDescription";
+import { getTopicShareSentence } from "@midfield/logic/src/topics";
 
 interface TopicPageClientProps {
     topic: any;
@@ -290,6 +291,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                 badgeUrl={isLeague ? (metadata?.logo_url) : metadata?.badge_url}
                 badgeUrlDark={isLeague ? metadata?.logo_url_dark : undefined}
                 postCount={topic.post_count || 0}
+                shareSentence={getTopicShareSentence(topic)}
                 metadata={{
                     position: metadata?.position,
                     rating: metadata?.rating,

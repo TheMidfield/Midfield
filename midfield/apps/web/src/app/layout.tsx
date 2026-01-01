@@ -22,11 +22,11 @@ const onest = Onest({
 export const metadata: Metadata = {
     title: "Midfield",
     description: "Football intelligence platform",
-    metadataBase: new URL("https://midfield.ai"), // Replace with actual production URL
+    metadataBase: new URL("https://midfield.one"), // Replace with actual production URL
     openGraph: {
         title: "Midfield",
         description: "The intelligent football platform bridging stats and community.",
-        url: "https://midfield.ai",
+        url: "https://midfield.one",
         siteName: "Midfield",
         locale: "en_US",
         type: "website",

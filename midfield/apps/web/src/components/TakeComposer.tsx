@@ -29,7 +29,8 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
     const isAuthenticated = !!userId;
 
     useEffect(() => {
-        setIsMac(navigator.platform.toUpperCase().includes('MAC'));
+        const platform = window.navigator?.userAgent || '';
+        setIsMac(/Mac|iPhone|iPod|iPad/.test(platform));
     }, []);
 
     // Intercept focus/click when not authenticated
@@ -164,7 +165,7 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
                                         {charCount}/{maxChars}
                                     </span>
                                     <span className="text-xs text-slate-300 dark:text-neutral-600">•</span>
-                                    <div className="text-[10px] font-bold px-2 py-1 flex items-center gap-0.5 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
+                                    <div className="hidden md:flex text-[10px] font-bold px-2 py-1 items-center gap-0.5 rounded-full bg-slate-200 dark:bg-neutral-700 text-slate-500 dark:text-neutral-400">
                                         <span>{isMac ? '⌘' : 'Ctrl'}</span>
                                         <span>⏎</span>
                                     </div>

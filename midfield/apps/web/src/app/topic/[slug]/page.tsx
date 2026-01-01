@@ -1,4 +1,4 @@
-import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getLeagueByTitle, getClubFixtures, getLeagueTable, getClubStanding, isContinentalLeague, getContinentalLeagueFixtures } from "@midfield/logic/src/topics";
+import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getLeagueByTitle, getClubFixtures, getLeagueTable, getClubStanding, isContinentalLeague, getContinentalLeagueFixtures, getTopicShareSentence } from "@midfield/logic/src/topics";
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
@@ -6,6 +6,7 @@ import { getTakes } from "@/app/actions";
 import { getUserProfile } from "@/app/profile/actions";
 import { getTopicVotes } from "@/app/actions/vote-topic";
 import { cache } from "react";
+import type { Metadata } from "next";
 
 // Cached wrappers for request-level deduplication
 const cachedGetTopicBySlug = cache(getTopicBySlug);
@@ -17,6 +18,73 @@ const cachedGetClubFixtures = cache(getClubFixtures);
 const cachedGetLeagueTable = cache(getLeagueTable);
 const cachedGetClubStanding = cache(getClubStanding);
 const cachedGetContinentalLeagueFixtures = cache(getContinentalLeagueFixtures);
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+    const { slug } = await params;
+    const topic = await cachedGetTopicBySlug(slug);
+
+    if (!topic) return {};
+
+    const shareSentence = await (async () => {
+        if (topic.type === 'player') {
+            const club = await cachedGetPlayerClub(topic.id);
+            if (club) {
+                return getTopicShareSentence({
+                    ...topic,
+                    metadata: {
+                        ...(topic.metadata as any),
+                        clubName: club.title
+                    }
+                });
+            }
+        }
+        return getTopicShareSentence(topic);
+    })();
+
+    const title = `${topic.title} - Midfield`;
+
+    // Construct OG Image URL using our share-card API
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://midfield.one';
+    const ogImageUrl = new URL(`${baseUrl}/api/share-card`);
+    ogImageUrl.searchParams.set('topicTitle', topic.title);
+    ogImageUrl.searchParams.set('topicType', topic.type);
+    ogImageUrl.searchParams.set('authorUsername', 'midfield');
+    ogImageUrl.searchParams.set('content', shareSentence);
+    ogImageUrl.searchParams.set('theme', 'dark');
+
+    const metadata = topic.metadata as any;
+    if (topic.type === 'player') {
+        if (metadata?.photo_url) ogImageUrl.searchParams.set('topicImageUrl', metadata.photo_url);
+        const club = await cachedGetPlayerClub(topic.id);
+        if (club) {
+            ogImageUrl.searchParams.set('clubName', club.title);
+            if ((club.metadata as any)?.badge_url) ogImageUrl.searchParams.set('clubBadgeUrl', (club.metadata as any).badge_url);
+        }
+        if (metadata?.position) ogImageUrl.searchParams.set('topicPosition', metadata.position);
+    } else if (topic.type === 'club') {
+        if (metadata?.badge_url) ogImageUrl.searchParams.set('topicImageUrl', metadata.badge_url);
+        if (metadata?.league) ogImageUrl.searchParams.set('topicPosition', metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, ''));
+    } else if (topic.type === 'league') {
+        if (metadata?.logo_url) ogImageUrl.searchParams.set('topicImageUrl', metadata.logo_url);
+    }
+
+    return {
+        title,
+        description: shareSentence,
+        openGraph: {
+            title,
+            description: shareSentence,
+            images: [{ url: ogImageUrl.toString(), width: 1080, height: 1080 }],
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description: shareSentence,
+            images: [ogImageUrl.toString()],
+        }
+    };
+}
 
 export default async function TopicPage({ params }: { params: { slug: string } }) {
     const { slug } = await params;

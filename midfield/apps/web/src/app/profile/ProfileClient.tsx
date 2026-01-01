@@ -606,37 +606,45 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                         <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">More Soon!</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap', minHeight: '40px' }}>
-                        {profile?.badges && profile.badges.length > 0 ? (
-                            profile.badges.map((badge: string) => {
-                                const info = BADGE_INFO[badge];
-                                if (!info) return null;
-                                const Icon = info.icon;
+                        {Object.keys(BADGE_INFO).map((badgeKey) => {
+                            const isEarned = profile?.badges?.includes(badgeKey);
+                            const info = BADGE_INFO[badgeKey];
+                            const Icon = info.icon;
 
+                            if (isEarned) {
                                 return (
                                     <button
-                                        key={badge}
-                                        onClick={() => setSelectedBadge(badge)}
+                                        key={badgeKey}
+                                        onClick={() => setSelectedBadge(badgeKey)}
                                         onMouseEnter={() => setHoveredBadgeTitle(info.title)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
-                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
+                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
                                         style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         title={info.title}
                                     >
                                         <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-6`} strokeWidth={1.5} />
                                     </button>
                                 );
-                            })
-                        ) : (
-                            // Empty State
-                            <div className="w-full text-xs text-slate-400 dark:text-neutral-500 italic py-2">
-                                No badges earned yet.
-                            </div>
-                        )}
+                            }
+
+                            // Placeholder / Rune Holder for unearned badges
+                            return (
+                                <div
+                                    key={`placeholder-${badgeKey}`}
+                                    className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40"
+                                    style={{ width: '40px', height: '40px' }}
+                                    onMouseEnter={() => setHoveredBadgeTitle(`Locked: ${info.title}`)}
+                                    onMouseLeave={() => setHoveredBadgeTitle(null)}
+                                >
+                                    <Icon className="w-5 h-5 text-slate-300 dark:text-neutral-700" strokeWidth={1} />
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* Elegant footer text reveal */}
                     <div className="mt-1 flex flex-col items-center justify-center h-6">
-                        <p className={`text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-300 ${hoveredBadgeTitle ? 'text-slate-900 dark:text-neutral-100 scale-105' : 'text-slate-400 dark:text-neutral-600'}`}>
+                        <p className={`text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-300 ${hoveredBadgeTitle ? 'text-slate-900 dark:text-neutral-100' : 'text-slate-400 dark:text-neutral-600'}`}>
                             {hoveredBadgeTitle || `${profile?.badges?.length || 0} BADGES`}
                         </p>
                     </div>

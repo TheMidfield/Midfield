@@ -50,7 +50,28 @@ function getContentFontSize(length: number): number {
 
 export async function POST(request: NextRequest) {
     const body = await request.json();
+    return generateImage(body, request.nextUrl.origin);
+}
 
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const data = {
+        content: searchParams.get('content') || '',
+        authorUsername: searchParams.get('authorUsername') || 'anonymous',
+        topicTitle: searchParams.get('topicTitle') || 'Topic',
+        topicType: searchParams.get('topicType') || 'player',
+        topicImageUrl: searchParams.get('topicImageUrl') || undefined,
+        authorAvatarUrl: searchParams.get('authorAvatarUrl') || undefined,
+        createdAt: searchParams.get('createdAt') || new Date().toISOString(),
+        theme: searchParams.get('theme') || 'dark',
+        clubName: searchParams.get('clubName') || undefined,
+        clubBadgeUrl: searchParams.get('clubBadgeUrl') || undefined,
+        topicPosition: searchParams.get('topicPosition') || undefined
+    };
+    return generateImage(data, request.nextUrl.origin);
+}
+
+async function generateImage(body: any, origin: string) {
     // Extract params from body
     const {
         content = '',
@@ -91,8 +112,6 @@ export async function POST(request: NextRequest) {
     const logoArc = isDark ? '#34d399' : '#10b981';
     const logoDot = isDark ? '#ffffff' : '#0f172a';
 
-    const origin = request.nextUrl.origin;
-    // Optimization: Load logo from FS to avoid internal fetch issues
     const logoPath = path.join(process.cwd(), 'public/midfield-logo.png');
     let logoUrl = `${origin}/midfield-logo.png`;
 

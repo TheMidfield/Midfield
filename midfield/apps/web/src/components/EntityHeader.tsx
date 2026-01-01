@@ -52,6 +52,7 @@ interface EntityHeaderProps {
     upvoteCount?: number; // Initial upvote count
     downvoteCount?: number; // Initial downvote count
     userVote?: 'upvote' | 'downvote' | null; // User's current vote
+    shareSentence?: string;
 }
 
 export function EntityHeader({
@@ -68,6 +69,7 @@ export function EntityHeader({
     upvoteCount: initialUpvoteCount = 0,
     downvoteCount: initialDownvoteCount = 0,
     userVote: initialUserVote = null,
+    shareSentence,
 }: EntityHeaderProps) {
     // Auth modal management
     const { isAuthModalOpen, authModalContext, requireAuth, closeAuthModal } = useAuthModal();
@@ -88,8 +90,8 @@ export function EntityHeader({
         if (typeof window === 'undefined') return;
 
         const shareData = {
-            title: title,
-            text: `Check out ${title} on Midfield`,
+            title: title + " - Midfield",
+            text: shareSentence || `Check out ${title} on Midfield`,
             url: window.location.href,
         };
 
