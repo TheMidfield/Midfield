@@ -13,7 +13,7 @@ import type { HeroEntity } from "@/app/actions/hero-data";
 export function SplitHero({ entities }: { entities: HeroEntity[] }) {
     return (
         <section
-            className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible"
+            className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible px-6 sm:px-8 lg:px-12"
             style={{ width: '100%' }}
         >
             {/* Discrete emerald spotlight - top-left corner */}

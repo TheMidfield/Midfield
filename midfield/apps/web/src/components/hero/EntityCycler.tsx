@@ -22,10 +22,10 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
     const posInfo = isPlayer && entity.position ? getPositionInfo(entity.position) : null;
 
     return (
-        <Card variant="interactive" className="p-2 sm:p-2.5 flex items-center gap-2.5 sm:gap-3 group hover:border-emerald-500/30 transition-all" style={{ width: '100%' }}>
+        <Card variant="interactive" className="p-3 sm:p-2.5 flex items-center gap-3 sm:gap-3 group hover:border-emerald-500/30 transition-all text-left" style={{ width: '100%' }}>
             {/* Avatar */}
             {isPlayer ? (
-                <div className="relative w-9 h-9 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
+                <div className="relative w-11 h-11 sm:w-10 sm:h-10 shrink-0 bg-slate-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden border border-slate-200 dark:border-neutral-700">
                     {entity.imageUrl ? (
                         <NextImage
                             src={entity.imageUrl}
@@ -41,7 +41,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
                     )}
                 </div>
             ) : (
-                <div className="relative w-8 h-8 sm:w-9 sm:h-9 shrink-0">
+                <div className="relative w-10 h-10 sm:w-9 sm:h-9 shrink-0">
                     {entity.imageUrl ? (
                         <NextImage
                             src={entity.imageUrl}
@@ -60,7 +60,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-sm sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {entity.displayName}
                 </h3>
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -224,14 +224,14 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                         What's your take on...
                     </span>
 
-                    {/* Card container - Reverted to slightly larger 240px min-width */}
-                    <div className="relative h-14" style={{ minWidth: '240px' }}>
+                    {/* Card container - Shorter but larger on mobile as requested */}
+                    <div className="relative h-20 sm:h-14 w-[280px] sm:w-[320px]">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentEntity.id}
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                exit={{ y: -20, opacity: 0 }}
+                                initial={{ y: 20, opacity: 0, scale: 0.95 }}
+                                animate={{ y: 0, opacity: 1, scale: 1.05 }}
+                                exit={{ y: -20, opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.3, ease: "easeOut" }}
                                 className="absolute left-0 top-1/2 -translate-y-1/2 w-full"
                                 style={{ width: '100%' }}
