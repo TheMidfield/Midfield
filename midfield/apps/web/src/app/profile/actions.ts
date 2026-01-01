@@ -134,7 +134,17 @@ export async function getUserProfile() {
 
         const { data: profile, error } = await supabase
             .from('users')
-            .select('id, username, display_name, avatar_url, favorite_club_id, created_at, favorite_club:topics!favorite_club_id(id, title, slug, metadata)')
+            .select(`
+                id, 
+                username, 
+                display_name, 
+                avatar_url, 
+                favorite_club_id, 
+                created_at, 
+                favorite_club:topics!favorite_club_id(id, title, slug, metadata),
+                posts:posts(count),
+                reactions:reactions(count)
+            `)
             .eq('id', user.id)
             .maybeSingle()
 

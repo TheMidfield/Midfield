@@ -9,6 +9,13 @@ import { uploadAvatar, updateProfile } from "./actions";
 import { FavoriteClubSelector, type Club } from "@/components/onboarding/FavoriteClubSelector";
 import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/client";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from "@/components/ui/Dialog";
 
 interface ProfileClientProps {
     initialData: {
@@ -313,21 +320,21 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: '16px' }}>
                         <div style={{ position: 'relative', marginBottom: '12px' }}>
                             {profile?.avatar_url ? (
-                                <img 
-                                    src={profile.avatar_url} 
-                                    alt="Profile" 
-                                    style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover' }} 
+                                <img
+                                    src={profile.avatar_url}
+                                    alt="Profile"
+                                    style={{ width: '80px', height: '80px', borderRadius: '6px', objectFit: 'cover' }}
                                 />
                             ) : (
-                                <div 
-                                    style={{ width: '80px', height: '80px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} 
+                                <div
+                                    style={{ width: '80px', height: '80px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                     className="bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700"
                                 >
                                     <User className="w-8 h-8 text-slate-400 dark:text-neutral-500" />
                                 </div>
                             )}
                             {isUploading && (
-                                <div style={{ position: 'absolute', inset: 0, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-black/60">
+                                <div style={{ position: 'absolute', inset: 0, borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="bg-black/60">
                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                 </div>
                             )}
@@ -339,7 +346,8 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </div>
 
                     {/* Username */}
-                    <div style={{ borderTop: '1px solid', paddingTop: '16px', opacity: 0.155 }} className="border-slate-200 dark:border-neutral-800">
+                    {/* Username */}
+                    <div style={{ borderTop: '1px solid', paddingTop: '16px' }} className="border-slate-200 dark:border-neutral-800">
                         <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2">Username</p>
                         {isEditingUsername ? (
                             <div>
@@ -352,10 +360,10 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                             value={username}
                                             onChange={(e) => { setUsername(e.target.value); setUsernameError(null); }}
                                             className={`h-9 px-2 pr-8 text-sm font-medium bg-white dark:bg-neutral-800 border-2 rounded-md text-slate-900 dark:text-neutral-100 focus:outline-none transition-colors ${usernameError
-                                                    ? 'border-red-400 dark:border-red-600 focus:border-red-500'
-                                                    : usernameAvailable === true
-                                                        ? 'border-emerald-400 dark:border-emerald-600 focus:border-emerald-500'
-                                                        : 'border-slate-300 dark:border-neutral-700 focus:border-emerald-500'
+                                                ? 'border-red-400 dark:border-red-600 focus:border-red-500'
+                                                : usernameAvailable === true
+                                                    ? 'border-emerald-400 dark:border-emerald-600 focus:border-emerald-500'
+                                                    : 'border-slate-300 dark:border-neutral-700 focus:border-emerald-500'
                                                 }`}
                                             style={{ width: '100%' }}
                                             disabled={isPending}
@@ -397,10 +405,10 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                 </div>
                             </div>
                         ) : (
-                            <div>
-                                <p className="text-base font-bold text-slate-900 dark:text-neutral-100 mb-1">@{profile.username}</p>
-                                <Button onClick={handleUsernameEdit} variant="outline" size="sm" icon={Pencil}>
-                                    Edit
+                            <div className="flex items-center justify-between">
+                                <p className="text-base font-bold text-slate-900 dark:text-neutral-100">@{profile.username}</p>
+                                <Button onClick={handleUsernameEdit} variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <Pencil className="w-4 h-4 text-slate-400" />
                                 </Button>
                             </div>
                         )}
@@ -410,27 +418,20 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 {/* Stats Card */}
                 <Card className="col-span-6 md:col-span-4" style={{ padding: '20px' }}>
                     <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-4">Activity</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                         <div style={{ textAlign: 'center' }}>
                             <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-2">
                                 <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                             </div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">0</p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-400">Takes</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">{profile?.posts?.[0]?.count || 0}</p>
+                            <p className="text-xs text-slate-500 dark:text-neutral-400">Takes Posted</p>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                             <div className="w-10 h-10 rounded-md bg-rose-50 dark:bg-rose-900/30 flex items-center justify-center mx-auto mb-2">
                                 <Heart className="w-5 h-5 text-rose-500 dark:text-rose-400" />
                             </div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">0</p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-400">Reactions</p>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                            <div className="w-10 h-10 rounded-md bg-violet-50 dark:bg-violet-900/30 flex items-center justify-center mx-auto mb-2">
-                                <Hash className="w-5 h-5 text-violet-500 dark:text-violet-400" />
-                            </div>
-                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">0</p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-400">Topics</p>
+                            <p className="text-2xl font-bold text-slate-900 dark:text-neutral-100">{profile?.reactions?.[0]?.count || 0}</p>
+                            <p className="text-xs text-slate-500 dark:text-neutral-400">Likes Given</p>
                         </div>
                     </div>
                 </Card>
@@ -439,53 +440,35 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 <Card className="col-span-6 sm:col-span-3 md:col-span-2" style={{ padding: '16px' }}>
                     <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-3">Favorite Club</p>
 
-                    {!isEditingClub ? (
-                        <div>
-                            {profile?.favorite_club ? (
-                                <div>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        {profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url ? (
-                                            <img
-                                                src={profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url}
-                                                alt={profile.favorite_club.title}
-                                                className="w-8 h-8 object-contain"
-                                            />
-                                        ) : (
-                                            <div className="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
-                                                <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                                            </div>
-                                        )}
-                                        <div style={{ minWidth: 0 }}>
-                                            <p className="text-xs font-bold text-slate-900 dark:text-neutral-100 uppercase tracking-tight truncate">
-                                                {profile.favorite_club.title}
-                                            </p>
-                                            {profile.favorite_club.metadata?.league_name && (
-                                                <p className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider truncate">
-                                                    {profile.favorite_club.metadata.league_name}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
-                                        Change
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div>
-                                    <p className="text-xs text-slate-500 dark:text-neutral-400 mb-2">Not set</p>
-                                    <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield}>
-                                        Select
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            <FavoriteClubSelector
-                                initialClubId={favoriteClubId}
-                                onSelect={(club) => setFavoriteClubId(club?.id || null)}
-                            />
-                            <div style={{ display: 'flex', gap: '6px' }}>
+                    {/* Club Selection Modal */}
+                    <Dialog open={isEditingClub} onOpenChange={setIsEditingClub}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Choose your badge</DialogTitle>
+                                <DialogDescription>
+                                    Select your favorite club to display on your profile.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="py-4">
+                                <FavoriteClubSelector
+                                    initialClubId={favoriteClubId}
+                                    onSelect={(club) => setFavoriteClubId(club?.id || null)}
+                                />
+                            </div>
+
+                            <div className="flex gap-2 justify-end">
+                                <Button
+                                    onClick={() => {
+                                        setFavoriteClubId(profile.favorite_club_id);
+                                        setIsEditingClub(false);
+                                    }}
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={isPending}
+                                >
+                                    Cancel
+                                </Button>
                                 <Button
                                     onClick={() => {
                                         if (favoriteClubId === profile.favorite_club_id) {
@@ -499,6 +482,8 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                                 setProfile((prev: any) => ({ ...prev, favorite_club_id: favoriteClubId }));
                                                 setIsEditingClub(false);
                                                 router.refresh();
+                                                // Hard reload to update layout logo if needed
+                                                setTimeout(() => window.location.reload(), 500);
                                             } else {
                                                 showToast("Update failed", 'error');
                                             }
@@ -507,22 +492,51 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     size="sm"
                                     disabled={isPending}
                                 >
-                                    {isPending ? "..." : "Save"}
-                                </Button>
-                                <Button
-                                    onClick={() => {
-                                        setFavoriteClubId(profile.favorite_club_id);
-                                        setIsEditingClub(false);
-                                    }}
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={isPending}
-                                >
-                                    Cancel
+                                    {isPending ? "Saving..." : "Save Badge"}
                                 </Button>
                             </div>
-                        </div>
-                    )}
+                        </DialogContent>
+                    </Dialog>
+
+                    <div>
+                        {profile?.favorite_club ? (
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    {profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url ? (
+                                        <img
+                                            src={profile.favorite_club.metadata?.badge_url || profile.favorite_club.metadata?.logo_url}
+                                            alt={profile.favorite_club.title}
+                                            className="w-8 h-8 object-contain"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+                                            <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                        </div>
+                                    )}
+                                    <div style={{ minWidth: 0 }}>
+                                        <p className="text-xs font-bold text-slate-900 dark:text-neutral-100 uppercase tracking-tight truncate">
+                                            {profile.favorite_club.title}
+                                        </p>
+                                        {profile.favorite_club.metadata?.league_name && (
+                                            <p className="text-[9px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider truncate">
+                                                {profile.favorite_club.metadata.league_name}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
+                                    Change
+                                </Button>
+                            </div>
+                        ) : (
+                            <div>
+                                <p className="text-xs text-slate-500 dark:text-neutral-400 mb-2">Not set</p>
+                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield}>
+                                    Select
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </Card>
 
                 {/* Badges Card - Coming Soon */}
@@ -543,44 +557,48 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 </Card>
 
                 {/* Account Info Card */}
-                <Card className="col-span-4 md:col-span-2" style={{ padding: '16px' }}>
-                    <Mail className="w-4 h-4 text-slate-400 dark:text-neutral-500 mb-2" />
-                    <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Email</p>
-                    <p className="text-xs text-slate-900 dark:text-neutral-100 truncate font-medium">{initialData.user.email}</p>
+                <Card className="col-span-6 sm:col-span-3 md:col-span-3" style={{ padding: '16px' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Mail className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                        <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Email</p>
+                    </div>
+                    <p className="text-sm text-slate-900 dark:text-neutral-100 font-medium truncate">{initialData.user.email}</p>
                 </Card>
 
                 {/* Member Since Card */}
-                <Card className="col-span-2 md:col-span-1" style={{ padding: '16px' }}>
-                    <Calendar className="w-4 h-4 text-slate-400 dark:text-neutral-500 mb-2" />
-                    <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Joined</p>
-                    <p className="text-xs text-slate-900 dark:text-neutral-100 font-medium">
-                        {new Date(profile?.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                <Card className="col-span-6 sm:col-span-3 md:col-span-3" style={{ padding: '16px' }}>
+                    <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                        <p className="text-[10px] text-slate-400 dark:text-neutral-500 uppercase tracking-wider">Joined</p>
+                    </div>
+                    <p className="text-sm text-slate-900 dark:text-neutral-100 font-medium">
+                        {new Date(profile?.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </p>
                 </Card>
 
                 {/* Bookmarks Card */}
-                <Card className="col-span-6 md:col-span-3" style={{ padding: 0, overflow: 'hidden' }}>
+                <Card className="col-span-6" style={{ padding: 0, overflow: 'hidden' }}>
                     <a
                         href="/profile/bookmarks"
-                        className="flex items-center justify-between p-4 h-full hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between p-4 h-full hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
-                                <Bookmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                            <div className="w-10 h-10 rounded-md bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
+                                <Bookmark className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                             </div>
                             <div>
-                                <p className="text-sm font-medium text-slate-900 dark:text-neutral-100">Bookmarks</p>
-                                <p className="text-[10px] text-slate-500 dark:text-neutral-400">Saved posts</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Bookmarks</p>
+                                <p className="text-xs text-slate-500 dark:text-neutral-400">View your saved reads</p>
                             </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400 dark:text-neutral-500" />
+                        <ChevronRight className="w-5 h-5 text-slate-300 dark:text-neutral-600 group-hover:text-indigo-500 transition-colors" />
                     </a>
                 </Card>
 
                 {/* Sign Out Card */}
-                <Card className="col-span-6 md:col-span-3" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <p className="text-sm text-slate-500 dark:text-neutral-400">Session</p>
-                    <Button onClick={handleSignOut} variant="destructive" size="sm" disabled={isPending}>
+                <Card className="col-span-6" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+                    <p className="text-sm font-medium text-slate-500 dark:text-neutral-400">Current Session</p>
+                    <Button onClick={handleSignOut} variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20">
                         Sign out
                     </Button>
                 </Card>
