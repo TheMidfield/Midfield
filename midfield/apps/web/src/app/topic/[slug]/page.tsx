@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
 import { getTakes } from "@/app/actions";
 import { getUserProfile } from "@/app/profile/actions";
+import { getTopicVotes } from "@/app/actions/vote-topic";
 import { cache } from "react";
 
 // Cached wrappers for request-level deduplication
@@ -149,6 +150,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
     // We can also parallelize these!
     let posts: any[] = [];
     let userData: any = null;
+    let voteData: any = null;
 
     parallelFetches.push((async () => {
         posts = await getTakes(id);
@@ -156,6 +158,10 @@ export default async function TopicPage({ params }: { params: { slug: string } }
 
     parallelFetches.push((async () => {
         userData = await getUserProfile();
+    })());
+
+    parallelFetches.push((async () => {
+        voteData = await getTopicVotes(id);
     })());
 
     // EXECUTE ALL FETCHES
@@ -191,6 +197,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                 username: userData?.profile?.username || null,
             }}
             leagueSlug={leagueSlug}
+            voteData={voteData}
         />
     );
 }

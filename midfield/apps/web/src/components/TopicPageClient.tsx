@@ -31,6 +31,11 @@ interface TopicPageClientProps {
         username: string | null;
     };
     leagueSlug?: string;
+    voteData?: {
+        upvoteCount: number;
+        downvoteCount: number;
+        userVote: 'upvote' | 'downvote' | null;
+    };
 }
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Staff"];
@@ -50,7 +55,7 @@ const getPositionPriority = (pos: string): number => {
     return positionBadgePriority[info.abbr] || 50;
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug, voteData }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
@@ -278,6 +283,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
 
             {/* Header */}
             <EntityHeader
+                key={topic.id}
                 title={topic.title}
                 type={isLeague ? "league" : isClub ? "club" : "player"}
                 imageUrl={metadata?.photo_url}
@@ -305,8 +311,11 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                     ...clubData,
                 }}
                 backHref="/"
-                userId={currentUser.id}
+                userId={currentUser?.id}
                 topicId={topic.id}
+                upvoteCount={voteData?.upvoteCount}
+                downvoteCount={voteData?.downvoteCount}
+                userVote={voteData?.userVote}
             />
 
             {/* Main Content */}

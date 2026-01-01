@@ -4,7 +4,7 @@ import { useState, useRef, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield, Loader2, MessageSquare, Heart, Hash, Award, Flame, Leaf, Sparkles, Star } from "lucide-react";
+import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield, Loader2, MessageSquare, Heart, Hash, Award, Flame, Zap, Crown, Trophy, Medal } from "lucide-react";
 import { uploadAvatar, updateProfile } from "./actions";
 import { FavoriteClubSelector, type Club } from "@/components/onboarding/FavoriteClubSelector";
 import { signOut } from "@/app/auth/actions";
@@ -114,12 +114,13 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const usernameInputRef = useRef<HTMLInputElement>(null);
     const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
+    const [hoveredBadgeTitle, setHoveredBadgeTitle] = useState<string | null>(null);
 
     const BADGE_INFO: Record<string, { title: string, description: string, icon: any, color: string, bg: string, border: string, text: string }> = {
         'trendsetter': {
             title: 'Trendsetter',
             description: 'You started the conversation! Awarded for being the first to post a take on any topic.',
-            icon: Leaf,
+            icon: Zap,
             color: 'emerald',
             bg: 'bg-emerald-100 dark:bg-emerald-900/30',
             border: 'border-emerald-200 dark:border-emerald-800',
@@ -128,7 +129,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
         'original-10': {
             title: 'Original XI',
             description: 'Legendary status. You were one of the first 10 users to join Midfield.',
-            icon: Star,
+            icon: Crown,
             color: 'amber',
             bg: 'bg-amber-100 dark:bg-amber-900/30',
             border: 'border-amber-200 dark:border-amber-800',
@@ -137,7 +138,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
         'club-100': {
             title: 'Club 100',
             description: 'Early adopter. You were among the first 100 users on the platform.',
-            icon: Sparkles,
+            icon: Trophy,
             color: 'purple',
             bg: 'bg-purple-100 dark:bg-purple-900/30',
             border: 'border-purple-200 dark:border-purple-800',
@@ -146,7 +147,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
         'club-1000': {
             title: 'Club 1k',
             description: 'Founding Member. You joined with the first 1000 users.',
-            icon: Flame,
+            icon: Medal,
             color: 'blue',
             bg: 'bg-blue-100 dark:bg-blue-900/30',
             border: 'border-blue-200 dark:border-blue-800',
@@ -603,7 +604,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                         <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider">Badges</p>
                         <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">More Soon!</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap', minHeight: '40px' }}>
                         {profile?.badges && profile.badges.length > 0 ? (
                             profile.badges.map((badge: string) => {
                                 const info = BADGE_INFO[badge];
@@ -614,10 +615,12 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     <button
                                         key={badge}
                                         onClick={() => setSelectedBadge(badge)}
-                                        className={`w-10 h-10 rounded-xl ${info.bg} border ${info.border} flex items-center justify-center transition-transform hover:scale-105 active:scale-95 cursor-pointer`}
+                                        onMouseEnter={() => setHoveredBadgeTitle(info.title)}
+                                        onMouseLeave={() => setHoveredBadgeTitle(null)}
+                                        className={`group relative w-10 h-10 rounded-xl ${info.bg} border ${info.border} flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
                                         title={info.title}
                                     >
-                                        <Icon className={`w-5 h-5 ${info.text} ${badge === 'original-10' ? 'fill-current' : ''}`} />
+                                        <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-12`} strokeWidth={1.5} />
                                     </button>
                                 );
                             })
@@ -628,7 +631,13 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                             </div>
                         )}
                     </div>
-                    <p className="text-[10px] text-slate-400 dark:text-neutral-500">Earn badges by being an early adopter or seeding new topics.</p>
+
+                    {/* Elegant footer text reveal */}
+                    <div className="mt-4 flex flex-col items-center justify-center h-6 border-t border-slate-100 dark:border-neutral-800 pt-4">
+                        <p className={`text-[10px] uppercase tracking-[0.2em] font-bold transition-all duration-300 ${hoveredBadgeTitle ? 'text-slate-900 dark:text-neutral-100 scale-105' : 'text-slate-400 dark:text-neutral-600'}`}>
+                            {hoveredBadgeTitle || `${profile?.badges?.length || 0} BADGES`}
+                        </p>
+                    </div>
                 </Card>
 
                 {/* Badge Detail Modal */}

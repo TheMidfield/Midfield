@@ -58,3 +58,20 @@ export async function voteTopic(topicId: string, voteType: 'upvote' | 'downvote'
         return { success: false, error: "An unexpected error occurred" };
     }
 }
+
+export async function getTopicVotes(topicId: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const [upvoteRes, downvoteRes, userVoteRes] = await Promise.all([
+        (supabase as any).from('topic_votes').select('*', { count: 'exact', head: true }).eq('topic_id', topicId).eq('vote_type', 'upvote'),
+        (supabase as any).from('topic_votes').select('*', { count: 'exact', head: true }).eq('topic_id', topicId).eq('vote_type', 'downvote'),
+        user ? (supabase as any).from('topic_votes').select('vote_type').eq('topic_id', topicId).eq('user_id', user.id).single() : Promise.resolve({ data: null })
+    ]);
+
+    return {
+        upvoteCount: upvoteRes.count || 0,
+        downvoteCount: downvoteRes.count || 0,
+        userVote: (userVoteRes.data?.vote_type as 'upvote' | 'downvote' | null) || null
+    };
+}
