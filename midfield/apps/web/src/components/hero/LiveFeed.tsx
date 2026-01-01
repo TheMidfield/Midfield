@@ -42,6 +42,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                                 fill
                                 sizes="20px"
                                 priority={true}
+                                unoptimized={true}
                                 className={isClub ? 'object-contain' : PLAYER_IMAGE_STYLE.className}
                                 {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
                             />
@@ -72,6 +73,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                                     width={16}
                                     height={16}
                                     priority={true}
+                                    unoptimized={true}
                                     className="w-full h-full object-cover"
                                 />
                             ) : (

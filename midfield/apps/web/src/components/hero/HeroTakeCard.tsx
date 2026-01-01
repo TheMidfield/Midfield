@@ -55,6 +55,7 @@ export const HeroTakeCard = memo(({ take }: { take: HeroTake }) => {
                                         width={24}
                                         height={24}
                                         className="object-cover w-full h-full"
+                                        unoptimized={true}
                                     />
                                 ) : (
                                     <span className="text-slate-400" style={{ fontSize: '10px', fontWeight: 700 }}>

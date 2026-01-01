@@ -90,6 +90,33 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
     );
 }
 
+// Smart Shuffle: Player-heavy mixing
+// Ensures we never have consecutive non-players (clubs/leagues).
+// Pattern: [Player, Player, Other, Player, Player, Other...]
+function smartShuffle(entities: HeroEntity[]): HeroEntity[] {
+    const players = entities.filter(e => e.type === 'player');
+    const others = entities.filter(e => e.type !== 'player');
+
+    // Standard shuffle for randomness within groups
+    const sPlayers = shuffleArray(players);
+    const sOthers = shuffleArray(others);
+
+    const result: HeroEntity[] = [];
+    let pIdx = 0;
+    let oIdx = 0;
+
+    while (pIdx < sPlayers.length || oIdx < sOthers.length) {
+        // Add up to 2 players
+        if (pIdx < sPlayers.length) result.push(sPlayers[pIdx++]);
+        if (pIdx < sPlayers.length) result.push(sPlayers[pIdx++]);
+
+        // Add 1 other entity
+        if (oIdx < sOthers.length) result.push(sOthers[oIdx++]);
+    }
+
+    return result;
+}
+
 // Fisher-Yates shuffle
 function shuffleArray<T>(arr: T[]): T[] {
     const shuffled = [...arr];
@@ -110,10 +137,10 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Shuffle entities once on mount
+    // Shuffle entities once on mount with SMART mixing
     useEffect(() => {
         if (entities.length > 0) {
-            setShuffledEntities(shuffleArray(entities));
+            setShuffledEntities(smartShuffle(entities));
         }
     }, [entities]);
 

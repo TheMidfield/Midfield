@@ -71,6 +71,10 @@ const CURATED_ENTITY_SLUGS = [
     'gavi-34193417',                     // Gavi
     'bukayo-saka-34169884',              // Bukayo Saka
     'cole-palmer-34192430',              // Cole Palmer
+    'phil-foden',                        // Phil Foden
+    'marcus-rashford',                   // Marcus Rashford
+    'bruno-fernandes',                   // Bruno Fernandes
+    'trent-alexander-arnold-34161593',   // Trent Alexander-Arnold
 
     // === WONDERKIDS / NXGN-TYPE CONNOISSEUR PICKS ===
     'endrick-34219641',                  // Endrick
