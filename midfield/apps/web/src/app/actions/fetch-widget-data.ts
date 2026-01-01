@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getTopicsByType, getClubAbbreviation } from "@midfield/logic/src/topics";
+import { cache } from 'react';
 
 export type WidgetEntity = {
     id: string;
@@ -38,7 +39,8 @@ export type SimilarEntity = {
     leagueBadge?: string; // For clubs - show their league badge
 };
 
-export async function getTrendingTopicsData() {
+// Request-level cache (dedupe only, no cross-request caching)
+export const getTrendingTopicsData = cache(async () => {
     const supabase = await createClient();
     const now = Date.now();
     const hours24 = new Date(now - 24 * 60 * 60 * 1000).toISOString();
@@ -172,7 +174,7 @@ export async function getTrendingTopicsData() {
             };
         })
         .filter(Boolean) as TrendingTopic[];
-}
+});
 
 export type TrendingTopic = {
     id: string;
@@ -283,8 +285,9 @@ export async function getRelatedTopicsData(slug?: string) {
  * Smart "Similar" recommendations algorithm
  * Lightweight but effective - uses existing indexed queries
  * With slight randomization for variety
+ * OPTIMIZED: Request-level cache + reduced query limit (50 instead of 500)
  */
-export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity[]> {
+export const getSimilarTopicsData = cache(async (slug?: string): Promise<SimilarEntity[]> => {
     if (!slug) return [];
 
     const supabase = await createClient();
@@ -345,7 +348,7 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
             });
         }
 
-        // Fetch all players with fc26_data for matching (more efficient than multiple queries)
+        // Fetch targeted players with fc26_data (OPTIMIZED: 50 instead of 500)
         const { data: allPlayers } = await supabase
             .from('topics')
             .select('id, title, slug, metadata, fc26_data')
@@ -353,7 +356,7 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
             .eq('is_active', true)
             .not('fc26_data', 'is', null)
             .neq('id', topic.id)
-            .limit(500);
+            .limit(50); // REDUCED from 500 for bandwidth optimization
 
         // 2. Same position players
         if (normalizedPosition) {
@@ -552,7 +555,7 @@ export async function getSimilarTopicsData(slug?: string): Promise<SimilarEntity
     return results
         .sort((a, b) => b.score - a.score)
         .slice(0, 6);
-}
+});
 
 // ==================== MATCH CENTER DATA ====================
 
@@ -655,14 +658,15 @@ export type MatchCenterFixture = {
  * - League standings proximity (close positions = more exciting)
  * - Derby/rivalry bonus
  * - League diversity bonus (ensures variety)
+ * OPTIMIZED: Request-level cache + reduced query limit (30 instead of 150)
  */
-export async function getMatchCenterData(limit = 12): Promise<MatchCenterFixture[]> {
+export const getMatchCenterData = cache(async (limit = 12): Promise<MatchCenterFixture[]> => {
     const supabase = await createClient();
     const now = new Date();
     const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000); // 3 days back for results
     const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-    // Fetch fixtures (both upcoming AND recent finished) with team and competition data
+    // Fetch fixtures (OPTIMIZED: 30 instead of 150) with team and competition data
     const { data: fixtures, error } = await supabase
         .from('fixtures')
         .select(`
@@ -682,7 +686,7 @@ export async function getMatchCenterData(limit = 12): Promise<MatchCenterFixture
         .gte('date', threeDaysAgo.toISOString()) // Include last 3 days
         .lte('date', weekAhead.toISOString())
         .order('date', { ascending: true })
-        .limit(150); // Get more to filter/score
+        .limit(30); // REDUCED from 150 for bandwidth optimization
 
     if (error || !fixtures?.length) {
         return [];
@@ -804,7 +808,7 @@ export async function getMatchCenterData(limit = 12): Promise<MatchCenterFixture
     const sorted = adjustedFixtures.sort((a, b) => b.adjustedImportance - a.adjustedImportance);
 
     return sorted;
-}
+});
 
 // ==================== HERO LIVE FEED DATA ====================
 

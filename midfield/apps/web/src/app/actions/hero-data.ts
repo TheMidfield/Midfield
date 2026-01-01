@@ -200,13 +200,13 @@ function getDisplayName(title: string, type: string): string {
     return title;
 }
 
-import { unstable_noStore as noStore } from 'next/cache';
+import { cache } from 'react';
 
 /**
- * Fetch recent takes globally (no topic restriction)
+ * Fetch recent takes globally (no topic restriction)  
+ * OPTIMIZED: Request-level cache for deduplication
  */
-export async function getHeroTakes(limit = 6): Promise<HeroTake[]> {
-    noStore(); // Opt out of static caching to ensure fresh data
+export const getHeroTakes = cache(async (limit = 6): Promise<HeroTake[]> => {
     try {
         const supabase = await createClient();
         return await getAnyRecentTakes(supabase, limit);
@@ -214,7 +214,7 @@ export async function getHeroTakes(limit = 6): Promise<HeroTake[]> {
         console.error('getHeroTakes error:', err);
         return [];
     }
-}
+});
 
 /* 
  * Deprecated: specific high profile fetching logic removed to ensure content freshness
