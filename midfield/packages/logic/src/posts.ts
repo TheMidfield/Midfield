@@ -112,7 +112,7 @@ export async function getTakesPaginatedLogic(
         .from('posts')
         .select(`
             *,
-            author:users(username, avatar_url, display_name)
+            author:users(username, avatar_url, display_name, favorite_club:topics!favorite_club_id(title, slug, metadata))
         `)
         .eq('topic_id', topicId)
         .eq('is_deleted', false)

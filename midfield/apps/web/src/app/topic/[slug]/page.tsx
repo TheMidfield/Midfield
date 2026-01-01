@@ -263,6 +263,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
                 id: userData?.user?.id,
                 avatar_url: userData?.profile?.avatar_url || null,
                 username: userData?.profile?.username || null,
+                favorite_club: userData?.profile?.favorite_club || null,
             }}
             leagueSlug={leagueSlug}
             voteData={voteData}

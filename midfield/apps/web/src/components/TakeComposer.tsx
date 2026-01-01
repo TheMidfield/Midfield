@@ -15,9 +15,10 @@ interface TakeComposerProps {
     username?: string | null;
     /** User ID to check authentication - if null/undefined, user is anonymous */
     userId?: string;
+    favoriteClub?: any;
 }
 
-export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, username, userId }: TakeComposerProps) {
+export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, username, favoriteClub, userId }: TakeComposerProps) {
     const [content, setContent] = useState("");
     const [isPending, startTransition] = useTransition();
     const [isFocused, setIsFocused] = useState(false);
@@ -68,6 +69,7 @@ export function TakeComposer({ topicId, topicTitle, onSuccess, userAvatar, usern
                     author: {
                         username: username || 'you',
                         avatar_url: userAvatar,
+                        favorite_club: favoriteClub,
                     }
                 };
                 setContent("");

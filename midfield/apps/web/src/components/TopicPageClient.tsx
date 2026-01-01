@@ -30,6 +30,7 @@ interface TopicPageClientProps {
         id?: string;
         avatar_url: string | null;
         username: string | null;
+        favorite_club?: any;
     };
     leagueSlug?: string;
     voteData?: {
@@ -780,6 +781,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                         topicTitle={topic.title}
                         userAvatar={currentUser?.avatar_url}
                         username={currentUser?.username}
+                        favoriteClub={currentUser?.favorite_club}
                         userId={currentUser?.id}
                         onSuccess={handlePostSuccess}
                     />
