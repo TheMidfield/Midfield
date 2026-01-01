@@ -211,21 +211,21 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                 onClose={closeAuthModal}
                 context={authModalContext}
             />
-            <div style={{ maxWidth: '600px' }}>
+            <div className="max-w-[600px] sm:max-w-[520px]">
                 {/* Title - Larger but NOT over-weighted */}
-                <h1 className="font-bold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-10 sm:mb-12 leading-[1.1]">
+                <h1 className="font-bold tracking-tight text-slate-900 dark:text-white text-4xl sm:text-5xl lg:text-6xl mb-8 sm:mb-12 leading-[1.1]">
                     Everyone has a <br />
                     <span className="text-emerald-600 dark:text-emerald-500">football take.</span>
                 </h1>
 
                 {/* "What's your take on" + cycling card */}
-                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-4 mb-10 sm:mb-16">
+                <div className="flex flex-col sm:flex-row sm:items-center flex-wrap gap-2 sm:gap-4 mb-10 sm:mb-16">
                     <span className="text-slate-700 dark:text-slate-200 font-semibold tracking-tight whitespace-nowrap text-lg sm:text-xl">
                         What's your take on...
                     </span>
 
-                    {/* Card container - Shorter but larger on mobile as requested */}
-                    <div className="relative h-20 sm:h-14 w-[280px] sm:w-[320px]">
+                    {/* Card container - Shorter but larger on mobile as requested, fixed width on desktop for 1-line fit */}
+                    <div className="relative h-20 sm:h-14 w-[280px] sm:w-[240px]">
                         <AnimatePresence mode="wait">
                             <motion.div
                                 key={currentEntity.id}
