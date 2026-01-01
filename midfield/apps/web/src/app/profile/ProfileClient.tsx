@@ -433,13 +433,14 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                 ) : null}
 
                                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '12px' }}>
-                                    <Button onClick={handleUsernameCancel} variant="ghost" size="sm" disabled={isPending}>
+                                    <Button onClick={handleUsernameCancel} variant="outline" size="sm" disabled={isPending}>
                                         Cancel
                                     </Button>
                                     <Button
                                         onClick={handleUsernameSave}
                                         size="sm"
                                         disabled={isPending || username === profile.username || usernameAvailable === false || isCheckingUsername}
+                                        style={{ minWidth: '100px' }}
                                     >
                                         {isPending ? "..." : "Save Changes"}
                                     </Button>
