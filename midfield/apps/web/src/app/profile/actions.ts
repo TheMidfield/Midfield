@@ -154,7 +154,37 @@ export async function getUserProfile() {
             return { user, profile: null };
         }
 
-        return { user, profile }
+        // Calculate User Rank (First 10/100/1000)
+        const { count: olderUsersCount } = await supabase
+            .from('users')
+            .select('*', { count: 'exact', head: true })
+            .lt('created_at', profile.created_at)
+
+        const userRank = (olderUsersCount || 0) + 1
+
+        // Calculate "Seeded Topic" (First take on a topic)
+        const { data: hasSeeded } = await supabase
+            .rpc('has_seeded_topic' as any, { user_id: user.id })
+
+        const badges: string[] = []
+
+        // Rank Badges (Mutually exclusive tiers)
+        if (userRank <= 10) badges.push('original-10')
+        else if (userRank <= 100) badges.push('club-100')
+        else if (userRank <= 1000) badges.push('club-1000')
+
+        // Trendsetter Badge
+        if (hasSeeded) badges.push('trendsetter')
+
+        // Return augmented profile
+        return {
+            user,
+            profile: {
+                ...profile,
+                user_rank: userRank,
+                badges
+            }
+        }
     } catch (error) {
         console.error('Unexpected error in getUserProfile:', error);
         return null;

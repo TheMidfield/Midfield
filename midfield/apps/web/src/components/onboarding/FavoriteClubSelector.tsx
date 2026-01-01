@@ -104,7 +104,7 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
     }
 
     return (
-        <div className={`space-y-4 ${className || ''}`}>
+        <div className={`space-y-4 ${className || ''}`} style={{ width: '100%' }}>
             {/* Search */}
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-neutral-500" />
@@ -113,7 +113,8 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search for your club..."
-                    className="pl-9 text-base"
+                    className="pl-9 text-base box-border"
+                    style={{ width: '100%' }} // Safe layout pattern
                 />
             </div>
 
