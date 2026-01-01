@@ -815,14 +815,14 @@ const getCachedMatchCenterData = unstable_cache(
                     title: homeTeam.title,
                     slug: homeTeam.slug,
                     badgeUrl: (homeTeam.metadata as any)?.badge_url,
-                    abbreviation: (homeTeam.metadata as any)?.abbreviation || getClubAbbreviation(homeTeam.slug, homeTeam.title),
+                    abbreviation: getClubAbbreviation(homeTeam.slug, homeTeam.title) || (homeTeam.metadata as any)?.abbreviation,
                 },
                 awayTeam: {
                     id: awayTeam.id,
                     title: awayTeam.title,
                     slug: awayTeam.slug,
                     badgeUrl: (awayTeam.metadata as any)?.badge_url,
-                    abbreviation: (awayTeam.metadata as any)?.abbreviation || getClubAbbreviation(awayTeam.slug, awayTeam.title),
+                    abbreviation: getClubAbbreviation(awayTeam.slug, awayTeam.title) || (awayTeam.metadata as any)?.abbreviation,
                 },
                 competition: {
                     id: competition.id,
@@ -1033,14 +1033,14 @@ export async function getRecentResultsData(limit = 6): Promise<RecentResult[]> {
             title: f.homeTeam.title,
             slug: f.homeTeam.slug,
             badgeUrl: (f.homeTeam.metadata as any)?.badge_url,
-            abbreviation: (f.homeTeam.metadata as any)?.abbreviation || getClubAbbreviation(f.homeTeam.slug, f.homeTeam.title),
+            abbreviation: getClubAbbreviation(f.homeTeam.slug, f.homeTeam.title) || (f.homeTeam.metadata as any)?.abbreviation,
         },
         awayTeam: {
             id: f.awayTeam.id,
             title: f.awayTeam.title,
             slug: f.awayTeam.slug,
             badgeUrl: (f.awayTeam.metadata as any)?.badge_url,
-            abbreviation: (f.awayTeam.metadata as any)?.abbreviation || getClubAbbreviation(f.awayTeam.slug, f.awayTeam.title),
+            abbreviation: getClubAbbreviation(f.awayTeam.slug, f.awayTeam.title) || (f.awayTeam.metadata as any)?.abbreviation,
         },
         competition: {
             id: f.competition.id,

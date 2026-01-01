@@ -6,6 +6,7 @@ import Link from "next/link";
 import NextImage from "next/image";
 import { useMatchCenter } from "@/lib/hooks/use-cached-data";
 import type { MatchCenterFixture } from "@/app/actions/fetch-widget-data";
+import { getClubAbbreviation } from "@midfield/logic/src/topics";
 
 // Format date for display - automatically converts to user's local timezone
 function formatMatchDate(dateStr: string): { dayMonth: string; time: string; fullDateTime: string } {
@@ -49,7 +50,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                         className="truncate"
                     >
                         <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
-                            {fixture.homeTeam.abbreviation || fixture.homeTeam.title.slice(0, 3).toUpperCase()}
+                            {getClubAbbreviation(fixture.homeTeam.slug, fixture.homeTeam.title)}
                         </span>
                     </Link>
                     <Link href={`/topic/${fixture.homeTeam.slug}`}>
@@ -122,7 +123,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                         className="truncate"
                     >
                         <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
-                            {fixture.awayTeam.abbreviation || fixture.awayTeam.title.slice(0, 3).toUpperCase()}
+                            {getClubAbbreviation(fixture.awayTeam.slug, fixture.awayTeam.title)}
                         </span>
                     </Link>
                 </div>

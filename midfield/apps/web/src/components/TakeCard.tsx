@@ -547,7 +547,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                     />
                                                 )}
                                                 <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[10px] xs:text-[11px] sm:text-xs truncate">
-                                                    @{reply.author?.username || 'anon'}
+                                                    {reply.author?.username || 'anon'}
                                                 </span>
                                                 <span className="text-slate-300 dark:text-neutral-600 text-[9px] xs:text-[10px] sm:text-xs flex-shrink-0">•</span>
                                                 <span className="text-slate-400 dark:text-neutral-500 text-[9px] xs:text-[10px] sm:text-xs whitespace-nowrap flex-shrink-0">
@@ -574,7 +574,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                                     >
                                                         <p className="text-[10px] xs:text-[11px] sm:text-[11px] line-clamp-2 text-slate-400 dark:text-neutral-500">
                                                             <span className="font-medium text-slate-500 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                                                                @{reply.reply_to.author.username}
+                                                                {reply.reply_to.author.username}
                                                             </span>
                                                             {reply.reply_to.content && (
                                                                 <>
@@ -655,7 +655,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                             ref={replyInputRef}
                                             value={replyContent}
                                             onChange={(e) => setReplyContent(e.target.value)}
-                                            placeholder={replyingTo ? "Write your reply..." : `Reply to @${authorHandle}...`}
+                                            placeholder={replyingTo ? "Write your reply..." : `Reply to ${authorHandle}...`}
                                             className="w-full p-2 sm:p-3 text-xs sm:text-sm bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-700 rounded-md text-slate-900 dark:text-neutral-100 placeholder:text-slate-400 dark:placeholder:text-neutral-500 focus:outline-none focus:border-emerald-400 dark:focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/10 hover:border-slate-300 dark:hover:border-neutral-600 resize-none transition-all"
                                             rows={2}
                                             disabled={isPending}

@@ -388,7 +388,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
 
                     {/* Username */}
                     {/* Username */}
-                    <div style={{ borderTop: '1px solid', paddingTop: '24px', marginTop: '12px', opacity: 0.5 }} className="border-slate-200 dark:border-neutral-700">
+                    <div style={{ borderTop: '1px solid', paddingTop: '24px', marginTop: '12px' }} className="border-slate-200 dark:border-neutral-700">
                         <p className="text-xs font-semibold text-slate-500 dark:text-neutral-400 uppercase tracking-wider mb-2">Username</p>
                         {isEditingUsername ? (
                             <div>
