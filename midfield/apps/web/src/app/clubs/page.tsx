@@ -1,11 +1,11 @@
 import { getTopicsByType } from "@midfield/logic/src/topics";
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
-import Link from "next/link";
 import { Shield } from "lucide-react";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { createClient } from "@/lib/supabase/server";
+import { TopicCard } from "@/components/TopicCard";
 
 export default async function ClubsPage() {
+    const supabase = await createClient();
     const allClubs = await getTopicsByType('club');
 
     // Filter strictly to allowed leagues
@@ -18,7 +18,7 @@ export default async function ClubsPage() {
         <div className="w-full">
             {/* Hero Banner - Elegant radial style matching homepage */}
             <section className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible" style={{ width: '100%' }}>
-                {/* Discrete emerald spotlight - top-left corner */}
+                {/* ... existing spotlight and grid divs ... */}
                 <div
                     className="absolute pointer-events-none"
                     style={{
@@ -30,8 +30,6 @@ export default async function ClubsPage() {
                         filter: 'blur(40px)',
                     }}
                 />
-
-                {/* Discrete emerald spotlight - bottom-right corner */}
                 <div
                     className="absolute pointer-events-none"
                     style={{
@@ -43,8 +41,6 @@ export default async function ClubsPage() {
                         filter: 'blur(50px)',
                     }}
                 />
-
-                {/* Fading grid background - simple radial mask */}
                 <div
                     className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.03]"
                     style={{
@@ -79,31 +75,11 @@ export default async function ClubsPage() {
                 </div>
             </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {sortedClubs.map((club: any) => (
-                    <Link key={club.id} href={`/topic/${club.slug}`}>
-                        <Card variant="interactive" className="p-5 flex items-center gap-4 group h-full">
-                            <div className="w-16 h-16 shrink-0 flex items-center justify-center">
-                                <img
-                                    src={club.metadata?.badge_url}
-                                    alt={club.title}
-                                    className="max-w-full max-h-full object-contain"
-                                />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate">
-                                    {club.title}
-                                </h3>
-                                <div className="flex items-center gap-2 mt-1.5">
-                                    <Badge variant="secondary" className="text-[10px] truncate max-w-full">
-                                        {club.metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') || "League"}
-                                    </Badge>
-                                </div>
-                            </div>
-                        </Card>
-                    </Link>
+                    <TopicCard key={club.id} topic={club} />
                 ))}
             </div>
-        </div >
+        </div>
     );
 }

@@ -131,8 +131,18 @@ export function TopicCard({ topic }: { topic: any }) {
                         </div>
 
                         <div className="flex items-center gap-2.5">
-                            <ThumbsUp className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
-                            <ThumbsDown className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                            {topic.upvotes > 0 && (
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-neutral-500">
+                                    <ThumbsUp className="w-3.5 h-3.5" />
+                                    <span>{topic.upvotes}</span>
+                                </div>
+                            )}
+                            {topic.downvotes > 0 && (
+                                <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-neutral-500">
+                                    <ThumbsDown className="w-3.5 h-3.5" />
+                                    <span>{topic.downvotes}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </Card>
@@ -269,8 +279,18 @@ export function TopicCard({ topic }: { topic: any }) {
                     </div>
 
                     <div className="flex items-center gap-2.5">
-                        <ThumbsUp className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
-                        <ThumbsDown className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
+                        {topic.upvotes > 0 && (
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-neutral-500">
+                                <ThumbsUp className="w-3.5 h-3.5" />
+                                <span>{topic.upvotes}</span>
+                            </div>
+                        )}
+                        {topic.downvotes > 0 && (
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-slate-400 dark:text-neutral-500">
+                                <ThumbsDown className="w-3.5 h-3.5" />
+                                <span>{topic.downvotes}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </Card>

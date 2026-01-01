@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Shield, ArrowRight } from "lucide-react";
+import { Shield, ArrowRight, ThumbsUp, ThumbsDown } from "lucide-react";
 import Link from "next/link";
 import NextImage from "next/image";
 import { useRouter } from "next/navigation";
@@ -63,7 +63,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                     {entity.displayName}
                 </h3>
-                <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 flex-wrap">
+                <div className="flex items-center gap-1.5 flex-wrap">
                     {isPlayer && posInfo && (
                         <Badge variant="secondary" className={`text-[8px] px-1 h-4 ${posInfo.color}`}>
                             {posInfo.abbr}

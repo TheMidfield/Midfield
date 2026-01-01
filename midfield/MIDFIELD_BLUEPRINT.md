@@ -1,7 +1,9 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.7)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.8)
 
 <!--
 UPDATE LOG (Jan 1, 2026):
+- **Sentiment Protocol**: Standardized subtle Slate-400 vote counts, conditional visibility (>0), and hero section clean-revert.
+- **Type Safety & RPC**: Standardized batch vote fetching via RPC and documented `as any` escape hatches for excessively deep TS instantiation.
 - **Bandwidth Optimization Law**: Query limit reductions (500→50 players, 150→30 fixtures) + React cache() for request deduplication. NEVER use unstable_cache() for dynamic user data.
 - **Image Optimization Law**: Documented Vercel 402 quota crisis. External CDN images MUST use `unoptimized={true}` to prevent quota exhaustion. User uploads stay optimized for SEO/perf.
 - **Smart Upsert Hardening**: Implemented "Safety Locks" in `smartUpsertTopic` to protect `fc26_data`, `follower_count`, and `post_count` from accidental overwrite.
@@ -201,7 +203,15 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - **Free Tier Awareness**: Vercel Free = 10GB Fast Origin Transfer/month.
       - Monitor usage in Vercel Dashboard → Analytics → Fast Origin Transfer.
       - Set alert at 8GB/month (80% threshold).
-    - **Scalability Standards** (Critical - Jan 1, 2026):
+13. **Sentiment Protocol (Votes)** (Critical - Jan 1, 2026):
+    - **Aesthetics**: Upvote/Downvote counts MUST use unsaturated **Slate-400** (`text-slate-400`). Emerald/Red are banned for general card display to preserve visual calm.
+    - **Conditional Display**: Vote counts (icon + number) MUST ONLY be visible if the count is `> 0`.
+    - **Scope**: Enabled for `TopicCard` (Search/Homepage) and `FeaturedPlayers`. 
+    - **Hero Protection**: Hero Cycler items MUST remain clean (no vote counts).
+14. **Type Safety & RPC Standards**:
+    - **RPC Batching**: Use `get_topic_vote_counts` RPC for all multi-topic list views to prevent N+1 overhead.
+    - **Type Resilience**: If the Supabase client returns "Never" types or "Excessively Deep" instantiation errors on complex RPCs, cast the client/call to `any` to unblock builds. Standardized schema types live in `packages/types/src/supabase.ts` and MUST be identical in `apps/web/src/types/database.types.ts`.
+15. **Scalability Standards** (Critical - Jan 1, 2026):
       - **No Waterfalls**: Independent data fetches MUST run in parallel using `Promise.all()`.
       - **Batch Writes**: Sync jobs must use atomic `upsert()` arrays. N+1 database writes are strictly forbidden.
       - **Widget Caching**: Heavy global widgets (Trending, Match Center, Similar Recs) MUST use `unstable_cache` (ISR) with tagged revalidation (e.g. 300s).

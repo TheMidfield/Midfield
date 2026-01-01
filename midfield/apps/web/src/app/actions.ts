@@ -10,7 +10,25 @@ import { searchTopicsLogic } from "@midfield/logic/src/search";
 
 export async function searchTopics(query: string, type?: string) {
     const supabase = await createClient();
-    return await searchTopicsLogic(supabase, query, type);
+    const topics = await searchTopicsLogic(supabase, query, type);
+
+    if (topics && topics.length > 0) {
+        const topicIds = topics.map((t: any) => t.id);
+        const { data: voteCounts } = await (supabase as any).rpc('get_topic_vote_counts', {
+            topic_ids: topicIds
+        });
+
+        if (voteCounts) {
+            const voteMap = new Map(voteCounts.map((v: any) => [v.topic_id, { up: v.upvotes, down: v.downvotes }]));
+            topics.forEach((t: any) => {
+                const votes = voteMap.get(t.id) as any;
+                t.upvotes = votes?.up || 0;
+                t.downvotes = votes?.down || 0;
+            });
+        }
+    }
+
+    return topics;
 }
 
 // ============================================

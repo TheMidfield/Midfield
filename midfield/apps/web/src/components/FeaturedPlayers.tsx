@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import NextImage from "next/image";
-import { User, LayoutGrid, LayoutList, Shield } from "lucide-react";
+import { User, LayoutGrid, LayoutList, Shield, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -138,6 +138,22 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                 )}
                                             </div>
                                         </div>
+                                        <div className="flex flex-col items-end gap-1 shrink-0">
+                                            <div className="flex items-center gap-1.5">
+                                                {player.upvotes > 0 && (
+                                                    <div className="flex items-center gap-0.5 text-[9px] font-bold text-slate-400 dark:text-neutral-500">
+                                                        <ThumbsUp className="w-2.5 h-2.5" />
+                                                        <span>{player.upvotes}</span>
+                                                    </div>
+                                                )}
+                                                {player.downvotes > 0 && (
+                                                    <div className="flex items-center gap-0.5 text-[9px] font-bold text-slate-400 dark:text-neutral-500">
+                                                        <ThumbsDown className="w-2.5 h-2.5" />
+                                                        <span>{player.downvotes}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </Card>
                             </Link>
@@ -208,6 +224,21 @@ export function FeaturedPlayers({ players }: FeaturedPlayersProps) {
                                                     <Badge variant="secondary" className={`text-[9px] ${positionInfo.color}`}>
                                                         {positionInfo.abbr}
                                                     </Badge>
+                                                )}
+                                            </div>
+                                            {/* Votes in grid */}
+                                            <div className="flex items-center gap-2 mt-1.5">
+                                                {player.upvotes > 0 && (
+                                                    <div className="flex items-center gap-0.5 text-[9px] font-bold text-slate-400 dark:text-neutral-500">
+                                                        <ThumbsUp className="w-2.5 h-2.5" />
+                                                        <span>{player.upvotes}</span>
+                                                    </div>
+                                                )}
+                                                {player.downvotes > 0 && (
+                                                    <div className="flex items-center gap-0.5 text-[9px] font-bold text-slate-400 dark:text-neutral-500">
+                                                        <ThumbsDown className="w-2.5 h-2.5" />
+                                                        <span>{player.downvotes}</span>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>

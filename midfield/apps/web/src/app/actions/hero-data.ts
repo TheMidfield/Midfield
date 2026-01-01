@@ -16,6 +16,8 @@ export type HeroEntity = {
     position?: string;
     rating?: number;
     subtitle?: string;
+    upvotes?: number;
+    downvotes?: number;
 };
 
 export type HeroTake = {
@@ -164,6 +166,23 @@ export async function getHeroEntities(): Promise<HeroEntity[]> {
             return FALLBACK_ENTITIES;
         }
 
+        // Fetch vote counts for these topics
+        const topicIds = data.map(t => t.id);
+        const { data: voteCounts, error: voteError } = await supabase.rpc('get_topic_vote_counts', {
+            topic_ids: topicIds
+        });
+
+        if (voteError) {
+            console.error('getHeroEntities vote count error:', voteError.message);
+        }
+
+        const voteMap = new Map();
+        if (voteCounts) {
+            voteCounts.forEach((v: any) => {
+                voteMap.set(v.topic_id, { up: v.upvotes, down: v.downvotes });
+            });
+        }
+
         // Deep clone
         const plain = JSON.parse(JSON.stringify(data));
 
@@ -183,7 +202,9 @@ export async function getHeroEntities(): Promise<HeroEntity[]> {
                 : t.metadata?.badge_url || t.metadata?.logo_url,
             position: t.metadata?.position,
             rating: t.metadata?.rating ? Number(t.metadata.rating) : undefined,
-            subtitle: t.type === 'club' ? t.metadata?.league_name : undefined
+            subtitle: t.type === 'club' ? t.metadata?.league_name : undefined,
+            upvotes: Number(voteMap.get(t.id)?.up || 0),
+            downvotes: Number(voteMap.get(t.id)?.down || 0)
         }));
 
     } catch (err) {

@@ -22,22 +22,23 @@ export default async function PlayersPage() {
         .eq('is_active', true);
 
     // Process players with club data AND filter by allowed leagues
-    const playersWithClubs = (playerRelationships || [])
+    const filteredPlayers = (playerRelationships || [])
         .filter((player: any) => {
             const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
             const league = (clubData?.metadata as any)?.league;
             return ALLOWED_LEAGUES.includes(league);
-        })
-        .map((player: any) => {
-            const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
-            return {
-                ...player,
-                clubInfo: clubData ? {
-                    name: clubData.title,
-                    badge_url: clubData.metadata?.badge_url
-                } : null
-            };
-        }).sort(() => Math.random() - 0.5); // Randomize order
+        });
+
+    const playersWithClubs = filteredPlayers.map((player: any) => {
+        const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
+        return {
+            ...player,
+            clubInfo: clubData ? {
+                name: clubData.title,
+                badge_url: clubData.metadata?.badge_url
+            } : null
+        };
+    }).sort(() => Math.random() - 0.5); // Randomize order
 
     return (
         <div className="w-full">

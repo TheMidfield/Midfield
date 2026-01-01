@@ -1,8 +1,9 @@
 import { supabase } from "@midfield/logic/src/supabase";
 import { getClubsByLeague } from "@midfield/logic/src/topics";
 import Link from "next/link";
-import { Trophy, Shield, Globe2, Sparkles, Star } from "lucide-react";
+import { Trophy, Shield, Globe2, Sparkles, Star, ThumbsUp, ThumbsDown } from "lucide-react";
 import { Card } from "@/components/ui/Card";
+import { createClient } from "@/lib/supabase/server";
 
 // Country flag image mapping
 const COUNTRY_FLAG_IMAGES: Record<string, string> = {
@@ -14,6 +15,8 @@ const COUNTRY_FLAG_IMAGES: Record<string, string> = {
 };
 
 export default async function LeaguesPage() {
+  const serverSupabase = await createClient();
+
   // Fetch league topics directly from database
   const { data: leagues } = await supabase
     .from('topics')
@@ -155,7 +158,7 @@ export default async function LeaguesPage() {
                           {league.title.replace(/^(English|Spanish|Italian|German|French)\s/, '')}
                         </h3>
 
-                        {/* Country Flag & Club Count - Stacked to avoid wrap */}
+                        {/* Country Flag, Club Count & Votes */}
                         <div className="flex flex-col items-center gap-2">
                           {/* Country Flag */}
                           {countryFlagImg && (
@@ -166,7 +169,7 @@ export default async function LeaguesPage() {
                             />
                           )}
 
-                          {/* Club Count */}
+                          {/* Club Count Row */}
                           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 dark:bg-neutral-800 rounded-md text-xs font-semibold text-slate-600 dark:text-neutral-400">
                             <Shield className="w-3.5 h-3.5" />
                             <span>{league.clubCount} clubs</span>
@@ -192,10 +195,6 @@ export default async function LeaguesPage() {
               {continentalLeagues.map((league: any) => {
                 const isUCL = league.slug.includes("champions-league") || league.title.includes("Champions League");
                 const isEuropa = league.slug.includes("europa-league") || league.title.includes("Europa League");
-
-                // Dynamic Styling Logic - Europa matches UCL architecture
-                // UCL: Dark Navy (#001A57) Light Mode / Blue-500 (#3b82f6) Dark Mode
-                // Europa: Orange-600 Light Mode / Orange-500 Dark Mode
 
                 const borderClass = isUCL
                   ? "border-[#001A57]/30 dark:border-[#3b82f6]/30 hover:border-[#001A57] dark:hover:border-[#3b82f6]"
@@ -242,7 +241,6 @@ export default async function LeaguesPage() {
                           {league.title.replace(/^UEFA\s/, '')}
                         </h3>
 
-                        {/* Continental Flag (UEFA) */}
                         <div className="flex justify-center">
                           <img
                             src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/uefa.png"

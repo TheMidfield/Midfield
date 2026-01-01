@@ -149,6 +149,35 @@ export default async function Home() {
         });
     }
 
+    const leagues = leaguesPlain.map((l: any) => ({
+        id: String(l.id),
+        title: String(l.title),
+        slug: String(l.slug),
+        type: 'league',
+        metadata: l.metadata || {},
+        post_count: l.post_count || 0
+    }));
+
+    // Fetch vote counts for ALL displayed topics on this page
+    const allTopicIds = [
+        ...clubsPlain.map((c: any) => c.id),
+        ...playersPlain.map((p: any) => p.id),
+        ...leaguesPlain.map((l: any) => l.id)
+    ];
+
+    let voteMap = new Map();
+    if (allTopicIds.length > 0) {
+        const { data: voteCounts } = await supabase.rpc('get_topic_vote_counts', {
+            topic_ids: allTopicIds
+        });
+
+        if (voteCounts) {
+            voteCounts.forEach((v: any) => {
+                voteMap.set(v.topic_id, { up: v.upvotes, down: v.downvotes });
+            });
+        }
+    }
+
     // Sort clubs by our curated order - preserve full structure for TopicCard
     const featuredClubs = FEATURED_CLUB_SLUGS
         .map(slug => clubsPlain.find((c: any) => c.slug === slug))
@@ -159,7 +188,9 @@ export default async function Home() {
             slug: String(c.slug),
             type: 'club',
             metadata: c.metadata || {},
-            post_count: c.post_count || 0
+            post_count: c.post_count || 0,
+            upvotes: voteMap.get(c.id)?.up || 0,
+            downvotes: voteMap.get(c.id)?.down || 0
         }));
 
     // Sort players by our curated order - preserve full structure for TopicCard with clubInfo
@@ -173,16 +204,15 @@ export default async function Home() {
             type: 'player',
             metadata: p.metadata || {},
             post_count: p.post_count || 0,
-            clubInfo: clubMap.get(p.id) || null
+            clubInfo: clubMap.get(p.id) || null,
+            upvotes: voteMap.get(p.id)?.up || 0,
+            downvotes: voteMap.get(p.id)?.down || 0
         }));
 
-    const leagues = leaguesPlain.map((l: any) => ({
-        id: String(l.id),
-        title: String(l.title),
-        slug: String(l.slug),
-        type: 'league',
-        metadata: l.metadata || {},
-        post_count: l.post_count || 0
+    const enrichedLeagues = leagues.map((l: any) => ({
+        ...l,
+        upvotes: voteMap.get(l.id)?.up || 0,
+        downvotes: voteMap.get(l.id)?.down || 0
     }));
 
     return (
@@ -269,7 +299,7 @@ export default async function Home() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {leagues.map((league) => (
+                    {enrichedLeagues.map((league: any) => (
                         <TopicCard key={league.id} topic={league} />
                     ))}
                 </div>
