@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import NextImage from "next/image";
-import { ChevronRight, Share2, MapPin, Calendar, Flag, Ruler, Shirt, Trophy, MessageSquare, ThumbsUp, ThumbsDown, Weight, Footprints } from "lucide-react";
+import { ChevronRight, Share, MapPin, Calendar, Flag, Ruler, Shirt, Trophy, MessageSquare, ThumbsUp, ThumbsDown, Weight, Footprints } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -11,6 +11,7 @@ import { AuthModal } from "@/components/ui/AuthModal";
 import { useAuthModal } from "@/components/ui/useAuthModal";
 import { voteTopic } from "@/app/actions/vote-topic";
 import { useState } from "react";
+import { Toast } from "@/components/ui/Toast";
 
 
 
@@ -76,6 +77,39 @@ export function EntityHeader({
     const [upvoteCount, setUpvoteCount] = useState(initialUpvoteCount);
     const [downvoteCount, setDownvoteCount] = useState(initialDownvoteCount);
     const [userVote, setUserVote] = useState(initialUserVote);
+    const [toastState, setToastState] = useState<{ message: string | null; type: 'success' | 'error' }>({ message: null, type: 'success' });
+
+    const showToast = (message: string, type: 'success' | 'error') => {
+        setToastState({ message, type });
+        setTimeout(() => setToastState({ message: null, type: 'success' }), 3000);
+    };
+
+    const handleShare = async () => {
+        if (typeof window === 'undefined') return;
+
+        const shareData = {
+            title: title,
+            text: `Check out ${title} on Midfield`,
+            url: window.location.href,
+        };
+
+        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                // User cancelled or failed, fallback to clipboard
+                console.log("Share failed or cancelled", err);
+            }
+        } else {
+            // Fallback to clipboard
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                showToast("Link copied to clipboard", 'success');
+            } catch (err) {
+                showToast("Failed to copy link", 'error');
+            }
+        }
+    };
 
     // Handle vote - instant optimistic update
     const handleVote = async (voteType: 'upvote' | 'downvote') => {
@@ -191,6 +225,7 @@ export function EntityHeader({
                 onClose={closeAuthModal}
                 context={authModalContext}
             />
+            <Toast message={toastState.message} type={toastState.type} />
 
             <div className="mb-4 sm:mb-6">
                 {/* Breadcrumb Navigation */}
@@ -345,8 +380,8 @@ export function EntityHeader({
                                     </h1>
 
                                     {/* Share Button - Square */}
-                                    <Button variant="ghost" size="sm" className="w-8 h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-md transition-colors shrink-0">
-                                        <Share2 className="w-4 h-4" />
+                                    <Button onClick={handleShare} variant="ghost" size="sm" className="w-8 h-8 p-0 text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 rounded-md transition-colors shrink-0">
+                                        <Share className="w-4 h-4" />
                                     </Button>
                                 </div>
 

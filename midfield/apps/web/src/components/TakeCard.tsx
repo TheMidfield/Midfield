@@ -22,6 +22,13 @@ interface Reply {
     author?: {
         username?: string;
         avatar_url?: string;
+        favorite_club?: {
+            title: string;
+            metadata?: {
+                badge_url?: string;
+                logo_url?: string;
+            };
+        };
     };
     reply_to?: {
         id: string;
@@ -532,6 +539,13 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                         {/* Col 3: Reply Content */}
                                         <div className="pt-1 sm:pt-2 min-w-0">
                                             <div className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 mb-0.5 sm:mb-1 min-w-0 h-4 sm:h-5">
+                                                {reply.author?.favorite_club && (reply.author.favorite_club.metadata?.badge_url || reply.author.favorite_club.metadata?.logo_url) && (
+                                                    <img
+                                                        src={reply.author.favorite_club.metadata.badge_url || reply.author.favorite_club.metadata.logo_url}
+                                                        alt={reply.author.favorite_club.title}
+                                                        className="w-4 h-4 object-contain mr-1 flex-shrink-0"
+                                                    />
+                                                )}
                                                 <span className="font-semibold text-slate-900 dark:text-neutral-100 text-[10px] xs:text-[11px] sm:text-xs truncate">
                                                     @{reply.author?.username || 'anon'}
                                                 </span>
