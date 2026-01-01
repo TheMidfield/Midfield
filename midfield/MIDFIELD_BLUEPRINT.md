@@ -1,7 +1,8 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.6)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.7)
 
 <!--
 UPDATE LOG (Jan 1, 2026):
+- **Bandwidth Optimization Law**: Query limit reductions (500→50 players, 150→30 fixtures) + React cache() for request deduplication. NEVER use unstable_cache() for dynamic user data.
 - **Image Optimization Law**: Documented Vercel 402 quota crisis. External CDN images MUST use `unoptimized={true}` to prevent quota exhaustion. User uploads stay optimized for SEO/perf.
 - **Smart Upsert Hardening**: Implemented "Safety Locks" in `smartUpsertTopic` to protect `fc26_data`, `follower_count`, and `post_count` from accidental overwrite.
 - **Metadata Merging**: Sync jobs now shallow-merge `metadata` JSONB. Enriched fields (Height, Weight, Foot) are preserved even if simpler syncs run later.
@@ -170,6 +171,20 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - **Above-Fold Critical Images**: Selectively optimize with `priority={true}` for LCP.
       - Use sparingly: Homepage hero, entity headers only.
     - **Crisis Reference**: See `image-optimization-audit.md` for full incident report.
+12. **Bandwidth Optimization Law** (Critical - Jan 1, 2026):
+    - **Query Limits**: ALWAYS limit queries to what's needed, not "fetch all then filter".
+      - Example: Fetch 50 players max for recommendations, not 500.
+      - Rationale: 90% bandwidth savings with zero UX impact.
+    - **React cache() for Server Actions**: Use `cache()` from React for request-level deduplication.
+      - Example: `export const getData = cache(async () => { ... })`
+      - Behavior: Multiple calls in SAME request = 1 DB query. Different requests = NEW queries (fresh data).
+    - **NEVER use unstable_cache() for dynamic data**: Cross-request caching causes stale data.
+      - ❌ WRONG: `unstable_cache(async () => getTrendingTopics(), ['trending'])`
+      - Why: First request's data cached globally for ALL users until revalidation.
+      - Only use `unstable_cache()` for truly static content (regenerated hourly/daily).
+    - **Free Tier Awareness**: Vercel Free = 10GB Fast Origin Transfer/month.
+      - Monitor usage in Vercel Dashboard → Analytics → Fast Origin Transfer.
+      - Set alert at 8GB/month (80% threshold).
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
