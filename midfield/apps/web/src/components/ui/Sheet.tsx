@@ -21,15 +21,17 @@ const SheetContent = React.forwardRef<
         {/* Overlay - full screen below navbar, darkens the main content */}
         <DialogPrimitive.Overlay
             className={cn(
-                "fixed inset-0 z-30 bg-black/40",
+                "fixed inset-0 z-30 bg-black/50",
                 // Start below navbar
                 "top-[62px] sm:top-16",
                 "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+                "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+                "duration-200"
             )}
         />
         <DialogPrimitive.Content
             ref={ref}
+            aria-describedby={undefined}
             className={cn(
                 "fixed z-40 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
                 // Start below navbar
@@ -52,6 +54,8 @@ const SheetContent = React.forwardRef<
             )}
             {...props}
         >
+            {/* Hidden title for accessibility - using sr-only pattern */}
+            <DialogPrimitive.Title className="sr-only">Notifications</DialogPrimitive.Title>
             {children}
         </DialogPrimitive.Content>
     </SheetPortal>

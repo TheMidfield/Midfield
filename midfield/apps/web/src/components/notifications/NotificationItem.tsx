@@ -58,10 +58,10 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                             width={48}
                             height={48}
                             className={cn(
-                                "object-contain",
+                                // Player cutout: proper head framing like PlayerCards
                                 entity.type === 'player'
-                                    ? "object-top scale-[2.2] translate-y-2"
-                                    : "p-1"
+                                    ? "object-cover object-top scale-[2.5] translate-y-3"
+                                    : "object-contain p-1"
                             )}
                             unoptimized
                         />
@@ -142,9 +142,10 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         }
     };
 
+    // Modal-type notifications: keep sidebar open
     if (notification.type === 'system_welcome') {
         return (
-            <div onClick={() => { onRead(); onWelcomeClick(); }} className={baseClasses}>
+            <div onClick={onWelcomeClick} className={baseClasses}>
                 {renderContent()}
             </div>
         );
@@ -153,12 +154,13 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
     if (notification.type === 'badge_received') {
         const badgeId = notification.resource_slug || '';
         return (
-            <div onClick={() => { onRead(); onBadgeClick(badgeId); }} className={baseClasses}>
+            <div onClick={() => onBadgeClick(badgeId)} className={baseClasses}>
                 {renderContent()}
             </div>
         );
     }
 
+    // Navigation notifications: close sidebar
     const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
 
     return (

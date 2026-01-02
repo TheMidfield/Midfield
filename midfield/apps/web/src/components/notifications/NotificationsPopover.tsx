@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bell, X, ChevronLeft } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { Bell, X } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/Sheet";
 import { IconButton } from "@/components/ui/IconButton";
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type Notification } from "@/app/actions/notifications";
@@ -30,6 +31,22 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     const closeSidebar = () => handleOpenChange(false);
 
+    // Lock body scroll on mobile when open
+    useEffect(() => {
+        if (open) {
+            // Only on mobile (use media query check)
+            const isMobile = window.matchMedia('(max-width: 639px)').matches;
+            if (isMobile) {
+                document.body.style.overflow = 'hidden';
+            }
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [open]);
+
     useEffect(() => {
         if (open) {
             setLoading(true);
@@ -57,7 +74,7 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     return (
         <>
-            <Sheet open={open} onOpenChange={handleOpenChange} modal={false}>
+            <Sheet open={open} onOpenChange={handleOpenChange}>
                 <SheetTrigger asChild>
                     <div className="relative">
                         <IconButton
@@ -76,39 +93,31 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                     </div>
                 </SheetTrigger>
                 <SheetContent side="right" className="flex flex-col">
-                    {/* Header - different layout for mobile */}
+                    {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-neutral-800">
-                        {/* Mobile: back arrow. Desktop: title */}
-                        <div className="flex items-center gap-2">
-                            <SheetClose asChild className="sm:hidden">
-                                <button className="rounded-md p-1 -ml-1 text-slate-500 dark:text-neutral-400 transition-colors hover:text-slate-700 dark:hover:text-neutral-200 cursor-pointer">
-                                    <ChevronLeft className="h-5 w-5" />
-                                </button>
-                            </SheetClose>
-                            <span className="text-sm sm:text-[11px] font-semibold sm:uppercase tracking-normal sm:tracking-wider text-slate-800 dark:text-neutral-200 sm:text-slate-500 sm:dark:text-neutral-500">
-                                Notifications
-                            </span>
-                        </div>
+                        <span className="text-sm sm:text-[11px] font-semibold sm:uppercase tracking-normal sm:tracking-wider text-slate-800 dark:text-neutral-200 sm:text-slate-500 sm:dark:text-neutral-500">
+                            Notifications
+                        </span>
                         <div className="flex items-center gap-3">
                             {hasUnread && (
                                 <button
                                     onClick={handleMarkAllRead}
-                                    className="text-[12px] sm:text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                    className="text-[12px] sm:text-[11px] font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                                 >
                                     Mark all read
                                 </button>
                             )}
-                            {/* Desktop only: X close button */}
-                            <SheetClose asChild className="hidden sm:block">
-                                <button className="rounded-md p-1 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer">
-                                    <X className="h-4 w-4" />
+                            {/* Close button - visible on both mobile and desktop, on the right */}
+                            <SheetClose asChild>
+                                <button className="rounded-md p-1.5 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer">
+                                    <X className="h-5 w-5 sm:h-4 sm:w-4" />
                                 </button>
                             </SheetClose>
                         </div>
                     </div>
 
                     {/* Scrollable content */}
-                    <div className="flex-1 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto overscroll-contain">
                         {loading && notifications.length === 0 ? (
                             <div className="p-8 text-center space-y-3">
                                 <div className="animate-pulse w-6 h-6 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
@@ -124,10 +133,12 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                         onNavigate={closeSidebar}
                                         onWelcomeClick={() => {
                                             // Keep sidebar open for modals
+                                            handleRead(n.id);
                                             setIsWelcomeOpen(true);
                                         }}
                                         onBadgeClick={(badgeId) => {
                                             // Keep sidebar open for badges
+                                            handleRead(n.id);
                                             setSelectedBadge(badgeId);
                                         }}
                                     />
