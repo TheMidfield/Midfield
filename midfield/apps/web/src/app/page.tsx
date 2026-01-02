@@ -1,10 +1,10 @@
-import { Shield, Trophy, ChevronRight, User } from "lucide-react";
+import { Shield, Trophy, ChevronRight, User, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { SplitHero } from "@/components/hero/SplitHero";
-import { HomeTrendingSection } from "@/components/hero/HomeTrendingSection";
+import { HomeTrendingSection, HomeTrendingRows } from "@/components/hero/HomeTrendingSection";
 import { MobileTakeFeed } from "@/components/hero/MobileTakeFeed";
 
 import { MatchCenterWidget } from "@/components/widgets/MatchCenterWidget";
@@ -222,14 +222,19 @@ export default async function Home() {
 
             {/* Trending + Match Center - Two Column Layout */}
             <section className="mb-20">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                    <HomeTrendingSection />
-                    {/* Desktop only: with offset for visual interest */}
-                    <div className="hidden lg:block" style={{ maxWidth: '512px', margin: '0 auto', width: '100%', paddingTop: '70px' }}>
-                        {/* Stats / Matches Column - Desktop */}
-                        <div className="hidden lg:flex flex-col gap-6 w-full">
-                            <MatchCenterWidget />
-                        </div>
+                {/* Trending Header - Outside grid so it doesn't affect centering */}
+                <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                    <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+                    <h2 className="font-display text-xl sm:text-2xl font-semibold text-slate-900 dark:text-neutral-100">
+                        Trending
+                    </h2>
+                </div>
+                {/* Grid: Only rows + widget - mathematically centered */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <HomeTrendingRows />
+                    {/* Desktop only: perfectly centered to trending rows */}
+                    <div className="hidden lg:flex flex-col" style={{ maxWidth: '420px', margin: '0 auto', width: '100%' }}>
+                        <MatchCenterWidget />
                     </div>
                 </div>
             </section>

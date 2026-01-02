@@ -132,26 +132,26 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
     }
 
     return (
-        <div className="flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.96] lg:active:scale-100 cursor-pointer">
+        <div className="flex items-center gap-2 p-1.5 sm:p-2 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.96] lg:active:scale-100 cursor-pointer">
             {/* Home Team - Full width on left */}
-            <div className="flex-1 min-w-0 flex items-center justify-end gap-2 group">
+            <div className="flex-1 min-w-0 flex items-center justify-end gap-1.5 group">
                 <Link
                     href={`/topic/${fixture.homeTeam.slug}`}
                     className="truncate active:scale-95 lg:active:scale-100 transition-transform"
                 >
-                    <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
+                    <span className="text-[11px] sm:text-xs font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-right text-slate-900 dark:text-neutral-100">
                         {fixture.homeTeam.title}
                     </span>
                 </Link>
                 <Link href={`/topic/${fixture.homeTeam.slug}`} className="active:scale-95 lg:active:scale-100 transition-transform">
-                    <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
+                    <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform">
                         {fixture.homeTeam.badgeUrl ? (
                             <NextImage
                                 src={fixture.homeTeam.badgeUrl}
                                 alt={fixture.homeTeam.title}
                                 fill
                                 unoptimized={true}
-                                className="object-contain p-0.5"
+                                className="object-contain"
                                 sizes="24px"
                             />
                         ) : (
@@ -189,16 +189,16 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
             </div>
 
             {/* Away Team - Full width on right */}
-            <div className="flex-1 min-w-0 flex items-center gap-2 group">
+            <div className="flex-1 min-w-0 flex items-center gap-1.5 group">
                 <Link href={`/topic/${fixture.awayTeam.slug}`} className="active:scale-95 lg:active:scale-100 transition-transform">
-                    <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform p-1">
+                    <div className="relative w-7 h-7 shrink-0 group-hover:scale-110 transition-transform">
                         {fixture.awayTeam.badgeUrl ? (
                             <NextImage
                                 src={fixture.awayTeam.badgeUrl}
                                 alt={fixture.awayTeam.title}
                                 fill
                                 unoptimized={true}
-                                className="object-contain p-0.5"
+                                className="object-contain"
                                 sizes="24px"
                             />
                         ) : (
@@ -212,7 +212,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                     href={`/topic/${fixture.awayTeam.slug}`}
                     className="truncate active:scale-95 lg:active:scale-100 transition-transform"
                 >
-                    <span className="text-xs sm:text-sm font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
+                    <span className="text-[11px] sm:text-xs font-semibold group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block text-slate-900 dark:text-neutral-100">
                         {fixture.awayTeam.title}
                     </span>
                 </Link>

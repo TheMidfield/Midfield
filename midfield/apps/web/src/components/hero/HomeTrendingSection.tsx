@@ -116,7 +116,17 @@ export function HomeTrendingSection() {
             </div>
 
             {/* List - inline style */}
-            <div className="space-y-0">
+            <HomeTrendingRows />
+        </div>
+    );
+}
+
+// Separate component for rows only - used for mathematical grid alignment
+export function HomeTrendingRows() {
+    const { data: trending, isLoading: loading } = useTrendingTopics();
+
+    return (
+        <div className="space-y-0">
                 {loading ? (
                     <>
                         <SkeletonItem />
@@ -136,6 +146,5 @@ export function HomeTrendingSection() {
                     </div>
                 )}
             </div>
-        </div>
     );
 }
