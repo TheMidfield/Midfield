@@ -2,15 +2,14 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { getUnreadCount, getNotifications } from "@/app/actions/notifications";
+import { getUnreadCount } from "@/app/actions/notifications";
 import { Toast } from "@/components/ui/Toast";
-import { useRouter } from "next/navigation";
 
 interface NotificationContextType {
     unreadCount: number;
     refreshUnreadCount: () => Promise<void>;
-    refreshNotifications: () => void; // Signal to popover to refresh
-    lastNotificationTrigger: number; // Timestamp to trigger effect
+    refreshNotifications: () => void;
+    lastNotificationTrigger: number;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -20,7 +19,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
     const [lastNotificationTrigger, setLastNotificationTrigger] = useState(0);
-    const router = useRouter();
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     const supabase = createClient();
 
@@ -38,15 +37,19 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         refreshUnreadCount();
     }, [refreshUnreadCount]);
 
-    // Realtime Subscription
+    // Realtime Subscription - separate effect with proper cleanup
     useEffect(() => {
-        // Get current user and subscribe to their notifications
+        let channel: ReturnType<typeof supabase.channel> | null = null;
+        let mounted = true;
+
         const setupSubscription = async () => {
             const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
+            if (!user || !mounted) return;
 
-            const channel = supabase
-                .channel('notifications-realtime')
+            console.log('[Notifications] Setting up realtime subscription for user:', user.id);
+
+            channel = supabase
+                .channel(`notifications-${user.id}`)
                 .on(
                     'postgres_changes',
                     {
@@ -55,25 +58,34 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                         table: 'notifications',
                         filter: `recipient_id=eq.${user.id}`,
                     },
-                    async () => {
+                    async (payload) => {
+                        console.log('[Notifications] Received realtime event:', payload);
+                        if (!mounted) return;
+
                         await refreshUnreadCount();
                         refreshNotifications();
                         setToastMessage("You have new notifications");
                         setToastType('success');
                     }
                 )
-                .subscribe();
-
-            return () => {
-                supabase.removeChannel(channel);
-            };
+                .subscribe((status) => {
+                    console.log('[Notifications] Subscription status:', status);
+                    if (status === 'SUBSCRIBED') {
+                        setIsSubscribed(true);
+                    }
+                });
         };
 
-        const cleanup = setupSubscription();
+        setupSubscription();
+
         return () => {
-            cleanup.then(fn => fn?.());
+            mounted = false;
+            if (channel) {
+                console.log('[Notifications] Cleaning up subscription');
+                supabase.removeChannel(channel);
+            }
         };
-    }, [refreshUnreadCount, supabase, refreshNotifications]);
+    }, [supabase, refreshUnreadCount, refreshNotifications]);
 
     return (
         <NotificationContext.Provider value={{ unreadCount, refreshUnreadCount, refreshNotifications, lastNotificationTrigger }}>

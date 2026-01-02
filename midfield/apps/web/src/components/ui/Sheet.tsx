@@ -18,14 +18,12 @@ const SheetContent = React.forwardRef<
     SheetContentProps
 >(({ className, children, side = "right", ...props }, ref) => (
     <SheetPortal>
-        {/* Overlay - covers content area only, not navbar or sidebar */}
+        {/* Overlay - full screen below navbar, darkens the main content */}
         <DialogPrimitive.Overlay
             className={cn(
-                "fixed z-30 bg-black/40",
-                // Match navbar height: h-[62px] mobile, sm:h-16 (64px)
-                "top-[62px] sm:top-16 left-0 bottom-0",
-                // Desktop: stop at sidebar. Mobile: full width (sidebar is full screen)
-                "right-0 sm:right-[340px]",
+                "fixed inset-0 z-30 bg-black/40",
+                // Start below navbar
+                "top-[62px] sm:top-16",
                 "data-[state=open]:animate-in data-[state=closed]:animate-out",
                 "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
             )}
@@ -34,14 +32,13 @@ const SheetContent = React.forwardRef<
             ref={ref}
             className={cn(
                 "fixed z-40 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
-                // Match navbar height
+                // Start below navbar
                 "top-[62px] sm:top-16 bottom-0",
                 side === "right" && [
-                    // Mobile: full width. Desktop: fixed width for bell centering
+                    // Mobile: full width. Desktop: fixed width
                     "right-0 left-0 sm:left-auto sm:w-[340px]",
                     "border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-neutral-800",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                    // Mobile: slide from bottom. Desktop: slide from right
                     "data-[state=closed]:slide-out-to-bottom sm:data-[state=closed]:slide-out-to-right",
                     "data-[state=open]:slide-in-from-bottom sm:data-[state=open]:slide-in-from-right",
                 ],
