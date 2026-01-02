@@ -18,33 +18,32 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-    // Consistent card styling - no background difference
-    const baseClasses = "flex items-start gap-2.5 p-2.5 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
+    const baseClasses = "flex items-center gap-2.5 p-2.5 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
 
-    // Unread indicator - blue dot (smaller)
+    // Unread indicator - blue dot, vertically centered with items-center
     const UnreadDot = () => !isRead ? (
-        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
     ) : <div className="w-1.5 shrink-0" />;
 
-    // Get type-specific icon
-    const getTypeConfig = () => {
+    // Get type-specific icon - all same color for cohesion
+    const getTypeIcon = () => {
         switch (notification.type) {
             case 'reply':
-                return { Icon: MessageSquare, bg: "bg-blue-500" };
+                return MessageSquare;
             case 'upvote':
-                return { Icon: Flame, bg: "bg-emerald-500" };
+                return Flame;
             case 'badge_received':
-                return { Icon: Shield, bg: "bg-amber-500" };
+                return Shield;
             case 'system_welcome':
-                return { Icon: Sparkles, bg: "bg-emerald-500" };
+                return Sparkles;
             default:
-                return { Icon: MessageSquare, bg: "bg-slate-500" };
+                return MessageSquare;
         }
     };
 
-    const { Icon, bg } = getTypeConfig();
+    const Icon = getTypeIcon();
 
-    // Entity image or fallback
+    // Entity image with square-md type badge
     const EntityImage = () => {
         const entity = notification.entity;
         const hasImage = entity?.imageUrl;
@@ -68,8 +67,8 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                         <User className="w-4 h-4 text-slate-300 dark:text-neutral-600" />
                     )}
                 </div>
-                {/* Type badge */}
-                <div className={cn("absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center", bg)}>
+                {/* Type badge - square with rounded-md, unified slate color */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-md bg-slate-600 dark:bg-neutral-600 flex items-center justify-center">
                     <Icon className="w-2.5 h-2.5 text-white" />
                 </div>
             </div>

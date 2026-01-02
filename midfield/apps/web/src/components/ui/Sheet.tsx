@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const Sheet = DialogPrimitive.Root
@@ -17,9 +16,11 @@ const SheetOverlay = React.forwardRef<
     <DialogPrimitive.Overlay
         ref={ref}
         className={cn(
-            "fixed inset-0 z-40 bg-black/40 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-            // Start below navbar
-            "top-[72px]",
+            // z-30 so it sits BELOW navbar (z-50)
+            "fixed inset-x-0 bottom-0 z-30 bg-black/40",
+            // Start exactly at navbar bottom - no gap
+            "top-[71px]",
+            "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             className
         )}
         {...props}
@@ -29,21 +30,22 @@ SheetOverlay.displayName = "SheetOverlay"
 
 interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
     side?: "right" | "left"
+    hideCloseButton?: boolean
 }
 
 const SheetContent = React.forwardRef<
     React.ElementRef<typeof DialogPrimitive.Content>,
     SheetContentProps
->(({ className, children, side = "right", ...props }, ref) => (
+>(({ className, children, side = "right", hideCloseButton = false, ...props }, ref) => (
     <SheetPortal>
         <SheetOverlay />
         <DialogPrimitive.Content
             ref={ref}
             className={cn(
-                "fixed z-50 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
-                // Position below navbar, full height minus navbar
-                "top-[72px] bottom-0",
-                // Side-specific positioning and animation
+                // z-40 so content is above overlay but below navbar
+                "fixed z-40 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
+                // Start exactly at navbar bottom
+                "top-[71px] bottom-0",
                 side === "right" && [
                     "right-0 w-80",
                     "border-l border-slate-200 dark:border-neutral-800",
@@ -61,10 +63,6 @@ const SheetContent = React.forwardRef<
             {...props}
         >
             {children}
-            <DialogPrimitive.Close className="absolute right-3 top-3 rounded-md p-1.5 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
-                <X className="h-4 w-4" />
-                <span className="sr-only">Close</span>
-            </DialogPrimitive.Close>
         </DialogPrimitive.Content>
     </SheetPortal>
 ))

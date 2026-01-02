@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/Sheet";
+import { Bell, X } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/Sheet";
 import { IconButton } from "@/components/ui/IconButton";
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type Notification } from "@/app/actions/notifications";
 import { NotificationItem } from "./NotificationItem";
@@ -23,7 +23,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
 
-    // Notify parent of open state changes
     const handleOpenChange = (isOpen: boolean) => {
         setOpen(isOpen);
         onOpenChange?.(isOpen);
@@ -41,7 +40,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     }, [open, lastNotificationTrigger, refreshUnreadCount]);
 
     const handleMarkAllRead = async () => {
-        // Instant optimistic update
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         refreshUnreadCount();
         await markAllNotificationsRead();
@@ -67,7 +65,7 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                             aria-label="Notifications"
                             className={cn(
                                 "transition-all duration-150",
-                                open && "bg-slate-100 dark:bg-neutral-800 ring-2 ring-emerald-500/30"
+                                open && "bg-slate-100 dark:bg-neutral-800"
                             )}
                         />
                         {unreadCount > 0 && (
@@ -76,17 +74,27 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                     </div>
                 </SheetTrigger>
                 <SheetContent side="right" className="flex flex-col">
-                    <SheetHeader>
-                        <SheetTitle>Notifications</SheetTitle>
-                        {hasUnread && (
-                            <button
-                                onClick={handleMarkAllRead}
-                                className="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
-                            >
-                                Mark all read
-                            </button>
-                        )}
-                    </SheetHeader>
+                    {/* Header with close button */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
+                            Notifications
+                        </span>
+                        <div className="flex items-center gap-3">
+                            {hasUnread && (
+                                <button
+                                    onClick={handleMarkAllRead}
+                                    className="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                >
+                                    Mark all read
+                                </button>
+                            )}
+                            <SheetClose asChild>
+                                <button className="rounded-md p-1 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer">
+                                    <X className="h-4 w-4" />
+                                </button>
+                            </SheetClose>
+                        </div>
+                    </div>
 
                     {/* Scrollable content */}
                     <div className="flex-1 overflow-y-auto">
@@ -97,25 +105,20 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                             </div>
                         ) : notifications.length > 0 ? (
                             <div className="py-2 px-2">
-                                {notifications.map((n, index) => (
-                                    <div key={n.id}>
-                                        <NotificationItem
-                                            notification={n}
-                                            onRead={() => handleRead(n.id)}
-                                            onWelcomeClick={() => {
-                                                handleOpenChange(false);
-                                                setIsWelcomeOpen(true);
-                                            }}
-                                            onBadgeClick={(badgeId) => {
-                                                handleOpenChange(false);
-                                                setSelectedBadge(badgeId);
-                                            }}
-                                        />
-                                        {/* Subtle divider between items */}
-                                        {index < notifications.length - 1 && (
-                                            <div className="mx-2 border-b border-slate-100/50 dark:border-neutral-800/30" />
-                                        )}
-                                    </div>
+                                {notifications.map((n) => (
+                                    <NotificationItem
+                                        key={n.id}
+                                        notification={n}
+                                        onRead={() => handleRead(n.id)}
+                                        onWelcomeClick={() => {
+                                            handleOpenChange(false);
+                                            setIsWelcomeOpen(true);
+                                        }}
+                                        onBadgeClick={(badgeId) => {
+                                            handleOpenChange(false);
+                                            setSelectedBadge(badgeId);
+                                        }}
+                                    />
                                 ))}
                             </div>
                         ) : (
@@ -141,5 +144,4 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     );
 }
 
-// Export with both names for compatibility
 export { NotificationsSidebar as NotificationBell };

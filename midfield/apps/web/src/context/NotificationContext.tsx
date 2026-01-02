@@ -40,31 +40,40 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     // Realtime Subscription
     useEffect(() => {
-        const channel = supabase
-            .channel('notifications-realtime')
-            .on(
-                'postgres_changes',
-                {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'notifications',
-                },
-                async () => {
-                    // Update unread count immediately
-                    await refreshUnreadCount();
-                    refreshNotifications();
+        // Get current user and subscribe to their notifications
+        const setupSubscription = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
 
-                    // Simple, reliable toast message
-                    setToastMessage("You have new notifications");
-                    setToastType('success');
-                }
-            )
-            .subscribe();
+            const channel = supabase
+                .channel('notifications-realtime')
+                .on(
+                    'postgres_changes',
+                    {
+                        event: 'INSERT',
+                        schema: 'public',
+                        table: 'notifications',
+                        filter: `recipient_id=eq.${user.id}`,
+                    },
+                    async () => {
+                        await refreshUnreadCount();
+                        refreshNotifications();
+                        setToastMessage("You have new notifications");
+                        setToastType('success');
+                    }
+                )
+                .subscribe();
 
-        return () => {
-            supabase.removeChannel(channel);
+            return () => {
+                supabase.removeChannel(channel);
+            };
         };
-    }, [refreshUnreadCount, supabase]);
+
+        const cleanup = setupSubscription();
+        return () => {
+            cleanup.then(fn => fn?.());
+        };
+    }, [refreshUnreadCount, supabase, refreshNotifications]);
 
     return (
         <NotificationContext.Provider value={{ unreadCount, refreshUnreadCount, refreshNotifications, lastNotificationTrigger }}>
