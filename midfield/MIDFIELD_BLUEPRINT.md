@@ -137,12 +137,16 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Safety**: Protected by `smartUpsertTopic`. Never overwritten by regular sync jobs.
 
 **C) HYBRID ARCHITECTURE ("Realtime & Atlas")**
+- **Reference**: See [docs/SYNC_STATUS.md](file:///Users/roycim/Documents/[5] Code/Projects/Midfield-proto/midfield/docs/SYNC_STATUS.md) for the definitive architecture.
 - **I. ATLAS ENGINE (Legacy Edge)**:
   - **Domain**: Structure (Clubs, Players, Leagues, Standings).
-  - **Frequency**: Deep/Heavy. Weekly runs.
-- **II. REALTIME ENGINE (V2 Next.js)**:
+  - **Frequency**: Deep/Heavy. Weekly runs (GitHub Actions).
+- **II. REALTIME ENGINE (V2 pg_cron)**:
   - **Domain**: Time (Fixtures, Live Scores, Match Status).
-  - **Frequency**: Surgical/Light. Daily (Schedule) & Minutely (Scores).
+  - **Driver**: Supabase `pg_cron` (Internal Database Scheduler). **Vercel Cron is BANNED**.
+  - **Frequency**: 
+    - **Schedule**: Every 6 Hours (`0 */6 * * *`).
+    - **Livescores**: Every Minute (`* * * * *`).
   - **Rule**: Sole authority for `fixtures` table.
 
 **D) STRICT FIXTURE ENUMS**

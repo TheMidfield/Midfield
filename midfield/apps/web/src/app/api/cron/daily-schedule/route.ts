@@ -23,7 +23,11 @@ export async function GET(request: Request) {
 
         await syncDailySchedules(supabase, apiClient);
 
-        return Response.json({ success: true, message: 'Daily schedule sync completed' });
+        // Secondary Sync: Ensure 96 Club Calendars are perfect (covers FA Cup, etc.)
+        const { syncClubSchedules } = await import("@midfield/logic/src/sync/simple-fixture-sync");
+        await syncClubSchedules(supabase, apiClient);
+
+        return Response.json({ success: true, message: 'Daily schedule & Club sync completed' });
     } catch (error) {
         console.error('Daily sync failed:', error);
         return Response.json({ success: false, error: 'Sync failed' }, { status: 500 });

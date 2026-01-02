@@ -142,7 +142,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
 
                 {/* Opponent Badge + Name - Clickable with hover */}
                 <div className="flex items-center gap-2 flex-1 min-w-0 group">
-                    {opponent?.slug ? (
+                    {opponent?.slug && !opponent?.metadata?.is_stub ? (
                         <Link href={`/topic/${opponent.slug}`}>
                             <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform">
                                 {opponentBadge ? (
@@ -179,7 +179,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                             )}
                         </div>
                     )}
-                    {opponent?.slug ? (
+                    {opponent?.slug && !opponent?.metadata?.is_stub ? (
                         <Link href={`/topic/${opponent.slug}`} className="truncate">
                             <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate block">
                                 {opponentName}
@@ -266,7 +266,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                             </div>
                                         );
 
-                                        if (opponentSlug) {
+                                        if (opponentSlug && !opponent?.metadata?.is_stub) {
                                             return (
                                                 <Link
                                                     key={idx}
@@ -297,6 +297,8 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                         const opponentBadge = opponent?.metadata?.badge_url || (isHome ? nextMatch.away_team_badge : nextMatch.home_team_badge) || null;
                                         const opponentName = opponent?.title || (isHome ? nextMatch.away_team_name : nextMatch.home_team_name) || "Unknown Team";
                                         const opponentSlug = opponent?.slug;
+                                        const isStub = opponent?.metadata?.is_stub;
+                                        const shouldLink = opponentSlug && !isStub;
 
                                         return (
                                             <>
@@ -318,7 +320,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
 
                                                 {/* Opponent Badge + Name */}
                                                 <div className="flex items-center gap-2 flex-1 min-w-0 group">
-                                                    {opponentSlug ? (
+                                                    {shouldLink ? (
                                                         <>
                                                             <Link href={`/topic/${opponentSlug}`}>
                                                                 <div className="relative w-6 h-6 shrink-0 group-hover:scale-110 transition-transform">

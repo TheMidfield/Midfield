@@ -219,49 +219,200 @@ function normalizeStatus(apiStatus: string | null): 'NS' | 'LIVE' | 'HT' | 'FT' 
     return 'LIVE';
 }
 
-async function createStub(supabase: SupabaseClient, tsdbId: string, teamName: string): Promise<string | null> {
-    console.log(`Creating Stub Club: ${teamName} (${tsdbId})`);
 
-    const baseSlug = slugify(teamName || `club-${tsdbId}`);
-    let slug = baseSlug;
+/**
+ * Syncs schedules for specific supported clubs across ALL their competitions.
+ * This ensures we capture matches in Cups/Tournaments that aren't in our main synced leagues list.
+ */
+export async function syncClubSchedules(
+    supabase: SupabaseClient,
+    apiClient: TheSportsDBClient
+) {
+    console.log('--- Starting Club-Centric Schedule Sync ---');
 
-    // Check if topic with this slug already exists
-    const { data: existing } = await supabase.from('topics').select('id').eq('slug', slug).single();
+    // 1. Get ONLY the Core 96 Supported Clubs
+    // Since 'league_id' in metadata isn't reliable (was unknown in audit), 
+    // we must rely on a hardcoded list of IDs or a specific query if we had a flag.
+    // For now, to be absolutely safe as per user request, we will use the ALLOWED_LEAGUES constant
+    // to filter, BUT we found the metadata is missing.
 
-    if (existing) {
-        console.log(`Stub creation: Slug ${slug} already exists. Using existing topic ${existing.id}.`);
-        // Ideally we would update the metadata here to include the TSDB ID so we don't miss it next time
-        // But for now, returning the ID is enough to unblock the fixture sync
-        return existing.id;
+    // TEMPORARY FIX: We will fetch ALL 'club' topics, but then FILTER them against a 
+    // Known "Core 96" list if we have it? No.
+    // We will filter by checking if they are the "Main" clubs.
+    // How do we know? 
+    // Option A: We rely on the fact that "Core" clubs have full metadata (manager, stadium etc) and "Stubs" have `is_stub: true`.
+    // But we just created stubs for non-core clubs.
+    // 
+    // BETTER: We only sync clubs that are NOT stubs. (`metadata->is_stub` is usually true for stubs).
+    // And to be safer, we can check a hardcoded list of IDs if available, but "is_stub: false" is the best proxy for "Main Topic".
+
+    const { data: clubs, error } = await supabase
+        .from('topics')
+        .select('id, title, metadata')
+        .eq('type', 'club')
+        .not('metadata->external->>thesportsdb_id', 'is', null);
+
+    if (error || !clubs) {
+        console.error('Failed to fetch clubs for sync:', error);
+        return;
     }
 
-    const stub = {
-        type: 'club',
-        title: teamName || 'Unknown Club',
-        slug: slug,
-        metadata: {
-            external: { thesportsdb_id: tsdbId, source: 'stub' },
-            is_stub: true
-        },
-        is_active: true
-    };
+    // FILTER: Strict Core 96 Definition
+    // We only want clubs that are:
+    // 1. Not Stubs
+    // 2. Belong to one of the Core 5 Leagues (EPL, La Liga, Bundesliga, Serie A, Ligue 1)
 
-    const { data: newClub, error } = await supabase.from('topics').insert(stub).select('id').single();
+    const CORE_LEAGUE_NAMES = [
+        'English Premier League',
+        'Spanish La Liga',
+        'German Bundesliga',
+        'Italian Serie A',
+        'French Ligue 1'
+    ];
+
+    const coreClubs = clubs.filter(c => {
+        if (c.metadata?.is_stub) return false;
+
+        const leagueName = c.metadata?.league || '';
+        return CORE_LEAGUE_NAMES.some(l => leagueName.includes(l));
+    });
+
+    console.log(`Found ${coreClubs.length} Core Clubs (filtered from ${clubs.length} total topics).`);
+
+    // 2. Iterate and sync in Parallel Batches
+    const CHUNK_SIZE = 10;
+    for (let i = 0; i < coreClubs.length; i += CHUNK_SIZE) {
+        const chunk = coreClubs.slice(i, i + CHUNK_SIZE);
+        console.log(`Processing Batch ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(coreClubs.length / CHUNK_SIZE)}...`);
+
+        await Promise.all(chunk.map(async (club) => {
+            const tsdbId = club.metadata?.external?.thesportsdb_id;
+            if (!tsdbId) return;
+
+            try {
+                // Fetch in Parallel (Last + Next)
+                const [lastRes, nextRes] = await Promise.all([
+                    fetch(`https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY}/eventslast.php?id=${tsdbId}`).then(r => r.json()),
+                    fetch(`https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY}/eventsnext.php?id=${tsdbId}`).then(r => r.json())
+                ]);
+
+                const allEvents = [...(lastRes.results || []), ...(nextRes.events || [])];
+
+                if (allEvents.length === 0) return;
+
+                // Transform and Save
+                const fixturesToUpsert = [];
+
+                for (const event of allEvents) {
+                    const homeId = await resolveTeamId(supabase, event.idHomeTeam, event.strHomeTeam);
+                    const awayId = await resolveTeamId(supabase, event.idAwayTeam, event.strAwayTeam);
+                    const competitionId = await resolveLeagueId(supabase, event.idLeague, event.strLeague);
+
+                    if (!homeId || !awayId || !competitionId) continue;
+
+                    const status = normalizeStatus(event.strStatus);
+
+                    fixturesToUpsert.push({
+                        id: parseInt(event.idEvent),
+                        competition_id: competitionId,
+                        date: event.dateEvent + 'T' + (event.strTime || '00:00:00'),
+                        home_team_id: homeId,
+                        away_team_id: awayId,
+                        home_team_name: event.strHomeTeam,
+                        away_team_name: event.strAwayTeam,
+                        home_score: event.intHomeScore ? parseInt(event.intHomeScore) : null,
+                        away_score: event.intAwayScore ? parseInt(event.intAwayScore) : null,
+                        status: status,
+                        venue: event.strVenue,
+                        gameweek: event.intRound ? parseInt(event.intRound) : null
+                    });
+                }
+
+                if (fixturesToUpsert.length > 0) {
+                    const { error } = await supabase.from('fixtures').upsert(fixturesToUpsert, { onConflict: 'id' });
+                    if (error) console.error(`Error saving club fixtures for ${club.title}:`, error);
+                }
+
+            } catch (e) {
+                console.error(`Error syncing club ${club.title}:`, e);
+            }
+        }));
+    }
+}
+
+// Reuse or duplicate helper to resolve/stub
+async function resolveTeamId(supabase: SupabaseClient, tsdbId: string, name: string): Promise<string | null> {
+    if (!tsdbId) return null;
+
+    // 1. Try to find by metadata->external->thesportsdb_id
+    const { data } = await supabase
+        .from('topics')
+        .select('id')
+        .eq('metadata->external->>thesportsdb_id', tsdbId)
+        .single();
+
+    if (data) return data.id;
+
+    // 2. Create Stub
+    return await createStub(supabase, tsdbId, name, 'club');
+}
+
+async function resolveLeagueId(supabase: SupabaseClient, tsdbId: string, name: string): Promise<string | null> {
+    if (!tsdbId) return null;
+
+    const { data } = await supabase
+        .from('topics')
+        .select('id')
+        .eq('type', 'league') // or competition
+        .eq('metadata->external->>thesportsdb_id', tsdbId)
+        .single();
+
+    if (data) return data.id;
+
+    // Create Stub League
+    return await createStub(supabase, tsdbId, name, 'league');
+}
+
+// Modified Stub creator to handle types
+async function createStub(supabase: SupabaseClient, tsdbId: string, name: string, type: 'club' | 'league' = 'club'): Promise<string | null> {
+    console.log(`Creating Stub ${type}: ${name} (${tsdbId})`);
+
+    // Generate slug
+    const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    let slug = baseSlug;
+    // Simple uniqueness check (random suffix if needed, or rely on distinct constraint handling fail)
+    // For stubs, collisions are rare-ish on full names, but let's be safe:
+    // Actually, smartUpsert handles collisions, but here we are doing raw insert.
+
+    const { data, error } = await supabase
+        .from('topics')
+        .insert({
+            title: name,
+            slug: slug, // Potential collision risk here, handled by try-catch usually or logic in `createStub` original
+            type: type,
+            metadata: {
+                external: { thesportsdb_id: tsdbId },
+                is_stub: true
+            }
+        })
+        .select('id')
+        .single();
 
     if (error) {
-        console.error(`Failed to create stub for ${teamName}:`, error);
-        // Fallback: try one more time with random suffix just to save the fixture
-        const retrySlug = `${slug}-${Math.floor(Math.random() * 1000)}`;
-        const { data: retryClub, error: retryError } = await supabase.from('topics').insert({ ...stub, slug: retrySlug }).select('id').single();
-
-        if (retryError) {
-            console.error(`Retry failed for ${teamName}:`, retryError);
-            return null;
+        // If slug collision, try appending ID
+        if (error.code === '23505') { // Unique violation
+            const { data: retry } = await supabase.from('topics').insert({
+                title: name,
+                slug: `${slug}-${tsdbId}`,
+                type: type,
+                metadata: { external: { thesportsdb_id: tsdbId }, is_stub: true }
+            }).select('id').single();
+            return retry?.id || null;
         }
-        return retryClub.id;
+        console.error('Stub creation failed:', error);
+        return null;
     }
-
-    return newClub.id;
+    return data?.id;
 }
 
 function slugify(text: string) {

@@ -58,6 +58,8 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
         const awayBadge = fixture.away_team_badge;
         const homeSlug = fixture.home_team?.slug;
         const awaySlug = fixture.away_team?.slug;
+        const homeIsStub = fixture.home_team?.metadata?.is_stub;
+        const awayIsStub = fixture.away_team?.metadata?.is_stub;
 
         const date = new Date(fixture.date);
         const status = fixture.status;
@@ -78,7 +80,7 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
         const homeScore = fixture.home_score;
         const awayScore = fixture.away_score;
 
-        const TeamDisplay = ({ name, badge, slug, alignRight }: { name: string, badge: string | null, slug?: string, alignRight?: boolean }) => {
+        const TeamDisplay = ({ name, badge, slug, isStub, alignRight }: { name: string, badge: string | null, slug?: string, isStub?: boolean, alignRight?: boolean }) => {
             const Content = (
                 <div className={`flex items-center gap-2 min-w-0 ${alignRight ? 'flex-row-reverse text-right' : ''}`}>
                     <div className="relative w-5 h-5 sm:w-6 sm:h-6 shrink-0">
@@ -96,7 +98,7 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
                 </div>
             );
 
-            if (slug) {
+            if (slug && !isStub) {
                 return (
                     <Link href={`/topic/${slug}`} className="block w-full group/team">
                         <div className={`flex items-center gap-2 min-w-0 ${alignRight ? 'flex-row-reverse text-right' : ''}`}>
@@ -127,7 +129,7 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
                 {/* Matchup Grid */}
                 <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 flex-1">
                     {/* Home */}
-                    <TeamDisplay name={homeName} badge={homeBadge} slug={homeSlug} alignRight={true} />
+                    <TeamDisplay name={homeName} badge={homeBadge} slug={homeSlug} isStub={homeIsStub} alignRight={true} />
 
                     {/* Score/Time Center */}
                     <div className="w-12 sm:w-16 text-center shrink-0">
@@ -145,7 +147,7 @@ export function ContinentalFixtures({ fixtures }: ContinentalFixturesProps) {
                     </div>
 
                     {/* Away */}
-                    <TeamDisplay name={awayName} badge={awayBadge} slug={awaySlug} />
+                    <TeamDisplay name={awayName} badge={awayBadge} slug={awaySlug} isStub={awayIsStub} />
                 </div>
             </div>
         );

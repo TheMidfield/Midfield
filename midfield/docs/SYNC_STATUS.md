@@ -1,138 +1,138 @@
-# 🔄 MIDFIELD SYNC STATUS — SINGLE SOURCE OF TRUTH
+# 🔄 MIDFIELD SYNC DOCTRINE & STATUS
+**Single Source of Truth for Data Synchronization**
 **Last Updated: January 2, 2026**
 
----
-
-## 📊 SYSTEM OVERVIEW (Simple Mental Model)
-
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                         SYNC ARCHITECTURE                               │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  ┌─────────────────┐              ┌─────────────────┐                  │
-│  │  FIXTURES       │              │  ENTITIES       │                  │
-│  │  (Time Data)    │              │  (Structure)    │                  │
-│  │                 │              │                 │                  │
-│  │  • Match dates  │              │  • Clubs        │                  │
-│  │  • Scores       │              │  • Players      │                  │
-│  │  • Status       │              │  • Standings    │                  │
-│  └────────┬────────┘              └────────┬────────┘                  │
-│           │                                │                           │
-│           ▼                                ▼                           │
-│  ╔═════════════════╗              ╔═════════════════╗                  │
-│  ║ Vercel Cron     ║              ║ GitHub Action   ║                  │
-│  ║ 6 AM UTC Daily  ║              ║ Sunday 3 AM UTC ║                  │
-│  ╚═════════════════╝              ╚═════════════════╝                  │
-│                                                                         │
-│  ┌─────────────────┐                                                   │
-│  │  LIVE SCORES    │  ← pg_cron (1-min) ← ❌ NOT CONFIGURED            │
-│  │  (Real-time)    │                                                   │
-│  └─────────────────┘                                                   │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
-```
+> [!IMPORTANT]
+> This document defines the **ONLY** authorized architecture for data extraction, transformation, and loading (ETL) within Midfield. It supersedes any prior documentation regarding sync, including legacy Vercel Cron references.
 
 ---
 
-## ✅ WHAT'S CURRENTLY ACTIVE
+## 1. THE "DUAL-ENGINE" ARCHITECTURE
 
-| Job | Trigger | Frequency | Status |
-|-----|---------|-----------|--------|
-| **Daily Fixture Sync** | Vercel Cron | 6 AM UTC daily | ✅ ACTIVE (if CRON_SECRET is set) |
-| **Weekly Metadata Sync** | GitHub Action | Sundays 3 AM UTC | ⚠️ CHECK: Needs GitHub secrets |
+Midfield uses a split-brain approach to handle the massive processing difference between "Live Data" (seconds) and "Structural Data" (days).
 
----
+### ⚡ ENGINE A: THE REALTIME ENGINE (Time-Sensitive)
+**Responsibility:** Fixtures, Scores, Match Status, Live Events.
+**Infrastructure:** Next.js API Routes triggered by **Supabase pg_cron**.
+**Frequency:** 
+- **Schedule Sync:** Every 6 hours (`0 */6 * * *`)
+- **Livescore Poll:** Every 1 minute (`* * * * *`)
 
-## ❌ WHAT'S NOT ACTIVE
-
-| Job | Trigger | Why Not Working | Fix Needed |
-|-----|---------|-----------------|------------|
-| **Live Scores Polling** | pg_cron | SQL never executed in production | Run SQL in Supabase dashboard |
-| **Atlas Deep Sync** | Supabase Edge Functions | No automated trigger | Manual or add cron trigger |
-
----
-
-## 🏟️ COMPETITIONS CURRENTLY SYNCED
-
-| League | ID | Synced? |
-|--------|-----|---------|
-| English Premier League | 4328 | ✅ |
-| Spanish La Liga | 4335 | ✅ |
-| Italian Serie A | 4332 | ✅ |
-| German Bundesliga | 4331 | ✅ |
-| French Ligue 1 | 4334 | ✅ |
-| UEFA Champions League | 4480 | ✅ |
-| UEFA Europa League | 4481 | ✅ |
-| **FA Cup** | 4482 | ❌ NOT SYNCED |
-| **EFL League Cup** | 4570 | ❌ NOT SYNCED |
-| **UEFA Conference League** | 4482 | ❌ NOT SYNCED |
+### 🗿 ENGINE B: THE ATLAS ENGINE (Structural)
+**Responsibility:** Clubs, Players, Leagues, Badges, Metadata, History.
+**Infrastructure:** Supabase Edge Functions + GitHub Actions.
+**Frequency:** Weekly (Sundays).
 
 ---
 
-## 🔧 CRON ENDPOINTS
+## 2. REALTIME ENGINE SPECIFICATIONS
 
-| Endpoint | Auth Required | Function |
-|----------|---------------|----------|
-| `POST /api/cron/daily-schedule` | `Bearer $CRON_SECRET` | Syncs fixture schedule for all leagues |
-| `POST /api/cron/livescores` | `Bearer $CRON_SECRET` | Updates live scores (only if matches active) |
+### A. The "Schedule Sync" (`/api/cron/daily-schedule`)
+**Triggers:** `pg_cron` (Supabase Database)
+**Schedule:** `0 */6 * * *` (00:00, 06:00, 12:00, 18:00 UTC)
+**Actions:**
+1.  **Season Detection**: Auto-calculates current/next season.
+2.  **Stub Law**: If a match involves a team NOT in our DB, a "Stub" topic is created instantly. This prevents foreign key failures.
+3.  **Strict Status Normalization**: Converts API statuses (e.g., "Match Postponed", "Pen.") to strict Postgres enums (`NS`, `LIVE`, `HT`, `FT`, `PST`, `ABD`).
+4.  **Upsert**: Batch upserts all fixtures for Core Leagues.
+
+### B. The "Livescore Poll" (`/api/cron/livescores`)
+**Triggers:** `pg_cron` (Supabase Database)
+**Schedule:** `* * * * *` (Every Minute)
+**Actions:**
+1.  **Smart Window**: Checks DB for *active* matches (LIVE/HT) or matches starting/ending ±2 hours.
+2.  **Zero-Cost Idle**: If no matches are active/imminent, it exits immediately (0 API calls).
+3.  **Update**: Fetches precise scores and minutes from TheSportsDB V2 Live endpoint.
 
 ---
 
-## 📁 KEY FILES
+## 3. CONFIGURATION & INFRASTRUCTURE
 
-| Purpose | File Location |
-|---------|---------------|
-| Fixture sync logic | `packages/logic/src/sync/simple-fixture-sync.ts` |
-| API client | `packages/logic/src/sync/client.ts` |
-| Vercel cron config | `apps/web/vercel.json` |
-| GitHub Action | `.github/workflows/weekly-metadata-sync.yml` |
-| Cron setup docs | `docs/CRON_SETUP.md` |
+### 🔐 Authentication
+Cron endpoints are protected. They accept authorization via **EITHER**:
+1.  `CRON_SECRET` (Legacy/External)
+2.  `SUPABASE_SERVICE_ROLE_KEY` (Internal/pg_cron)
 
----
+### 🤖 Supabase `pg_cron` Setup
+All cron jobs are managed directly within the Postgres database. 
 
-## 🚨 KNOWN ISSUES & FIXES
-
-### Issue 1: Cup matches not appearing (FA Cup, League Cup)
-**Root Cause:** League IDs not in sync list
-**Fix:** Add league IDs to `LEAGUES` array in `simple-fixture-sync.ts`
-
-### Issue 2: Live scores not updating
-**Root Cause:** pg_cron never configured in production
-**Fix:** Run this SQL in Supabase SQL Editor:
+**Current Active Configuration:**
 ```sql
+-- 1. General Schedule Sync (Every 6 Hours)
+SELECT cron.schedule(
+  'daily-fixture-sync',
+  '0 */6 * * *',
+  $$
+  SELECT net.http_get(
+      url:='https://midfield.one/api/cron/daily-schedule',
+      headers:='{"Authorization": "Bearer YOUR_SERVICE_ROLE_KEY"}'::jsonb
+  ) as request_id;
+  $$
+);
+
+-- 2. Livescore Polling (Every Minute)
 SELECT cron.schedule(
   'livescore-poll',
   '* * * * *',
   $$
   SELECT net.http_get(
       url:='https://midfield.one/api/cron/livescores',
-      headers:='{"Authorization": "Bearer YOUR_CRON_SECRET"}'::jsonb
+      headers:='{"Authorization": "Bearer YOUR_SERVICE_ROLE_KEY"}'::jsonb
   ) as request_id;
   $$
 );
 ```
 
-### Issue 3: Vercel cron may not be firing
-**Check:** Vercel Dashboard → Project → Cron Jobs tab
-**Verify:** `CRON_SECRET` env var is set
+### 🚫 Vercel Cron (DEPRECATED)
+We explicitly **DO NOT** use Vercel Cron to avoid free tier limits (2 jobs/project). `vercel.json` crons have been removed.
 
 ---
 
-## 🔍 HOW TO VERIFY SYNC IS WORKING
+## 4. TROUBLESHOOTING & VERIFICATION
 
-### Check last fixture sync:
+### How to verify sync is working?
+
+**1. Check Latency:**
+Run this SQL in Supabase Studio:
 ```sql
-SELECT MAX(updated_at), COUNT(*) FROM fixtures WHERE updated_at > NOW() - INTERVAL '1 day';
+SELECT 
+    id, 
+    home_team_name, 
+    status, 
+    updated_at, 
+    NOW() - updated_at as time_since_update 
+FROM fixtures 
+WHERE status IN ('LIVE', 'HT') 
+ORDER BY updated_at DESC;
 ```
 
-### Check for today's matches:
+**2. Check Schedule Freshness:**
 ```sql
-SELECT * FROM fixtures WHERE date::date = CURRENT_DATE ORDER BY date;
+-- Should show dates far into the future (e.g. May 2026)
+SELECT MAX(date) FROM fixtures;
 ```
 
-### Check pg_cron jobs:
-```sql
-SELECT * FROM cron.job;
-SELECT * FROM cron.job_run_details ORDER BY start_time DESC LIMIT 10;
+**3. Manually Trigger Sync (Emergency):**
+Run the script locally:
+```bash
+npx tsx scripts/test-sync.ts
 ```
+
+---
+
+## 5. SUPPORTED LEAGUES
+Currently synced leagues (IDs):
+- **4328**: EPL
+- **4335**: La Liga
+- **4332**: Serie A
+- **4331**: Bundesliga
+- **4334**: Ligue 1
+- **4480**: UEFA Champions League
+- **4481**: UEFA Europa League
+*(Note: Domestic Cups like FA Cup are currently excluded by design to minimize noise/stub creation for non-league teams)*
+
+### C. The "Stub UI Law"
+Stubs (opponents created solely for fixture completeness) are **Visible but Non-Interactive**.
+- **Display**: They appear in fixture lists with their Name and Logo (if available).
+- **Interactivity**: They are **NOT Clickable**. They do not have dedicated Topic Pages.
+- **Identification**: Frontend checks `metadata.is_stub` to disable links.
