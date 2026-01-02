@@ -50,20 +50,28 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
             <div className="relative shrink-0">
                 <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                     {hasImage ? (
-                        <Image
-                            src={entity.imageUrl!}
-                            alt={entity.title}
-                            width={48}
-                            height={48}
-                            className={cn(
-                                // Player cutout: scale up and position to show head with space above
-                                // Using object-[center_20%] to move the focus point down, leaving space for head top
-                                entity.type === 'player'
-                                    ? "w-full h-full object-cover object-[center_20%] scale-150"
-                                    : "object-contain p-1"
-                            )}
-                            unoptimized
-                        />
+                        entity.type === 'player' ? (
+                            // Player cutout: add padding to ensure head is not cropped
+                            <div className="w-full h-full flex items-end justify-center pt-1">
+                                <Image
+                                    src={entity.imageUrl!}
+                                    alt={entity.title}
+                                    width={48}
+                                    height={48}
+                                    className="w-[140%] h-auto object-contain"
+                                    unoptimized
+                                />
+                            </div>
+                        ) : (
+                            <Image
+                                src={entity.imageUrl!}
+                                alt={entity.title}
+                                width={48}
+                                height={48}
+                                className="object-contain p-1"
+                                unoptimized
+                            />
+                        )
                     ) : (
                         <User className="w-6 h-6 sm:w-5 sm:h-5 text-slate-400 dark:text-neutral-600" />
                     )}

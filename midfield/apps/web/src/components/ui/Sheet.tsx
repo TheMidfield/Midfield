@@ -11,31 +11,30 @@ const SheetPortal = DialogPrimitive.Portal
 
 interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
     side?: "right" | "left"
+    onOverlayClick?: () => void
 }
 
 const SheetContent = React.forwardRef<
     React.ElementRef<typeof DialogPrimitive.Content>,
     SheetContentProps
->(({ className, children, side = "right", ...props }, ref) => (
+>(({ className, children, side = "right", onOverlayClick, ...props }, ref) => (
     <SheetPortal>
-        {/* Overlay - below navbar only, z-30 so navbar (z-50) remains interactive */}
-        <DialogPrimitive.Overlay
+        {/* Custom overlay - NOT part of Radix, so it doesn't block navbar */}
+        {/* This is a regular div that sits below navbar (z-30) and captures clicks */}
+        <div
+            onClick={onOverlayClick}
             className={cn(
-                "fixed z-30 bg-black/50",
-                // Cover everything below navbar
+                "fixed z-30 bg-black/60",
                 "top-[62px] sm:top-16 left-0 right-0 bottom-0",
-                "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-                "duration-200"
+                "animate-in fade-in-0 duration-200"
             )}
+            data-state="open"
         />
         <DialogPrimitive.Content
             ref={ref}
             aria-describedby={undefined}
             className={cn(
-                // z-40 above overlay but below navbar (z-50)
                 "fixed z-40 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
-                // Start below navbar
                 "top-[62px] sm:top-16 bottom-0",
                 side === "right" && [
                     "right-0 left-0 sm:left-auto sm:w-[340px]",

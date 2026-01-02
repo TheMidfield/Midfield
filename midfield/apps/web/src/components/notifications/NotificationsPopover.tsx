@@ -15,7 +15,6 @@ interface NotificationsSidebarProps {
     onOpenChange?: (open: boolean) => void;
 }
 
-// Skeleton component for loading state
 function NotificationSkeleton() {
     return (
         <div className="flex items-center gap-3 p-3 sm:p-2.5 animate-pulse">
@@ -44,7 +43,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     const closeSidebar = () => handleOpenChange(false);
 
-    // Lock body scroll on mobile when open
     useEffect(() => {
         if (open) {
             const isMobile = window.matchMedia('(max-width: 639px)').matches;
@@ -86,7 +84,8 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     return (
         <>
-            <Sheet open={open} onOpenChange={handleOpenChange}>
+            {/* modal={false} allows navbar to remain interactive */}
+            <Sheet open={open} onOpenChange={handleOpenChange} modal={false}>
                 <SheetTrigger asChild>
                     <div className="relative">
                         <IconButton
@@ -104,7 +103,7 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                         )}
                     </div>
                 </SheetTrigger>
-                <SheetContent side="right" className="flex flex-col">
+                <SheetContent side="right" className="flex flex-col" onOverlayClick={closeSidebar}>
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-neutral-800">
                         <span className="text-sm sm:text-[11px] font-semibold sm:uppercase tracking-normal sm:tracking-wider text-slate-800 dark:text-neutral-200 sm:text-slate-500 sm:dark:text-neutral-500">
@@ -114,13 +113,15 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                             {hasUnread && (
                                 <button
                                     onClick={handleMarkAllRead}
-                                    className="text-[12px] sm:text-[11px] font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                    className="text-[12px] sm:text-[11px] font-medium text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 active:text-emerald-700 dark:active:text-emerald-300 transition-colors cursor-pointer"
                                 >
                                     Mark all read
                                 </button>
                             )}
+                            {/* Close button with text on mobile */}
                             <SheetClose asChild>
-                                <button className="rounded-md p-1.5 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer">
+                                <button className="flex items-center gap-1.5 rounded-md px-2 py-1.5 sm:p-1.5 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 active:bg-slate-200 dark:active:bg-neutral-700 cursor-pointer">
+                                    <span className="text-xs font-medium sm:hidden">Close</span>
                                     <X className="h-5 w-5 sm:h-4 sm:w-4" />
                                 </button>
                             </SheetClose>
