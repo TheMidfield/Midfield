@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { LayoutContent } from "@/components/LayoutContent";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SearchProvider } from "@/context/SearchContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import { GlobalSearchLayout } from "@/components/GlobalSearchLayout";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
 import "./globals.css";
@@ -77,19 +78,21 @@ export default function RootLayout({
             <body className="min-h-screen antialiased selection:bg-emerald-100 dark:selection:bg-emerald-900/50 flex flex-col">
                 <ThemeProvider>
                     <SearchProvider>
-                        <OnboardingProvider>
-                            <Navbar />
+                        <NotificationProvider>
+                            <OnboardingProvider>
+                                <Navbar />
 
-                            <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 pt-24 sm:pt-28 pb-12 sm:pb-16">
-                                <GlobalSearchLayout>
-                                    <LayoutContent>
-                                        {children}
-                                    </LayoutContent>
-                                </GlobalSearchLayout>
-                            </div>
+                                <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 pt-24 sm:pt-28 pb-12 sm:pb-16">
+                                    <GlobalSearchLayout>
+                                        <LayoutContent>
+                                            {children}
+                                        </LayoutContent>
+                                    </GlobalSearchLayout>
+                                </div>
 
-                            <Footer />
-                        </OnboardingProvider>
+                                <Footer />
+                            </OnboardingProvider>
+                        </NotificationProvider>
                     </SearchProvider>
                 </ThemeProvider>
             </body>

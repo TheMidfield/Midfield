@@ -7,6 +7,7 @@ import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
 import { NavbarSearch } from "./NavbarSearch";
+import { NotificationBell } from "./notifications/NotificationsPopover";
 import { useEffect, useState } from "react";
 import { useOnboarding } from "./OnboardingProvider";
 import { useSearch } from "@/context/SearchContext";
@@ -147,17 +148,20 @@ export function Navbar() {
 
                         {!isLoading ? (
                             isAuthenticated ? (
-                                <Link href="/profile" className="active:scale-95 lg:active:scale-100 transition-transform">
-                                    {userAvatar ? (
-                                        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
-                                            <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-center">
-                                            <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 dark:text-neutral-500" />
-                                        </div>
-                                    )}
-                                </Link>
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <NotificationBell />
+                                    <Link href="/profile" className="active:scale-95 lg:active:scale-100 transition-transform">
+                                        {userAvatar ? (
+                                            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
+                                                <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
+                                            </div>
+                                        ) : (
+                                            <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md bg-slate-100 dark:bg-neutral-800 border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer flex items-center justify-center">
+                                                <UserIcon className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 dark:text-neutral-500" />
+                                            </div>
+                                        )}
+                                    </Link>
+                                </div>
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <Link href="/auth/login" className="hidden md:block">
