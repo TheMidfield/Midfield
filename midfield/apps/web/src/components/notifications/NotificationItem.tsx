@@ -1,8 +1,9 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Flame, Shield, Sparkles } from "lucide-react";
+import { MessageSquare, Flame, Shield, Sparkles, User } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Notification } from "@/app/actions/notifications";
 import { cn } from "@/lib/utils";
 
@@ -17,52 +18,75 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-    // Consistent card styling - no background difference for read/unread
-    const baseClasses = "flex items-start gap-3 p-3 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
+    // Consistent card styling - no background difference
+    const baseClasses = "flex items-start gap-2.5 p-2 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
 
-    // Unread indicator - blue dot for consistency
+    // Unread indicator - blue dot
     const UnreadDot = () => !isRead ? (
-        <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
-    ) : <div className="w-2 shrink-0" />; // Spacer for alignment
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
+    ) : <div className="w-1.5 shrink-0" />;
 
-    // Get type-specific icon and colors
-    const getTypeIcon = () => {
+    // Get type-specific icon
+    const getTypeConfig = () => {
         switch (notification.type) {
             case 'reply':
-                return { Icon: MessageSquare, bg: "bg-blue-500", color: "text-white" };
+                return { Icon: MessageSquare, bg: "bg-blue-500" };
             case 'upvote':
-                return { Icon: Flame, bg: "bg-emerald-500", color: "text-white" };
+                return { Icon: Flame, bg: "bg-emerald-500" };
             case 'badge_received':
-                return { Icon: Shield, bg: "bg-amber-500", color: "text-white" };
+                return { Icon: Shield, bg: "bg-amber-500" };
             case 'system_welcome':
-                return { Icon: Sparkles, bg: "bg-emerald-500", color: "text-white" };
+                return { Icon: Sparkles, bg: "bg-emerald-500" };
             default:
-                return { Icon: MessageSquare, bg: "bg-slate-500", color: "text-white" };
+                return { Icon: MessageSquare, bg: "bg-slate-500" };
         }
     };
 
-    const { Icon, bg, color } = getTypeIcon();
+    const { Icon, bg } = getTypeConfig();
+
+    // Render entity image or fallback
+    const EntityImage = () => {
+        const entity = notification.entity;
+        const hasImage = entity?.imageUrl;
+
+        return (
+            <div className="relative shrink-0">
+                <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
+                    {hasImage ? (
+                        <Image
+                            src={entity.imageUrl!}
+                            alt={entity.title}
+                            width={32}
+                            height={32}
+                            className={cn(
+                                "object-contain",
+                                entity.type === 'player' ? "object-top scale-150 translate-y-1" : ""
+                            )}
+                            unoptimized
+                        />
+                    ) : (
+                        <User className="w-4 h-4 text-slate-300 dark:text-neutral-600" />
+                    )}
+                </div>
+                {/* Type badge */}
+                <div className={cn("absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center", bg)}>
+                    <Icon className="w-2 h-2 text-white" />
+                </div>
+            </div>
+        );
+    };
 
     const renderContent = () => {
         switch (notification.type) {
             case 'reply':
                 return (
                     <>
-                        <div className="relative shrink-0">
-                            {/* Entity image placeholder - using a gradient for now */}
-                            <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center overflow-hidden">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500">TAKE</span>
-                            </div>
-                            {/* Type indicator badge */}
-                            <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center", bg)}>
-                                <Icon className={cn("w-2.5 h-2.5", color)} />
-                            </div>
-                        </div>
+                        <EntityImage />
                         <div className="flex-1 min-w-0">
-                            <p className="text-[13px] text-slate-700 dark:text-neutral-200 leading-snug">
-                                <span className="font-semibold">{notification.actor?.username}</span> replied to your take
+                            <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-snug">
+                                <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> replied to your take
                             </p>
-                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -70,19 +94,12 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
             case 'upvote':
                 return (
                     <>
-                        <div className="relative shrink-0">
-                            <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center overflow-hidden">
-                                <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500">TAKE</span>
-                            </div>
-                            <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center", bg)}>
-                                <Icon className={cn("w-2.5 h-2.5", color)} />
-                            </div>
-                        </div>
+                        <EntityImage />
                         <div className="flex-1 min-w-0">
-                            <p className="text-[13px] text-slate-700 dark:text-neutral-200 leading-snug">
-                                <span className="font-semibold">{notification.actor?.username}</span> upvoted your take
+                            <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-snug">
+                                <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> upvoted your take
                             </p>
-                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -93,14 +110,14 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                     : 'New Badge';
                 return (
                     <>
-                        <div className="shrink-0 w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                            <Shield className="w-5 h-5 text-amber-500 dark:text-amber-400" />
+                        <div className="shrink-0 w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                            <Shield className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[13px] text-slate-700 dark:text-neutral-200 leading-snug">
+                            <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-snug">
                                 You unlocked <span className="font-semibold text-amber-600 dark:text-amber-400">{badgeText}</span>
                             </p>
-                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -108,14 +125,14 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
             case 'system_welcome':
                 return (
                     <>
-                        <div className="shrink-0 w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
+                        <div className="shrink-0 w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                            <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-semibold text-slate-700 dark:text-neutral-200">
+                            <p className="text-[11px] font-semibold text-slate-700 dark:text-neutral-200">
                                 Welcome to Midfield!
                             </p>
-                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">Let's get you started</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">Let's get you started</p>
                         </div>
                         <UnreadDot />
                     </>

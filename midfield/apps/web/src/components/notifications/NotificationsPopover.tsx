@@ -30,11 +30,12 @@ export function NotificationsPopover() {
     }, [open, lastNotificationTrigger, refreshUnreadCount]);
 
     const handleMarkAllRead = async () => {
-        const success = await markAllNotificationsRead();
-        if (success.success) {
-            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-            refreshUnreadCount();
-        }
+        // Instant optimistic update
+        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        // Trigger refresh to update bell icon immediately
+        refreshUnreadCount();
+        // Then persist to backend
+        await markAllNotificationsRead();
     };
 
     const handleRead = async (id: string) => {
@@ -42,6 +43,9 @@ export function NotificationsPopover() {
         await markNotificationRead(id);
         refreshUnreadCount();
     };
+
+    // Check if there are any unread notifications
+    const hasUnread = notifications.some(n => !n.is_read);
 
     return (
         <>
@@ -60,17 +64,17 @@ export function NotificationsPopover() {
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-[340px] p-0 overflow-hidden rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl"
+                    className="w-72 p-0 overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
                     align="end"
-                    sideOffset={24}
+                    sideOffset={20}
                 >
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Notifications</span>
-                        {notifications.some(n => !n.is_read) && (
+                    <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100 dark:border-neutral-800">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Notifications</span>
+                        {hasUnread && (
                             <button
                                 onClick={handleMarkAllRead}
-                                className="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                className="text-[10px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                             >
                                 Mark all read
                             </button>
@@ -78,14 +82,14 @@ export function NotificationsPopover() {
                     </div>
 
                     {/* Content */}
-                    <div className="max-h-[400px] overflow-y-auto">
+                    <div className="max-h-[320px] overflow-y-auto">
                         {loading && notifications.length === 0 ? (
-                            <div className="p-8 text-center space-y-3">
-                                <div className="animate-pulse w-6 h-6 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
-                                <div className="animate-pulse h-3 w-20 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
+                            <div className="p-6 text-center space-y-2">
+                                <div className="animate-pulse w-5 h-5 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
+                                <div className="animate-pulse h-2 w-16 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
                             </div>
                         ) : notifications.length > 0 ? (
-                            <div className="py-2 px-2 space-y-1">
+                            <div className="py-1.5 px-1.5 space-y-0.5">
                                 {notifications.map(n => (
                                     <NotificationItem
                                         key={n.id}
@@ -103,9 +107,9 @@ export function NotificationsPopover() {
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-12 px-6 text-center">
-                                <Bell className="w-6 h-6 mx-auto mb-2 text-slate-200 dark:text-neutral-700" />
-                                <p className="text-xs text-slate-400 dark:text-neutral-500">All caught up!</p>
+                            <div className="py-8 px-4 text-center">
+                                <Bell className="w-5 h-5 mx-auto mb-1.5 text-slate-200 dark:text-neutral-700" />
+                                <p className="text-[11px] text-slate-400 dark:text-neutral-500">All caught up!</p>
                             </div>
                         )}
                     </div>

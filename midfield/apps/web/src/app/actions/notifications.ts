@@ -15,7 +15,13 @@ export interface Notification {
         username: string;
         avatar_url: string | null;
     } | null;
-    badge_id?: string; // Enriched for badge notifications
+    badge_id?: string;
+    // Entity data for reply/upvote notifications
+    entity?: {
+        title: string;
+        type: 'player' | 'club' | 'league';
+        imageUrl: string | null;
+    } | null;
 }
 
 /**
@@ -27,7 +33,6 @@ export async function getNotifications(offset: number = 0, limit: number = 20) {
 
     if (!user) return { notifications: [], count: 0 };
 
-    // Fetch notifications with actor details
     const { data, count, error } = await supabase
         .from('notifications')
         .select(`
@@ -46,20 +51,51 @@ export async function getNotifications(offset: number = 0, limit: number = 20) {
         return { notifications: [], count: 0 };
     }
 
-    // Enrich badge notifications
+    // Enrich notifications with entity data
     const notifications = await Promise.all(data.map(async (n: any) => {
+        // Badge enrichment
         if (n.type === 'badge_received' && n.resource_id) {
-            // Fetch the badge detail from user_badges using the resource_id (which is user_badges.id)
             const { data: badge } = await supabase
                 .from('user_badges')
                 .select('badge_id')
                 .eq('id', n.resource_id)
                 .single();
-
             if (badge) {
                 return { ...n, badge_id: badge.badge_id };
             }
         }
+
+        // Entity enrichment for reply/upvote (resource_slug is the topic slug)
+        if ((n.type === 'reply' || n.type === 'upvote') && n.resource_slug) {
+            const { data: topic } = await supabase
+                .from('topics')
+                .select('title, type, metadata')
+                .eq('slug', n.resource_slug)
+                .single();
+
+            if (topic) {
+                const metadata = topic.metadata as any;
+                // Get appropriate image based on entity type
+                let imageUrl: string | null = null;
+                if (topic.type === 'player') {
+                    imageUrl = metadata?.photo_url || null;
+                } else if (topic.type === 'club') {
+                    imageUrl = metadata?.badge_url || metadata?.logo_url || null;
+                } else if (topic.type === 'league') {
+                    imageUrl = metadata?.logo_url || null;
+                }
+
+                return {
+                    ...n,
+                    entity: {
+                        title: topic.title,
+                        type: topic.type,
+                        imageUrl
+                    }
+                };
+            }
+        }
+
         return n;
     }));
 
