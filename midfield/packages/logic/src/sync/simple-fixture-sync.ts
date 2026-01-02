@@ -214,9 +214,15 @@ function normalizeStatus(apiStatus: string | null): 'NS' | 'LIVE' | 'HT' | 'FT' 
     // Check for halftime
     if (s === 'ht' || s.includes('halftime') || s.includes('half time') || s === 'break') return 'HT';
 
-    // Live indicators (1H, 2H, ET, minute numbers, etc.)
-    // If it's none of the above but has content, assume it's live
-    return 'LIVE';
+    // Live indicators (Explicit check)
+    // Common: 1H, 2H, ET, Pen, integers (minutes), 'In Progress'
+    if (s === '1h' || s === '2h' || s === 'et' || s === 'pen' || s === 'live' || s === 'in progress') return 'LIVE';
+
+    // Check for minute markers (e.g. "34'", "90+2")
+    if (/\d+'/.test(s) || /^\d+$/.test(s)) return 'LIVE';
+
+    // Default to Not Started if unknown (Safer than defaulting to Live)
+    return 'NS';
 }
 
 
@@ -439,5 +445,131 @@ async function updateFixtureStatus(supabase: SupabaseClient, event: any) {
         .from('fixtures')
         .update(update)
         .eq('id', event.idEvent);
+}
+
+/**
+ * Syncs the league table/standings for all Core Leagues.
+ * This should be run daily/6-hourly to keep positions up to date.
+ */
+export async function syncLeagueStandings(
+    supabase: SupabaseClient,
+    apiClient?: TheSportsDBClient
+) {
+    if (!apiClient) {
+        console.warn('⚠️ No API client provided to syncLeagueStandings');
+        return;
+    }
+
+    console.log('🏆 Starting League Standings Sync...');
+    const results = {
+        leaguesProcessed: 0,
+        standingsUpdated: 0,
+        errors: 0
+    };
+
+    // Core Leagues (National only for now)
+    const TARGET_LEAGUES = [
+        { id: '4328', name: 'English Premier League' },
+        { id: '4335', name: 'Spanish La Liga' },
+        { id: '4331', name: 'German Bundesliga' },
+        { id: '4332', name: 'Italian Serie A' },
+        { id: '4334', name: 'French Ligue 1' }
+    ];
+
+    for (const league of TARGET_LEAGUES) {
+        try {
+            console.log(`\n   Processing ${league.name} (${league.id})...`);
+
+            // 1. Fetch Table
+            const season = '2024-2025';
+            const table = await apiClient.getLeagueTable(league.id, season);
+
+            if (!table || table.length === 0) {
+                console.log(`      ⚠️ No table data found for ${league.name}`);
+                continue;
+            }
+
+            // 2. Resolve internal League ID
+            const { data: leagueTopic } = await supabase
+                .from('topics')
+                .select('id')
+                .eq('type', 'league')
+                .contains('metadata', { external: { thesportsdb_id: league.id } })
+                .single();
+
+            if (!leagueTopic) {
+                console.log(`      ❌ League topic not found for ${league.name}`);
+                continue;
+            }
+
+            // 3. Clear Old Standings
+            await supabase.from('league_standings').delete().eq('league_id', leagueTopic.id);
+
+            // 4. Resolve Teams & Prepare Payload
+            const teamIds = table.map((r: any) => r.idTeam);
+
+            // Batch fetch club topics
+            // We need to cast the JSONB query carefully or fetch all and map in memory if list is small (20 items is tiny)
+            // But let's use the 'contains' trick or just fetch by IDs if we had a clean column. 
+            // Since `metadata` is JSONB, `in` query on nested field is tricky in Supabase JS without generic match
+            // Easiest reliable way for 20 items: Fetch all active clubs and filter, OR map existing club-sync logic.
+            // Let's try fetching clubs that HAVE a thesportsdb_id, then map.
+
+            // Optimization: Fetch all clubs with these IDs. 
+            // Limitations: Supabase `.in('metadata->external->thesportsdb_id', ...)` doesn't work easily.
+            // Workaround: We'll do it one-by-one or fetch all 'club' type topics (lightweight id/metadata select) and map in memory.
+            // Fetching 500 clubs 'id/metadata' is fast.
+
+            const { data: teamTopics } = await supabase
+                .from('topics')
+                .select('id, metadata')
+                .eq('type', 'club')
+                .not('metadata->external->>thesportsdb_id', 'is', null);
+
+            const teamMap = new Map<string, string>();
+            teamTopics?.forEach(t => {
+                const extId = t.metadata?.external?.thesportsdb_id;
+                if (extId) teamMap.set(String(extId), t.id);
+            });
+
+            const standingsPayloads = [];
+            for (const row of table) {
+                const internalTeamId = teamMap.get(String(row.idTeam));
+
+                if (internalTeamId) {
+                    standingsPayloads.push({
+                        league_id: leagueTopic.id,
+                        team_id: internalTeamId,
+                        position: parseInt(row.intRank),
+                        points: parseInt(row.intPoints),
+                        played: parseInt(row.intPlayed),
+                        goals_diff: parseInt(row.intGoalDifference),
+                        goals_for: parseInt(row.intGoalsFor),
+                        goals_against: parseInt(row.intGoalsAgainst),
+                        form: row.strForm,
+                        description: row.strDescription
+                    });
+                }
+            }
+
+            if (standingsPayloads.length > 0) {
+                const { error } = await supabase.from('league_standings').insert(standingsPayloads);
+                if (error) throw error;
+                console.log(`      ✅ Updated ${standingsPayloads.length} rows.`);
+                results.standingsUpdated += standingsPayloads.length;
+            } else {
+                console.log(`      ⚠️ No matching club topics found to link.`);
+            }
+
+            results.leaguesProcessed++;
+
+        } catch (err: any) {
+            console.error(`      ❌ Error syncing ${league.name}:`, err.message);
+            results.errors++;
+        }
+    }
+
+    console.log(`\n🏆 Standings Sync Complete. Processed ${results.leaguesProcessed} leagues. Updated ${results.standingsUpdated} rows.`);
+    return results;
 }
 

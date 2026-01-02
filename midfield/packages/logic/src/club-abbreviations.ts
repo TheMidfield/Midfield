@@ -14,6 +14,7 @@ export const CLUB_ABBREVIATIONS: Record<string, string> = {
     'aston-villa': 'AVL',
     'brentford': 'BRE',
     'brighton-hove-albion': 'BHA',
+    'brighton-and-hove-albion': 'BHA',
     'brighton': 'BHA',
     'burnley': 'BUR',
     'chelsea': 'CHE',
@@ -43,9 +44,11 @@ export const CLUB_ABBREVIATIONS: Record<string, string> = {
     // Spanish La Liga (2025-26)
     'alaves': 'ALA',
     'deportivo-alaves': 'ALA',
+    'deportivo-alavs': 'ALA', // Alias
     'athletic-bilbao': 'ATH',
     'athletic-club': 'ATH',
     'atletico-madrid': 'ATM',
+    'atltico-madrid': 'ATM', // Alias
     'barcelona': 'BAR',
     'fc-barcelona': 'BAR',
     'celta-vigo': 'CEL',
@@ -239,17 +242,27 @@ export const CLUB_ABBREVIATIONS: Record<string, string> = {
  * Falls back to first 3 uppercase characters of title if not found
  */
 export function getClubAbbreviation(slug: string, title?: string): string {
-    const normalized = slug?.toLowerCase().trim();
+    if (!slug) return 'CLB';
 
+    const normalized = slug.toLowerCase().trim();
+
+    // 1. Exact match
     if (CLUB_ABBREVIATIONS[normalized]) {
         return CLUB_ABBREVIATIONS[normalized];
     }
 
-    // Fallback: first 3 chars of title in uppercase
+    // 2. Try removing trailing ID (e.g. "manchester-city-133613" -> "manchester-city")
+    // Regex: look for dash followed by digits at end of string
+    const cleanSlug = normalized.replace(/-\d+$/, '');
+    if (CLUB_ABBREVIATIONS[cleanSlug]) {
+        return CLUB_ABBREVIATIONS[cleanSlug];
+    }
+
+    // 3. Fallback: first 3 chars of title in uppercase
     if (title) {
         return title.substring(0, 3).toUpperCase();
     }
 
-    // Last resort: first 3 chars of slug
-    return slug?.substring(0, 3).toUpperCase() || 'CLB';
+    // 4. Last resort: first 3 chars of slug
+    return slug.substring(0, 3).toUpperCase();
 }

@@ -521,8 +521,9 @@ const getCachedSimilarTopics = unstable_cache(
                     .select('id, title, slug, type, metadata')
                     .eq('type', 'club')
                     .eq('is_active', true)
+                    .neq('id', topic.id)
                     .not('metadata->>league', 'eq', league)
-                    .limit(20);
+                    .limit(50); // Fetch more to filter down
 
                 // Filter to only clubs from ALLOWED_LEAGUES
                 const crossLeague = (otherClubs || []).filter(c => {
@@ -551,7 +552,7 @@ const getCachedSimilarTopics = unstable_cache(
 
             // Top clubs in the league
             const clubs = await getClubsByLeague(leagueName);
-            shuffleArray(clubs).slice(0, 4).forEach(c => {
+            shuffleArray(clubs).filter(c => !addedIds.has(c.id)).slice(0, 4).forEach(c => {
                 addResult({
                     id: c.id,
                     title: c.title,
@@ -564,12 +565,13 @@ const getCachedSimilarTopics = unstable_cache(
                 });
             });
 
-            // Other random leagues
+            // Other random leagues - STRICTLY FILTERED
             const { data: otherLeagues } = await supabase
                 .from('topics')
                 .select('id, title, slug, type, metadata')
                 .eq('type', 'league')
                 .eq('is_active', true)
+                .in('title', ALLOWED_LEAGUES) // STRICT FILTER
                 .neq('id', topic.id)
                 .limit(10);
 

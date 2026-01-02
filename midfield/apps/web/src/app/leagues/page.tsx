@@ -14,15 +14,21 @@ const COUNTRY_FLAG_IMAGES: Record<string, string> = {
   "France": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/france.png",
 };
 
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
+
 export default async function LeaguesPage() {
   const serverSupabase = await createClient();
 
-  // Fetch league topics directly from database
+  const CONTINENTAL_LEAGUES = ["UEFA Champions League", "UEFA Europa League"];
+  const TARGET_LEAGUES = [...ALLOWED_LEAGUES, ...CONTINENTAL_LEAGUES];
+
+  // Fetch league topics directly from database - STRICTLY FILTERED
   const { data: leagues } = await supabase
     .from('topics')
     .select('id, title, slug, type, metadata')
     .eq('type', 'league')
     .eq('is_active', true)
+    .in('title', TARGET_LEAGUES)
     .order('title', { ascending: true });
 
   // Get club counts for each league (only for national leagues)

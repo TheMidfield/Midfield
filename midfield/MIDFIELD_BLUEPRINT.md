@@ -1,37 +1,16 @@
 # ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.10)
 
 <!--
-UPDATE LOG (Jan 2, 2026 - PM):
-- **Mathematical Layout Centering**: Homepage Trending + MatchCenter now use architectural pattern where header sits OUTSIDE grid, allowing rows-only centering.
-- **EntityHeader Mobile Adaptation**: Club pages skip separate mobile info section (sm:hidden) since clubs have minimal metadata. Only players get dedicated mobile stats rows.
-- **Homepage Trending Refinement**: Rank numbers have proper edge padding (pl-3/pr-3), tighter icon spacing (gap-1.5), smaller badge fonts for visual hierarchy.
-
-UPDATE LOG (Jan 2, 2026 - AM):
-- **Mobile-Only Click Feedback Protocol**: Implemented `active:scale-[value] lg:active:scale-100` pattern across entire codebase to disable click animations on desktop while preserving tactile mobile feedback.
-- **Widget Spacing Standards**: TrendingWidget spacing optimized - increased container padding (px-2 → px-3), reduced internal gap (gap-3 → gap-2) for better visual hierarchy.
-- **Smart Collapsible Defaults**: Player topic pages now conditionally open "About" section when FC26 ratings unavailable, preventing empty default states.
-- **Take Counter Accuracy**: Fixed post_count SQL migration to include both parent posts AND replies for accurate take counts across all topic cards.
-
-UPDATE LOG (Jan 1, 2026):
-- **Sentiment Protocol**: Standardized subtle Slate-400 vote counts, conditional visibility (>0), and hero section clean-revert.
-- **Type Safety & RPC**: Standardized batch vote fetching via RPC and documented `as any` escape hatches for excessively deep TS instantiation.
-- **Bandwidth Optimization Law**: Query limit reductions (500→50 players, 150→30 fixtures) + React cache() for request deduplication. NEVER use unstable_cache() for dynamic user data.
-- **Image Optimization Law**: Documented Vercel 402 quota crisis. External CDN images MUST use `unoptimized={true}` to prevent quota exhaustion. User uploads stay optimized for SEO/perf.
-- **Smart Upsert Hardening**: Implemented "Safety Locks" in `smartUpsertTopic` to protect `fc26_data`, `follower_count`, and `post_count` from accidental overwrite.
-- **Metadata Merging**: Sync jobs now shallow-merge `metadata` JSONB. Enriched fields (Height, Weight, Foot) are preserved even if simpler syncs run later.
-- **Rich Player Metadata**: Implemented V1 + V2 Hybrid lookup for high-fidelity player profiles (Birth Location, Preferred Foot, Clean Weight strings).
-- **Match Center Stability**: Added sort-on-null safety and loading skeleton overflow fixes for the Sidebar widget.
-- **Design Alignment**: Added 10px standard left-padding to nested metadata rows to align icons with parent button text.
-- **Scalability Breakthroughs**: 
-  - **Topic Page**: Eliminated waterfall (6+ seq calls) -> Parallel `Promise.all` execution.
-  - **Trending Widget**: Implemented `unstable_cache` (ISR, 5m) to prevent 5x table scans per request.
-  - **Sync Engine**: Converted Livescore N+1 updates to Single Batch Upsert.
+UPDATE LOG (Jan 2, 2026 - EVENING):
+- **Sync Doctrine Consolidation**: Merged all sync documentation into a single source of truth: `docs/SYNC_DOCTRINE.md`.
+- **Standings Sync**: Formally integrated Standings Sync into Realtime Engine (6-hour cycle).
+- **Core Club Audit**: Seeded 4 missing core clubs (Las Palmas, Empoli, Venezia, Monza) to achieve 100% standings coverage.
 
 -->
 
 STATUS: ACTIVE // DEFINITIVE SINGLE SOURCE OF TRUTH
 OPERATIONAL PHASE: OPTIMIZATION → MOBILE-NATIVE PREP → SCALE
-FORGE DATE: JAN 1, 2026 (Updated)
+FORGE DATE: JAN 2, 2026 (Updated)
 OWNER: Developer is the master of this repo. Standards are non-negotiable.
 
 This file is designed to enable "fresh context window" resets at any time.
@@ -137,7 +116,7 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Safety**: Protected by `smartUpsertTopic`. Never overwritten by regular sync jobs.
 
 **C) HYBRID ARCHITECTURE ("Realtime & Atlas")**
-- **Reference**: See [docs/SYNC_STATUS.md](file:///Users/roycim/Documents/[5] Code/Projects/Midfield-proto/midfield/docs/SYNC_STATUS.md) for the definitive architecture.
+- **Reference**: See [docs/SYNC_DOCTRINE.md](file:///Users/roycim/Documents/[5] Code/Projects/Midfield-proto/midfield/docs/SYNC_DOCTRINE.md) for the definitive architecture.
 - **I. ATLAS ENGINE (Legacy Edge)**:
   - **Domain**: Structure (Clubs, Players, Leagues, Standings).
   - **Frequency**: Deep/Heavy. Weekly runs (GitHub Actions).
@@ -184,6 +163,7 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 5.  **Blueprint Authority**: This file is the single source of truth.
 6.  **Centralized League Control**:
     - `packages/logic/src/constants.ts` (`ALLOWED_LEAGUES`) is the SINGLE source of truth.
+    - **Strict Filtering**: `fetch-widget-data.ts` (Widgets) and `leagues/page.tsx` (UI) MUST explicitly `.in('title', ALLOWED_LEAGUES)` to prevent database pollution from displaying.
 7.  **Auth Profile Safety**:
     - `auth/callback` MUST use `ignoreDuplicates: true` on user upsert to protect custom avatars.
     - **Social Avatar Ban**: user `avatar_url` MUST be initialized as `null`. We DO NOT sync images from OAuth providers (Google/GitHub).
