@@ -432,13 +432,29 @@ export function EntityHeader({
                                             </Button>
                                         </Link>
                                     )}
-                                    {isClub && metadata?.league && (
-                                        <Link href={`/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
-                                            <Button variant="ghost" size="sm" className="h-[22px] px-1.5 gap-1 text-[10px] font-bold bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors border border-slate-200/50 dark:border-neutral-700/50 rounded-md">
-                                                <Trophy className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                                <span className="whitespace-nowrap text-slate-700 dark:text-neutral-200">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>
-                                            </Button>
-                                        </Link>
+                                    {isClub && (
+                                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 dark:text-neutral-400">
+                                            {metadata?.league && (
+                                                <Link href={`/topic/${metadata.leagueSlug || metadata.league.toLowerCase().replace(/\s+/g, '-')}`} className="shrink-0">
+                                                    <Button variant="ghost" size="sm" className="h-[22px] px-1.5 gap-1 text-[10px] font-bold bg-slate-100 dark:bg-neutral-800 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors border border-slate-200/50 dark:border-neutral-700/50 rounded-md">
+                                                        <Trophy className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                                        <span className="whitespace-nowrap text-slate-700 dark:text-neutral-200">{metadata.league.replace(/^(English|Spanish|Italian|German|French)\s/, '')}</span>
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                            {metadata?.stadium && (
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    <MapPin className="w-3 h-3 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-semibold">{metadata.stadium}</span>
+                                                </div>
+                                            )}
+                                            {metadata?.founded && (
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                    <Calendar className="w-3 h-3 text-slate-400 dark:text-neutral-500" />
+                                                    <span className="whitespace-nowrap font-semibold">Est. {metadata.founded}</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 

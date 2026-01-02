@@ -1,7 +1,12 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.9)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.10)
 
 <!--
-UPDATE LOG (Jan 2, 2026):
+UPDATE LOG (Jan 2, 2026 - PM):
+- **Mathematical Layout Centering**: Homepage Trending + MatchCenter now use architectural pattern where header sits OUTSIDE grid, allowing rows-only centering.
+- **EntityHeader Mobile Adaptation**: Club pages skip separate mobile info section (sm:hidden) since clubs have minimal metadata. Only players get dedicated mobile stats rows.
+- **Homepage Trending Refinement**: Rank numbers have proper edge padding (pl-3/pr-3), tighter icon spacing (gap-1.5), smaller badge fonts for visual hierarchy.
+
+UPDATE LOG (Jan 2, 2026 - AM):
 - **Mobile-Only Click Feedback Protocol**: Implemented `active:scale-[value] lg:active:scale-100` pattern across entire codebase to disable click animations on desktop while preserving tactile mobile feedback.
 - **Widget Spacing Standards**: TrendingWidget spacing optimized - increased container padding (px-2 → px-3), reduced internal gap (gap-3 → gap-2) for better visual hierarchy.
 - **Smart Collapsible Defaults**: Player topic pages now conditionally open "About" section when FC26 ratings unavailable, preventing empty default states.
@@ -257,6 +262,29 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
       AND p.is_deleted = false
       ```
     - **Rationale**: Users expect "Takes" to reflect total conversation volume (parent + replies), not just top-level posts.
+20. **Mathematical Layout Centering** (Jan 2, 2026):
+    - **Pattern**: When two-column grids need perfect mathematical centering, move headers OUTSIDE the grid.
+    - **Example**: Homepage Trending + MatchCenter
+      - ❌ WRONG: Entire `<HomeTrendingSection>` (header + rows) in grid → centers whole column including header
+      - ✅ CORRECT: Header rendered separately above grid, `<HomeTrendingRows>` component participates in `items-center` alignment
+    - **Implementation**:
+      ```tsx
+      {/* Header outside grid */}
+      <div className="flex items-center gap-2 mb-3">...</div>
+      {/* Grid only contains rows + widget - mathematically centered */}
+      <div className="grid lg:grid-cols-2 items-center">
+        <HomeTrendingRows />  {/* Exported component: rows only */}
+        <MatchCenterWidget />
+      </div>
+      ```
+    - **Rationale**: CSS grid `items-center` centers ALL content. By excluding headers, visual centering aligns to content rows only.
+21. **EntityHeader Mobile Adaptation** (Jan 2, 2026):
+    - **Rule**: Mobile info sections (`sm:hidden`) MUST be conditional based on entity type.
+    - **Implementation**: 
+      - **Players**: Show dedicated mobile stats section (nationality, age, kit number, etc.)
+      - **Clubs**: Skip mobile section entirely - all info (league, stadium, founded) stays in main header
+    - **Rationale**: Clubs have minimal metadata (2-3 fields). Separate mobile section adds unnecessary vertical space. Players have 6+ fields that benefit from dedicated mobile layout.
+    - **Code Pattern**: Wrap mobile section with `{isPlayer && <div className="sm:hidden">...</div>}`
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
