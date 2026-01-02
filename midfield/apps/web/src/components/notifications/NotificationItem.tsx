@@ -19,11 +19,11 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
     // Consistent card styling - no background difference
-    const baseClasses = "flex items-start gap-2.5 p-2 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
+    const baseClasses = "flex items-start gap-2.5 p-2.5 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
 
-    // Unread indicator - blue dot
+    // Unread indicator - blue dot (smaller)
     const UnreadDot = () => !isRead ? (
-        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
     ) : <div className="w-1.5 shrink-0" />;
 
     // Get type-specific icon
@@ -44,23 +44,23 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
 
     const { Icon, bg } = getTypeConfig();
 
-    // Render entity image or fallback
+    // Entity image or fallback
     const EntityImage = () => {
         const entity = notification.entity;
         const hasImage = entity?.imageUrl;
 
         return (
             <div className="relative shrink-0">
-                <div className="w-8 h-8 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
+                <div className="w-9 h-9 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                     {hasImage ? (
                         <Image
                             src={entity.imageUrl!}
                             alt={entity.title}
-                            width={32}
-                            height={32}
+                            width={36}
+                            height={36}
                             className={cn(
                                 "object-contain",
-                                entity.type === 'player' ? "object-top scale-150 translate-y-1" : ""
+                                entity.type === 'player' ? "object-top scale-[1.8] translate-y-1.5" : ""
                             )}
                             unoptimized
                         />
@@ -69,8 +69,8 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                     )}
                 </div>
                 {/* Type badge */}
-                <div className={cn("absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center", bg)}>
-                    <Icon className="w-2 h-2 text-white" />
+                <div className={cn("absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center", bg)}>
+                    <Icon className="w-2.5 h-2.5 text-white" />
                 </div>
             </div>
         );
@@ -83,7 +83,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                     <>
                         <EntityImage />
                         <div className="flex-1 min-w-0">
-                            <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-snug">
+                            <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
                                 <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> replied to your take
                             </p>
                             <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
@@ -96,7 +96,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                     <>
                         <EntityImage />
                         <div className="flex-1 min-w-0">
-                            <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-snug">
+                            <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
                                 <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> upvoted your take
                             </p>
                             <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
@@ -110,11 +110,11 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                     : 'New Badge';
                 return (
                     <>
-                        <div className="shrink-0 w-8 h-8 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                        <div className="shrink-0 w-9 h-9 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
                             <Shield className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[11px] text-slate-600 dark:text-neutral-300 leading-snug">
+                            <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
                                 You unlocked <span className="font-semibold text-amber-600 dark:text-amber-400">{badgeText}</span>
                             </p>
                             <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
@@ -125,11 +125,11 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
             case 'system_welcome':
                 return (
                     <>
-                        <div className="shrink-0 w-8 h-8 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                        <div className="shrink-0 w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
                             <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[11px] font-semibold text-slate-700 dark:text-neutral-200">
+                            <p className="text-[12px] font-semibold text-slate-700 dark:text-neutral-200">
                                 Welcome to Midfield!
                             </p>
                             <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">Let's get you started</p>

@@ -2,15 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/Popover";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/Sheet";
 import { IconButton } from "@/components/ui/IconButton";
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type Notification } from "@/app/actions/notifications";
 import { NotificationItem } from "./NotificationItem";
 import { WelcomeModal } from "./WelcomeModal";
 import { BadgeModal } from "@/components/profile/BadgeModal";
 import { useNotification } from "@/context/NotificationContext";
+import { cn } from "@/lib/utils";
 
-export function NotificationsPopover() {
+interface NotificationsSidebarProps {
+    onOpenChange?: (open: boolean) => void;
+}
+
+export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps) {
     const { unreadCount, refreshUnreadCount, lastNotificationTrigger } = useNotification();
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -18,10 +23,16 @@ export function NotificationsPopover() {
     const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
 
+    // Notify parent of open state changes
+    const handleOpenChange = (isOpen: boolean) => {
+        setOpen(isOpen);
+        onOpenChange?.(isOpen);
+    };
+
     useEffect(() => {
         if (open) {
             setLoading(true);
-            getNotifications(0, 20).then((res) => {
+            getNotifications(0, 30).then((res) => {
                 setNotifications(res.notifications);
                 setLoading(false);
                 refreshUnreadCount();
@@ -32,9 +43,7 @@ export function NotificationsPopover() {
     const handleMarkAllRead = async () => {
         // Instant optimistic update
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-        // Trigger refresh to update bell icon immediately
         refreshUnreadCount();
-        // Then persist to backend
         await markAllNotificationsRead();
     };
 
@@ -44,77 +53,80 @@ export function NotificationsPopover() {
         refreshUnreadCount();
     };
 
-    // Check if there are any unread notifications
     const hasUnread = notifications.some(n => !n.is_read);
 
     return (
         <>
-            <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
+            <Sheet open={open} onOpenChange={handleOpenChange}>
+                <SheetTrigger asChild>
                     <div className="relative">
                         <IconButton
                             icon={Bell}
                             variant="ghost"
                             size="sm"
                             aria-label="Notifications"
+                            className={cn(
+                                "transition-all duration-150",
+                                open && "bg-slate-100 dark:bg-neutral-800 ring-2 ring-emerald-500/30"
+                            )}
                         />
                         {unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
+                            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-500" />
                         )}
                     </div>
-                </PopoverTrigger>
-                <PopoverContent
-                    className="w-72 p-0 overflow-hidden rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
-                    align="end"
-                    sideOffset={20}
-                >
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-100 dark:border-neutral-800">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">Notifications</span>
+                </SheetTrigger>
+                <SheetContent side="right" className="flex flex-col">
+                    <SheetHeader>
+                        <SheetTitle>Notifications</SheetTitle>
                         {hasUnread && (
                             <button
                                 onClick={handleMarkAllRead}
-                                className="text-[10px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                className="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                             >
                                 Mark all read
                             </button>
                         )}
-                    </div>
+                    </SheetHeader>
 
-                    {/* Content */}
-                    <div className="max-h-[320px] overflow-y-auto">
+                    {/* Scrollable content */}
+                    <div className="flex-1 overflow-y-auto">
                         {loading && notifications.length === 0 ? (
-                            <div className="p-6 text-center space-y-2">
-                                <div className="animate-pulse w-5 h-5 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
-                                <div className="animate-pulse h-2 w-16 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
+                            <div className="p-8 text-center space-y-3">
+                                <div className="animate-pulse w-6 h-6 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
+                                <div className="animate-pulse h-3 w-20 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
                             </div>
                         ) : notifications.length > 0 ? (
-                            <div className="py-1.5 px-1.5 space-y-0.5">
-                                {notifications.map(n => (
-                                    <NotificationItem
-                                        key={n.id}
-                                        notification={n}
-                                        onRead={() => handleRead(n.id)}
-                                        onWelcomeClick={() => {
-                                            setOpen(false);
-                                            setIsWelcomeOpen(true);
-                                        }}
-                                        onBadgeClick={(badgeId) => {
-                                            setOpen(false);
-                                            setSelectedBadge(badgeId);
-                                        }}
-                                    />
+                            <div className="py-2 px-2">
+                                {notifications.map((n, index) => (
+                                    <div key={n.id}>
+                                        <NotificationItem
+                                            notification={n}
+                                            onRead={() => handleRead(n.id)}
+                                            onWelcomeClick={() => {
+                                                handleOpenChange(false);
+                                                setIsWelcomeOpen(true);
+                                            }}
+                                            onBadgeClick={(badgeId) => {
+                                                handleOpenChange(false);
+                                                setSelectedBadge(badgeId);
+                                            }}
+                                        />
+                                        {/* Subtle divider between items */}
+                                        {index < notifications.length - 1 && (
+                                            <div className="mx-2 border-b border-slate-100/50 dark:border-neutral-800/30" />
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         ) : (
-                            <div className="py-8 px-4 text-center">
-                                <Bell className="w-5 h-5 mx-auto mb-1.5 text-slate-200 dark:text-neutral-700" />
-                                <p className="text-[11px] text-slate-400 dark:text-neutral-500">All caught up!</p>
+                            <div className="py-16 px-6 text-center">
+                                <Bell className="w-6 h-6 mx-auto mb-2 text-slate-200 dark:text-neutral-700" />
+                                <p className="text-xs text-slate-400 dark:text-neutral-500">All caught up!</p>
                             </div>
                         )}
                     </div>
-                </PopoverContent>
-            </Popover>
+                </SheetContent>
+            </Sheet>
 
             <WelcomeModal
                 isOpen={isWelcomeOpen}
@@ -129,4 +141,5 @@ export function NotificationsPopover() {
     );
 }
 
-export { NotificationsPopover as NotificationBell };
+// Export with both names for compatibility
+export { NotificationsSidebar as NotificationBell };
