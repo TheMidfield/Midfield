@@ -18,7 +18,6 @@ export function NotificationsPopover() {
     const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
 
-    // Fetch on open or trigger
     useEffect(() => {
         if (open) {
             setLoading(true);
@@ -56,14 +55,14 @@ export function NotificationsPopover() {
                             aria-label="Notifications"
                         />
                         {unreadCount > 0 && (
-                            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+                            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500" />
                         )}
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-80 p-0 overflow-hidden rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg"
+                    className="w-[340px] p-0 overflow-hidden rounded-lg border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-xl"
                     align="end"
-                    sideOffset={16}
+                    sideOffset={24}
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
@@ -79,14 +78,14 @@ export function NotificationsPopover() {
                     </div>
 
                     {/* Content */}
-                    <div className="max-h-[360px] overflow-y-auto">
+                    <div className="max-h-[400px] overflow-y-auto">
                         {loading && notifications.length === 0 ? (
-                            <div className="p-8 text-center space-y-2">
+                            <div className="p-8 text-center space-y-3">
                                 <div className="animate-pulse w-6 h-6 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
                                 <div className="animate-pulse h-3 w-20 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
                             </div>
                         ) : notifications.length > 0 ? (
-                            <div className="p-1.5">
+                            <div className="py-2 px-2 space-y-1">
                                 {notifications.map(n => (
                                     <NotificationItem
                                         key={n.id}

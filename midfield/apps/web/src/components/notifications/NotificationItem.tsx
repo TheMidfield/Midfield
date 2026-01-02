@@ -5,7 +5,6 @@ import { MessageSquare, Flame, Shield, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Notification } from "@/app/actions/notifications";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 
 interface NotificationItemProps {
     notification: Notification;
@@ -18,12 +17,31 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-    const baseClasses = cn(
-        "flex items-start gap-3 p-2.5 rounded-md transition-colors cursor-pointer",
-        isRead
-            ? "bg-transparent hover:bg-slate-50 dark:hover:bg-neutral-800/50"
-            : "bg-slate-50 dark:bg-neutral-800/30 hover:bg-slate-100 dark:hover:bg-neutral-800/50"
-    );
+    // Consistent card styling - no background difference for read/unread
+    const baseClasses = "flex items-start gap-3 p-3 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
+
+    // Unread indicator - blue dot for consistency
+    const UnreadDot = () => !isRead ? (
+        <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+    ) : <div className="w-2 shrink-0" />; // Spacer for alignment
+
+    // Get type-specific icon and colors
+    const getTypeIcon = () => {
+        switch (notification.type) {
+            case 'reply':
+                return { Icon: MessageSquare, bg: "bg-blue-500", color: "text-white" };
+            case 'upvote':
+                return { Icon: Flame, bg: "bg-emerald-500", color: "text-white" };
+            case 'badge_received':
+                return { Icon: Shield, bg: "bg-amber-500", color: "text-white" };
+            case 'system_welcome':
+                return { Icon: Sparkles, bg: "bg-emerald-500", color: "text-white" };
+            default:
+                return { Icon: MessageSquare, bg: "bg-slate-500", color: "text-white" };
+        }
+    };
+
+    const { Icon, bg, color } = getTypeIcon();
 
     const renderContent = () => {
         switch (notification.type) {
@@ -31,71 +49,75 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                 return (
                     <>
                         <div className="relative shrink-0">
-                            <Avatar className="w-8 h-8">
-                                <AvatarImage src={notification.actor?.avatar_url || ''} />
-                                <AvatarFallback className="text-[10px]">{notification.actor?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
-                            </Avatar>
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                                <MessageSquare className="w-2 h-2" />
+                            {/* Entity image placeholder - using a gradient for now */}
+                            <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center overflow-hidden">
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500">TAKE</span>
+                            </div>
+                            {/* Type indicator badge */}
+                            <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center", bg)}>
+                                <Icon className={cn("w-2.5 h-2.5", color)} />
                             </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
-                                <span className="font-semibold text-slate-800 dark:text-neutral-100">{notification.actor?.username}</span> replied to your take
+                            <p className="text-[13px] text-slate-700 dark:text-neutral-200 leading-snug">
+                                <span className="font-semibold">{notification.actor?.username}</span> replied to your take
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
                         </div>
+                        <UnreadDot />
                     </>
                 );
             case 'upvote':
                 return (
                     <>
                         <div className="relative shrink-0">
-                            <Avatar className="w-8 h-8">
-                                <AvatarImage src={notification.actor?.avatar_url || ''} />
-                                <AvatarFallback className="text-[10px]">{notification.actor?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
-                            </Avatar>
-                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center">
-                                <Flame className="w-2 h-2" />
+                            <div className="w-10 h-10 rounded-md bg-gradient-to-br from-slate-100 to-slate-200 dark:from-neutral-700 dark:to-neutral-800 flex items-center justify-center overflow-hidden">
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500">TAKE</span>
+                            </div>
+                            <div className={cn("absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center", bg)}>
+                                <Icon className={cn("w-2.5 h-2.5", color)} />
                             </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
-                                <span className="font-semibold text-slate-800 dark:text-neutral-100">{notification.actor?.username}</span> upvoted your take
+                            <p className="text-[13px] text-slate-700 dark:text-neutral-200 leading-snug">
+                                <span className="font-semibold">{notification.actor?.username}</span> upvoted your take
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
                         </div>
+                        <UnreadDot />
                     </>
                 );
             case 'badge_received':
                 const badgeText = notification.resource_slug
-                    ? notification.resource_slug.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                    ? notification.resource_slug.replace(/_/g, ' ').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
                     : 'New Badge';
                 return (
                     <>
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                            <Shield className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                        <div className="shrink-0 w-10 h-10 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                            <Shield className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
+                            <p className="text-[13px] text-slate-700 dark:text-neutral-200 leading-snug">
                                 You unlocked <span className="font-semibold text-amber-600 dark:text-amber-400">{badgeText}</span>
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
                         </div>
+                        <UnreadDot />
                     </>
                 );
             case 'system_welcome':
                 return (
                     <>
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                            <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                        <div className="shrink-0 w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                            <Sparkles className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-slate-800 dark:text-neutral-100">
+                            <p className="text-[13px] font-semibold text-slate-700 dark:text-neutral-200">
                                 Welcome to Midfield!
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">Let's get you started</p>
+                            <p className="text-[11px] text-slate-400 dark:text-neutral-500 mt-1">Let's get you started</p>
                         </div>
+                        <UnreadDot />
                     </>
                 );
             default:
@@ -103,16 +125,10 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
         }
     };
 
-    // Unread indicator
-    const UnreadDot = () => !isRead ? (
-        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-2.5" />
-    ) : null;
-
     if (notification.type === 'system_welcome') {
         return (
             <div onClick={() => { onRead(); onWelcomeClick(); }} className={baseClasses}>
                 {renderContent()}
-                <UnreadDot />
             </div>
         );
     }
@@ -122,7 +138,6 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
         return (
             <div onClick={() => { onRead(); onBadgeClick(badgeId); }} className={baseClasses}>
                 {renderContent()}
-                <UnreadDot />
             </div>
         );
     }
@@ -132,7 +147,6 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
     return (
         <Link href={href} onClick={onRead} className={baseClasses}>
             {renderContent()}
-            <UnreadDot />
         </Link>
     );
 }
