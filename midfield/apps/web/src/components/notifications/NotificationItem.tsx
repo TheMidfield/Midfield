@@ -51,14 +51,14 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                 <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                     {hasImage ? (
                         entity.type === 'player' ? (
-                            // Player cutout: add padding to ensure head is not cropped
-                            <div className="w-full h-full flex items-end justify-center pt-1">
+                            // Player cutout: zoom heavily on head/face with buffer at top
+                            // Using a wrapper with pt-2 for top buffer, scale-200 for face zoom
+                            <div className="w-full h-full relative overflow-hidden">
                                 <Image
                                     src={entity.imageUrl!}
                                     alt={entity.title}
-                                    width={48}
-                                    height={48}
-                                    className="w-[140%] h-auto object-contain"
+                                    fill
+                                    className="object-cover object-[center_15%] scale-[2]"
                                     unoptimized
                                 />
                             </div>
@@ -149,9 +149,16 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         }
     };
 
+    // Modal-type notifications: DO NOT close sidebar, just mark as read and open modal
     if (notification.type === 'system_welcome') {
         return (
-            <div onClick={onWelcomeClick} className={baseClasses}>
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onWelcomeClick();
+                }}
+                className={baseClasses}
+            >
                 {renderContent()}
             </div>
         );
@@ -160,12 +167,19 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
     if (notification.type === 'badge_received') {
         const badgeId = notification.resource_slug || '';
         return (
-            <div onClick={() => onBadgeClick(badgeId)} className={baseClasses}>
+            <div
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onBadgeClick(badgeId);
+                }}
+                className={baseClasses}
+            >
                 {renderContent()}
             </div>
         );
     }
 
+    // Navigation notifications: close sidebar
     const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
 
     return (

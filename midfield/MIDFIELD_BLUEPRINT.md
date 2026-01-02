@@ -269,6 +269,31 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
       - **Clubs**: Skip mobile section entirely - all info (league, stadium, founded) stays in main header
     - **Rationale**: Clubs have minimal metadata (2-3 fields). Separate mobile section adds unnecessary vertical space. Players have 6+ fields that benefit from dedicated mobile layout.
     - **Code Pattern**: Wrap mobile section with `{isPlayer && <div className="sm:hidden">...</div>}`
+22. **Notification System Architecture** (Jan 3, 2026):
+    - **Components**:
+      - `NotificationContext.tsx`: Global provider with realtime subscription + toast management
+      - `NotificationsPopover.tsx` (renamed to Sidebar): Right-edge Sheet sidebar with bell trigger
+      - `NotificationItem.tsx`: Individual notification cards with entity images
+      - `actions/notifications.ts`: Server actions for CRUD + entity enrichment
+    - **Realtime**: Supabase Postgres Changes (`INSERT` on `notifications` table, filtered by `recipient_id`)
+      - **CRITICAL**: Must enable "Enable Realtime" checkbox on `notifications` table in Supabase Dashboard
+    - **UI Architecture**:
+      - **Desktop**: 340px fixed-width right sidebar, slide-from-right animation
+      - **Mobile**: Full-width bottom sheet, slide-from-bottom animation, "Close" text button
+      - **Overlay**: Custom non-Radix overlay (`bg-black/60`) below navbar (z-30) for dimming without blocking navbar (z-50)
+      - **modal={false}**: Required on Sheet to keep navbar interactive
+    - **Entity Images**:
+      - Players: Heavy zoom (`scale-[2] object-[center_15%]`) for face-focused cutout with head buffer
+      - Clubs/Leagues: Standard `object-contain p-1` for badges/logos
+    - **Blue Dot Indicators**: 
+      - Bell icon: Shows when `unreadCount > 0` (from context)
+      - Individual items: Shows when `is_read === false` (optimistic update on click)
+    - **Performance**:
+      - Fetch limit: `30` notifications per open (no full history load)
+      - Optimistic updates: UI updates immediately, backend confirms async
+      - useRef for Supabase client to prevent multiple instances
+    - **Security**: All queries filter by `recipient_id = user.id` (RLS + explicit filter)
+    - **Modal Exceptions**: `system_welcome` and `badge_received` use `e.stopPropagation()` to keep sidebar open
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
