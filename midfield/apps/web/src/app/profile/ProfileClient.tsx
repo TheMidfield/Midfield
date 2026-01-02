@@ -710,8 +710,27 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </p>
                 </Card>
 
+                {/* My Takes Card - Side by side with Bookmarks */}
+                <Card className="col-span-6 sm:col-span-3" style={{ padding: 0, overflow: 'hidden' }}>
+                    <a
+                        href="/profile/takes"
+                        className="flex items-center justify-between p-4 h-full hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center border border-emerald-100 dark:border-emerald-900/50">
+                                <MessageSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">My Takes</p>
+                                <p className="text-xs text-slate-500 dark:text-neutral-400">View your post history</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-300 dark:text-neutral-600 group-hover:text-emerald-500 transition-colors" />
+                    </a>
+                </Card>
+
                 {/* Bookmarks Card */}
-                <Card className="col-span-6" style={{ padding: 0, overflow: 'hidden' }}>
+                <Card className="col-span-6 sm:col-span-3" style={{ padding: 0, overflow: 'hidden' }}>
                     <a
                         href="/profile/bookmarks"
                         className="flex items-center justify-between p-4 h-full hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"

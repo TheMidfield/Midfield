@@ -321,3 +321,60 @@ export async function getBookmarkedPosts() {
     // Extract post data
     return data.map((b: any) => b.posts).filter(Boolean);
 }
+
+/**
+ * Get all takes (root posts) created by current user
+ */
+export async function getUserPosts() {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) return [];
+
+    const { data, error } = await supabase
+        .from('posts')
+        .select(`
+            id,
+            content,
+            created_at,
+            author_id,
+            topic_id,
+            reply_count,
+            reaction_count,
+            author:author_id (
+                username,
+                avatar_url,
+                favorite_club:favorite_club_id (
+                    title,
+                    metadata
+                )
+            )
+        `)
+        .eq('author_id', user.id)
+        .is('reply_to_post_id', null) // Only root takes, not replies
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error("Error fetching user posts:", error);
+        return [];
+    }
+
+    // Enrich with user reaction (though it's their own post, they might have reacted?)
+    // Actually standard getTakes logic usually enriches. Let's do it for consistency.
+    if (data && data.length > 0) {
+        const { data: reactions } = await supabase
+            .from('reactions')
+            .select('post_id, reaction_type')
+            .eq('user_id', user.id)
+            .in('post_id', data.map((p: any) => p.id));
+
+        if (reactions) {
+            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
+            data.forEach((p: any) => {
+                (p as any).userReaction = reactionMap.get(p.id) || null;
+            });
+        }
+    }
+
+    return data;
+}
