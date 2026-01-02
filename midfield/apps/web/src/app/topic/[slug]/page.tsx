@@ -86,8 +86,15 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     };
 }
 
-export default async function TopicPage({ params }: { params: { slug: string } }) {
+export default async function TopicPage({
+    params,
+    searchParams
+}: {
+    params: { slug: string };
+    searchParams: { post?: string };
+}) {
     const { slug } = await params;
+    const { post: postId } = await searchParams;
     const topic = await cachedGetTopicBySlug(slug);
 
     if (!topic) {
@@ -267,6 +274,7 @@ export default async function TopicPage({ params }: { params: { slug: string } }
             }}
             leagueSlug={leagueSlug}
             voteData={voteData}
+            highlightPostId={postId}
         />
     );
 }

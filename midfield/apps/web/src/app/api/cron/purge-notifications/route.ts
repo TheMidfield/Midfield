@@ -4,11 +4,19 @@ import { createClient } from '@supabase/supabase-js';
 // Scheduled job to purge notifications older than 30 days
 // Trigger: Supabase pg_cron or external cron service
 export async function POST(request: NextRequest) {
-    // Verify cron secret
+    // Verify cron secret OR service role key (for internal Supabase crons)
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    if (!authHeader) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const isValid = (cronSecret && token === cronSecret) || (serviceKey && token === serviceKey);
+
+    if (!isValid) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

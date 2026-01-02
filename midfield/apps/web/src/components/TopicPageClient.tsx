@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { TakeComposer } from "@/components/TakeComposer";
 import { TakeFeed } from "@/components/TakeFeed";
+import { ThreadView } from "@/components/ThreadView";
 import { EntityHeader } from "@/components/EntityHeader";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -38,6 +39,7 @@ interface TopicPageClientProps {
         downvoteCount: number;
         userVote: 'upvote' | 'downvote' | null;
     };
+    highlightPostId?: string;
 }
 
 const positionOrder = ["Goalkeepers", "Defenders", "Midfielders", "Forwards", "Other", "Staff"];
@@ -57,11 +59,14 @@ const getPositionPriority = (pos: string): number => {
     return positionBadgePriority[info.abbr] || 50;
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug, voteData }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug, voteData, highlightPostId }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
     const metadata = topic.metadata as any;
+
+    // Thread view mode (when coming from notification)
+    const [threadViewMode, setThreadViewMode] = useState(!!highlightPostId);
 
     // Check if this is a manager/coach (stored as player type but with manager position)
     const isManager = isPlayer && (metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach'));
@@ -790,18 +795,32 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                         onSuccess={handlePostSuccess}
                     />
 
-                    <TakeFeed
-                        initialPosts={posts}
-                        topicId={topic.id}
-                        topicTitle={topic.title}
-                        topicImageUrl={isClub ? metadata?.badge_url : metadata?.photo_url}
-                        topicType={topic.type}
-                        currentUser={currentUser}
-                        onAddPostRef={addPostRef}
-                        clubName={clubData.clubName}
-                        clubBadgeUrl={clubData.clubBadgeUrl}
-                        topicPosition={isClub ? metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') : metadata?.position}
-                    />
+                    {threadViewMode && highlightPostId ? (
+                        <ThreadView
+                            postId={highlightPostId}
+                            topicTitle={topic.title}
+                            topicImageUrl={isClub ? metadata?.badge_url : metadata?.photo_url}
+                            topicType={topic.type}
+                            currentUser={currentUser}
+                            clubName={clubData.clubName}
+                            clubBadgeUrl={clubData.clubBadgeUrl}
+                            topicPosition={isClub ? metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') : metadata?.position}
+                            onBackToAll={() => setThreadViewMode(false)}
+                        />
+                    ) : (
+                        <TakeFeed
+                            initialPosts={posts}
+                            topicId={topic.id}
+                            topicTitle={topic.title}
+                            topicImageUrl={isClub ? metadata?.badge_url : metadata?.photo_url}
+                            topicType={topic.type}
+                            currentUser={currentUser}
+                            onAddPostRef={addPostRef}
+                            clubName={clubData.clubName}
+                            clubBadgeUrl={clubData.clubBadgeUrl}
+                            topicPosition={isClub ? metadata?.league?.replace(/^(English|Spanish|Italian|German|French)\s/, '') : metadata?.position}
+                        />
+                    )}
                 </main>
             </div >
         </div >

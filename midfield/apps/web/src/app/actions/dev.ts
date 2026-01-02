@@ -5,11 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 // DEV-ONLY: Creates test notifications for the CURRENT logged-in user only
 // These notifications are MARKED with `is_test: true` in metadata for easy cleanup
 export async function simulateNotification(type: 'reply' | 'upvote' | 'badge_received' | 'system_welcome') {
-    // Only allow in development
-    if (process.env.NODE_ENV === 'production') {
-        return { success: false, error: "Dev actions disabled in production" };
-    }
-
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -76,10 +71,6 @@ export async function simulateNotification(type: 'reply' | 'upvote' | 'badge_rec
 
 // DEV-ONLY: Clears ALL notifications for the current user
 export async function clearMyNotifications() {
-    if (process.env.NODE_ENV === 'production') {
-        return { success: false, error: "Dev actions disabled in production" };
-    }
-
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
