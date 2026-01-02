@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, Bell } from "lucide-react";
 
 export interface ToastProps {
     message: string | null;
-    type: 'success' | 'error';
+    type: 'success' | 'error' | 'notification';
     duration?: number;
     onClose?: () => void;
 }
@@ -13,18 +13,16 @@ export interface ToastProps {
 export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
     const [visible, setVisible] = useState(false);
     const [currentMessage, setCurrentMessage] = useState<string | null>(null);
-    const [currentType, setCurrentType] = useState<'success' | 'error'>('success');
+    const [currentType, setCurrentType] = useState<'success' | 'error' | 'notification'>('success');
 
     useEffect(() => {
         if (message) {
-            // On enter: update content immediately, then animate in
             setCurrentMessage(message);
             setCurrentType(type);
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => setVisible(true));
             });
 
-            // Auto-dismiss
             const timer = setTimeout(() => {
                 setVisible(false);
                 if (onClose) onClose();
@@ -32,12 +30,10 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
 
             return () => clearTimeout(timer);
         } else {
-            // On exit: animate out
             setVisible(false);
         }
     }, [message, type, duration, onClose]);
 
-    // Clear content after exit animation completes
     useEffect(() => {
         if (!visible && !message && currentMessage) {
             const timer = setTimeout(() => setCurrentMessage(null), 300);
@@ -45,10 +41,29 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
         }
     }, [visible, message, currentMessage]);
 
-    // Don't render if no content
     if (!currentMessage) return null;
 
     const isSuccess = currentType === 'success';
+    const isNotification = currentType === 'notification';
+    const isError = currentType === 'error';
+
+    const getBorderColor = () => {
+        if (isNotification) return 'border-blue-500/50 dark:border-blue-700';
+        if (isSuccess) return 'border-emerald-500/50 dark:border-emerald-700';
+        return 'border-red-500/50 dark:border-red-700';
+    };
+
+    const getIconBgColor = () => {
+        if (isNotification) return 'bg-blue-100 dark:bg-blue-900/50';
+        if (isSuccess) return 'bg-emerald-100 dark:bg-emerald-900/50';
+        return 'bg-red-100 dark:bg-red-900/50';
+    };
+
+    const renderIcon = () => {
+        if (isNotification) return <Bell className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />;
+        if (isSuccess) return <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />;
+        return <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />;
+    };
 
     return (
         <div
@@ -68,13 +83,13 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 pointerEvents: visible ? 'auto' : 'none',
             }}
-            className={`bg-white dark:bg-neutral-900 border-2 ${isSuccess ? 'border-emerald-500/50 dark:border-emerald-700' : 'border-red-500/50 dark:border-red-700'}`}
+            className={`bg-white dark:bg-neutral-900 border-2 ${getBorderColor()}`}
         >
             <div
                 style={{ width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                className={isSuccess ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50'}
+                className={getIconBgColor()}
             >
-                {isSuccess ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <X className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />}
+                {renderIcon()}
             </div>
             <p className="text-sm font-bold text-slate-700 dark:text-neutral-200" style={{ whiteSpace: 'nowrap' }}>{currentMessage}</p>
         </div>

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Bell, X } from "lucide-react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/Sheet";
 import { IconButton } from "@/components/ui/IconButton";
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type Notification } from "@/app/actions/notifications";
@@ -14,6 +13,20 @@ import { cn } from "@/lib/utils";
 
 interface NotificationsSidebarProps {
     onOpenChange?: (open: boolean) => void;
+}
+
+// Skeleton component for loading state
+function NotificationSkeleton() {
+    return (
+        <div className="flex items-center gap-3 p-3 sm:p-2.5 animate-pulse">
+            <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800" />
+            <div className="flex-1 space-y-2">
+                <div className="h-3 w-32 bg-slate-100 dark:bg-neutral-800 rounded" />
+                <div className="h-2 w-20 bg-slate-100 dark:bg-neutral-800 rounded" />
+            </div>
+            <div className="w-1.5 h-1.5 rounded-full bg-slate-100 dark:bg-neutral-800" />
+        </div>
+    );
 }
 
 export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps) {
@@ -34,7 +47,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     // Lock body scroll on mobile when open
     useEffect(() => {
         if (open) {
-            // Only on mobile (use media query check)
             const isMobile = window.matchMedia('(max-width: 639px)').matches;
             if (isMobile) {
                 document.body.style.overflow = 'hidden';
@@ -107,7 +119,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                     Mark all read
                                 </button>
                             )}
-                            {/* Close button - visible on both mobile and desktop, on the right */}
                             <SheetClose asChild>
                                 <button className="rounded-md p-1.5 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer">
                                     <X className="h-5 w-5 sm:h-4 sm:w-4" />
@@ -118,10 +129,12 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
                     {/* Scrollable content */}
                     <div className="flex-1 overflow-y-auto overscroll-contain">
-                        {loading && notifications.length === 0 ? (
-                            <div className="p-8 text-center space-y-3">
-                                <div className="animate-pulse w-6 h-6 rounded-full bg-slate-100 dark:bg-neutral-800 mx-auto" />
-                                <div className="animate-pulse h-3 w-20 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
+                        {loading ? (
+                            <div className="py-2 px-2">
+                                <NotificationSkeleton />
+                                <NotificationSkeleton />
+                                <NotificationSkeleton />
+                                <NotificationSkeleton />
                             </div>
                         ) : notifications.length > 0 ? (
                             <div className="py-2 px-2 sm:px-2">
@@ -132,12 +145,10 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                         onRead={() => handleRead(n.id)}
                                         onNavigate={closeSidebar}
                                         onWelcomeClick={() => {
-                                            // Keep sidebar open for modals
                                             handleRead(n.id);
                                             setIsWelcomeOpen(true);
                                         }}
                                         onBadgeClick={(badgeId) => {
-                                            // Keep sidebar open for badges
                                             handleRead(n.id);
                                             setSelectedBadge(badgeId);
                                         }}

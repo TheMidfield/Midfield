@@ -19,7 +19,6 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-    // Mobile: larger touch targets. Desktop: compact
     const baseClasses = "flex items-center gap-3 p-3 sm:p-2.5 rounded-md transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-neutral-800/50 active:bg-slate-200 dark:active:bg-neutral-700/50";
 
     const UnreadDot = () => !isRead ? (
@@ -49,7 +48,6 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
 
         return (
             <div className="relative shrink-0">
-                {/* Mobile: larger. Desktop: compact */}
                 <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                     {hasImage ? (
                         <Image
@@ -58,9 +56,10 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                             width={48}
                             height={48}
                             className={cn(
-                                // Player cutout: proper head framing like PlayerCards
+                                // Player cutout: scale up and position to show head with space above
+                                // Using object-[center_20%] to move the focus point down, leaving space for head top
                                 entity.type === 'player'
-                                    ? "object-cover object-top scale-[2.5] translate-y-3"
+                                    ? "w-full h-full object-cover object-[center_20%] scale-150"
                                     : "object-contain p-1"
                             )}
                             unoptimized
@@ -142,7 +141,6 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         }
     };
 
-    // Modal-type notifications: keep sidebar open
     if (notification.type === 'system_welcome') {
         return (
             <div onClick={onWelcomeClick} className={baseClasses}>
@@ -160,7 +158,6 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         );
     }
 
-    // Navigation notifications: close sidebar
     const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
 
     return (

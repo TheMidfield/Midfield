@@ -17,7 +17,7 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export function NotificationProvider({ children }: { children: ReactNode }) {
     const [unreadCount, setUnreadCount] = useState(0);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [toastType, setToastType] = useState<'success' | 'error'>('success');
+    const [toastType, setToastType] = useState<'success' | 'error' | 'notification'>('notification');
     const [lastNotificationTrigger, setLastNotificationTrigger] = useState(0);
 
     // Use ref to avoid recreating supabase client on each render
@@ -70,7 +70,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                             await refreshUnreadCount();
                             refreshNotifications();
                             setToastMessage("You have new notifications");
-                            setToastType('success');
+                            setToastType('notification');
                         }
                     )
                     .subscribe((status, err) => {
