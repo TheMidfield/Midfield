@@ -151,7 +151,7 @@ export function Navbar() {
                                     <span>Dev</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
+                            <DropdownMenuContent align="end" sideOffset={8} className="w-56">
                                 <DropdownMenuItem asChild>
                                     <Link href="/design-system" className="cursor-pointer">Design System</Link>
                                 </DropdownMenuItem>
@@ -251,6 +251,25 @@ export function Navbar() {
                         <MobileNavLink href="/leagues" icon={Trophy} active={isActive("/leagues")} onClick={() => setIsMobileMenuOpen(false)}>Leagues</MobileNavLink>
                         <div className="my-3 border-t border-slate-200 dark:border-neutral-800" />
                         <MobileNavLink href="/design-system" icon={Terminal} active={isActive("/design-system")} onClick={() => setIsMobileMenuOpen(false)}>Showcase</MobileNavLink>
+
+                        {/* Mobile Dev Tools */}
+                        <div className="px-4 py-2">
+                            <p className="text-xs font-semibold text-slate-500 dark:text-neutral-500 uppercase tracking-wider mb-2">Dev Tools</p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button variant="outline" size="sm" onClick={() => handleDevAction('system_welcome')} className="text-xs h-8 justify-start">
+                                    Simulate Welcome
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => handleDevAction('reply')} className="text-xs h-8 justify-start">
+                                    Simulate Reply
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => handleDevAction('upvote')} className="text-xs h-8 justify-start">
+                                    Simulate Upvote
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => handleDevAction('badge_received')} className="text-xs h-8 justify-start">
+                                    Simulate Badge
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
