@@ -11,7 +11,7 @@ export function SearchResults() {
     return (
         <div className="w-full animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8 gap-4">
+            <div className="flex items-center justify-between mb-4 gap-4">
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-2">
                         <div className="w-7 h-7 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-center">
@@ -28,15 +28,23 @@ export function SearchResults() {
                 </div>
                 <button
                     onClick={closeSearch}
-                    className="w-9 h-9 rounded-md border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 dark:text-neutral-500 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all active:scale-90 lg:active:scale-100 shrink-0"
+                    className="flex flex-col items-center gap-1 group shrink-0 cursor-pointer"
                     aria-label="Close search"
                 >
-                    <X className="w-4 h-4" />
+                    <div className="w-9 h-9 rounded-md border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 dark:text-neutral-500 group-hover:border-emerald-500 dark:group-hover:border-emerald-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:bg-slate-50 dark:group-hover:bg-neutral-800 transition-all active:scale-90 lg:active:scale-100">
+                        <X className="w-4 h-4" />
+                    </div>
+                    <span className="text-[10px] font-medium text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                        Close
+                    </span>
                 </button>
             </div>
 
+            {/* Divider */}
+            <div className="border-t border-slate-200 dark:border-neutral-800 mb-6" />
+
             {/* Filters */}
-            <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2">
+            <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                 <Button
                     variant="outline"
                     size="sm"
@@ -68,7 +76,7 @@ export function SearchResults() {
 
             {/* Content */}
             {isLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {[...Array(8)].map((_, i) => (
                         <div key={i} className="rounded-md border border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 animate-pulse">
                             {/* Avatar skeleton */}
@@ -88,7 +96,7 @@ export function SearchResults() {
                     ))}
                 </div>
             ) : results.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {results.map((topic) => (
                         <TopicCard key={topic.id} topic={topic} />
                     ))}
