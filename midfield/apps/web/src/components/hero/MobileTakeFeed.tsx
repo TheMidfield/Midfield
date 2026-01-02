@@ -41,6 +41,7 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
                                     sizes="16px"
                                     className={isClub ? 'object-contain' : PLAYER_IMAGE_STYLE.className}
                                     {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
+                                    unoptimized={true}
                                 />
                             ) : (
                                 <div className="w-full h-full bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
@@ -48,7 +49,7 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
                                 </div>
                             )}
                         </div>
-                        <span className="text-xs font-semibold text-slate-800 dark:text-neutral-200 truncate">
+                        <span className="text-xs font-semibold text-slate-800 dark:text-neutral-200 truncate group-active:text-emerald-600 dark:group-active:text-emerald-400 transition-colors">
                             {take.topic.title}
                         </span>
                     </div>

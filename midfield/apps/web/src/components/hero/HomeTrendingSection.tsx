@@ -66,7 +66,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
 
             {/* Title + Badges */}
             <div className="flex-1 min-w-0">
-                <div className="font-bold text-[15px] sm:text-base text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate mb-0.5">
+                <div className="font-bold text-[15px] sm:text-base text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-active:text-emerald-600 dark:group-active:text-emerald-400 transition-colors truncate mb-0.5">
                     {item.title}
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -93,7 +93,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
 
             {/* Take count - End of row */}
             {item.takeCount > 0 && (
-                <div className="flex items-center gap-1.5 pr-4 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors shrink-0 ml-auto">
+                <div className="flex items-center gap-1.5 pr-4 text-slate-400 dark:text-neutral-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400 group-active:text-emerald-600 dark:group-active:text-emerald-400 transition-colors shrink-0 ml-auto">
                     <MessageSquare className="w-3.5 h-3.5" />
                     <span className="text-xs font-medium tabular-nums">{item.takeCount}</span>
                 </div>

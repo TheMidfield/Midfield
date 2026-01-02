@@ -60,7 +60,7 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-                <h3 className="text-sm sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-sm sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-active:text-emerald-600 dark:group-active:text-emerald-400 transition-colors">
                     {entity.displayName}
                 </h3>
                 <div className="flex items-center gap-1.5 flex-wrap">

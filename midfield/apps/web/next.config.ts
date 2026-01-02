@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
             bodySizeLimit: '5mb', // Increase from 1mb default to support image uploads
         },
     },
+    compiler: {
+        removeConsole: process.env.NODE_ENV === "production"
+    },
     images: {
         remotePatterns: [
             {
