@@ -197,16 +197,25 @@ export async function updateLivescores(supabase: SupabaseClient, apiClient: TheS
 function normalizeStatus(apiStatus: string | null): 'NS' | 'LIVE' | 'HT' | 'FT' | 'PST' | 'ABD' {
     if (!apiStatus) return 'NS';
 
-    // Exact matches
     const s = apiStatus.toLowerCase();
-    if (s === 'match finished' || s === 'finished' || s === 'ft' || s === 'aet' || s === 'pen') return 'FT';
-    if (s === 'not started' || s === 'ns' || s === 'time to be defined') return 'NS';
-    if (s === 'postponed' || s === 'cancelled') return 'PST';
-    if (s === 'abandoned' || s === 'suspended') return 'ABD';
-    if (s === 'ht' || s === 'halftime' || s === 'break') return 'HT';
 
-    // Live indicators (1H, 2H, ET, etc.)
-    // If it's none of the above but has content, assume it's live or a specific live minute
+    // Check for finished states (must come before live detection)
+    if (s.includes('finished') || s === 'ft' || s === 'aet' || s === 'pen' || s === 'after extra time' || s === 'after penalties') return 'FT';
+
+    // Check for not started
+    if (s.includes('not started') || s === 'ns' || s === 'time to be defined' || s === 'tbd') return 'NS';
+
+    // Check for postponed/cancelled (must come before generic live fallback)
+    if (s.includes('postponed') || s.includes('cancelled') || s.includes('canceled')) return 'PST';
+
+    // Check for abandoned/suspended
+    if (s.includes('abandoned') || s.includes('suspended') || s.includes('interrupted')) return 'ABD';
+
+    // Check for halftime
+    if (s === 'ht' || s.includes('halftime') || s.includes('half time') || s === 'break') return 'HT';
+
+    // Live indicators (1H, 2H, ET, minute numbers, etc.)
+    // If it's none of the above but has content, assume it's live
     return 'LIVE';
 }
 
