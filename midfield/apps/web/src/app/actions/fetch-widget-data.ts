@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getTopicsByType, getClubAbbreviation } from "@midfield/logic/src/topics";
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 import { cache } from 'react';
 
 export type WidgetEntity = {
@@ -496,8 +497,8 @@ const getCachedSimilarTopics = unstable_cache(
                 });
             });
 
-            // 2. Same league clubs
-            if (league) {
+            // 2. Same league clubs (FILTERED to only allowed leagues)
+            if (league && ALLOWED_LEAGUES.includes(league)) {
                 const leagueClubs = await getClubsByLeague(league);
                 const rivals = leagueClubs.filter(c => c.id !== topic.id && !addedIds.has(c.id));
 
@@ -514,7 +515,7 @@ const getCachedSimilarTopics = unstable_cache(
                     });
                 });
 
-                // 3. Cross-league clubs - get all clubs from other leagues
+                // 3. Cross-league clubs - ONLY from allowed leagues
                 const { data: otherClubs } = await supabase
                     .from('topics')
                     .select('id, title, slug, type, metadata')
@@ -523,7 +524,11 @@ const getCachedSimilarTopics = unstable_cache(
                     .not('metadata->>league', 'eq', league)
                     .limit(20);
 
-                const crossLeague = (otherClubs || []).filter(c => !addedIds.has(c.id));
+                // Filter to only clubs from ALLOWED_LEAGUES
+                const crossLeague = (otherClubs || []).filter(c => {
+                    const clubLeague = (c.metadata as any)?.league;
+                    return !addedIds.has(c.id) && clubLeague && ALLOWED_LEAGUES.includes(clubLeague);
+                });
 
                 shuffleArray(crossLeague).slice(0, 2).forEach(c => {
                     addResult({

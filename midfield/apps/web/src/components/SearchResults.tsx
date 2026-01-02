@@ -11,30 +11,27 @@ export function SearchResults() {
     return (
         <div className="w-full animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8 gap-4 py-2 border-b border-slate-100 dark:border-neutral-800">
+            <div className="flex items-center justify-between mb-8 gap-4">
                 <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
-                            <Search className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-7 h-7 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-center">
+                            <Search className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-500">Search Results</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">Search Results</span>
                     </div>
                     <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-neutral-100 truncate">
                         {query}
                     </h2>
-                    <p className="text-slate-500 dark:text-neutral-400 text-xs font-medium mt-0.5">
-                        Found {results.length} matches
+                    <p className="text-slate-500 dark:text-neutral-400 text-sm mt-1">
+                        {results.length} {results.length === 1 ? 'match' : 'matches'} found
                     </p>
                 </div>
                 <button
                     onClick={closeSearch}
-                    className="flex flex-col items-center gap-1 group shrink-0 active:scale-90 lg:active:scale-100 transition-all"
+                    className="w-9 h-9 rounded-md border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 dark:text-neutral-500 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all active:scale-90 lg:active:scale-100 shrink-0"
                     aria-label="Close search"
                 >
-                    <div className="w-10 h-10 rounded-full border-2 border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 dark:text-neutral-500 group-hover:border-emerald-500 dark:group-hover:border-emerald-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                        <X className="w-5 h-5" />
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 hidden sm:inline">ESC</span>
+                    <X className="w-4 h-4" />
                 </button>
             </div>
 

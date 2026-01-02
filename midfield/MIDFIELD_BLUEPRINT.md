@@ -1,6 +1,12 @@
-# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.8)
+# ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.9)
 
 <!--
+UPDATE LOG (Jan 2, 2026):
+- **Mobile-Only Click Feedback Protocol**: Implemented `active:scale-[value] lg:active:scale-100` pattern across entire codebase to disable click animations on desktop while preserving tactile mobile feedback.
+- **Widget Spacing Standards**: TrendingWidget spacing optimized - increased container padding (px-2 → px-3), reduced internal gap (gap-3 → gap-2) for better visual hierarchy.
+- **Smart Collapsible Defaults**: Player topic pages now conditionally open "About" section when FC26 ratings unavailable, preventing empty default states.
+- **Take Counter Accuracy**: Fixed post_count SQL migration to include both parent posts AND replies for accurate take counts across all topic cards.
+
 UPDATE LOG (Jan 1, 2026):
 - **Sentiment Protocol**: Standardized subtle Slate-400 vote counts, conditional visibility (>0), and hero section clean-revert.
 - **Type Safety & RPC**: Standardized batch vote fetching via RPC and documented `as any` escape hatches for excessively deep TS instantiation.
@@ -219,6 +225,38 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
         - SOLUTION: Use `createSupabaseClient` (direct from `@supabase/supabase-js`) with `process.env` keys inside the cached function scope.
       - **JSONB Indexing**: Filters on metadata fields (e.g., `metadata->>league`) MUST have a corresponding GIN/Expression index to prevent full table scans.
       - **Pagination**: Use standard offset/limit pagination for large datasets. Fixed limits (e.g., 2000) are banned for core data fetchers to prevent silent data loss.
+16. **Mobile-Only Click Feedback Protocol** (Critical - Jan 2, 2026):
+    - **Pattern**: ALL `active:scale-*` effects MUST include `lg:active:scale-100` to disable on desktop.
+      - ✅ CORRECT: `active:scale-95 lg:active:scale-100`
+      - ❌ WRONG: `active:scale-95` (applies to all screen sizes)
+    - **Rationale**: Mobile users need tactile feedback for touch interactions. Desktop users with precise mouse cursors do not need scale animations and find them unprofessional.
+    - **Scope**: Applied universally across 10+ components (Navbar, TakeCard, EntityHeader, ReactionBar, MatchCenterWidget, etc.).
+    - **Base Components**: UI primitives (Button, IconButton, Card) are pre-configured with this pattern.
+17. **Widget Spacing Standards** (Jan 2, 2026):
+    - **TrendingWidget**: 
+      - Container padding: `px-3` (increased from `px-2`) to prevent ranking numbers/take counts from touching borders.
+      - Internal gap: `gap-2` (reduced from `gap-3`) to tighten rank-to-player spacing for better visual grouping.
+    - **General Principle**: Elements near container edges need breathing room. Internal element groups should be visually cohesive.
+18. **Smart Collapsible Defaults** (Jan 2, 2026):
+    - **Player Pages**: Topic collapsible sections MUST check for data availability before choosing default open state.
+      - If `topic.fc26_data?.overall` exists: Default to `["ratings"]`
+      - If ratings unavailable: Default to `["about"]` (prevents empty default state)
+    - **Implementation**: `TopicPageClient.tsx` line 71-76 uses conditional logic: `hasFC26Ratings ? ["ratings"] : ["about"]`
+19. **Take Counter Accuracy** (Jan 2, 2026):
+    - **Rule**: `topics.post_count` MUST include both parent posts AND replies for accurate take display.
+    - **SQL Pattern** (Migration `20240107000000_fix_topic_post_counts.sql`):
+      ```sql
+      SELECT COUNT(*)
+      FROM posts p
+      LEFT JOIN posts parent ON p.parent_post_id = parent.id
+      WHERE (
+          (p.topic_id = t.id AND p.parent_post_id IS NULL)  -- Parent posts
+          OR
+          (parent.topic_id = t.id AND p.parent_post_id IS NOT NULL)  -- Replies
+      )
+      AND p.is_deleted = false
+      ```
+    - **Rationale**: Users expect "Takes" to reflect total conversation volume (parent + replies), not just top-level posts.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
