@@ -28,13 +28,11 @@ export function SearchResults() {
                 </div>
                 <button
                     onClick={closeSearch}
-                    className="flex flex-col items-center gap-1 group shrink-0 cursor-pointer"
+                    className="flex items-center gap-2 h-9 px-3 rounded-md border border-slate-200 dark:border-neutral-700 text-slate-400 dark:text-neutral-500 hover:border-emerald-500 dark:hover:border-emerald-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all active:scale-90 lg:active:scale-100 shrink-0 cursor-pointer"
                     aria-label="Close search"
                 >
-                    <div className="w-9 h-9 rounded-md border border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 dark:text-neutral-500 group-hover:border-emerald-500 dark:group-hover:border-emerald-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:bg-slate-50 dark:group-hover:bg-neutral-800 transition-all active:scale-90 lg:active:scale-100">
-                        <X className="w-4 h-4" />
-                    </div>
-                    <span className="text-[10px] font-medium text-slate-400 dark:text-neutral-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    <X className="w-4 h-4" />
+                    <span className="text-xs font-medium">
                         Close
                     </span>
                 </button>

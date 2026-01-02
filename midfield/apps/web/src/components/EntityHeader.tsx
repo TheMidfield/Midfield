@@ -536,9 +536,9 @@ export function EntityHeader({
                         </div>
                     </div>
 
-                    {/* Row 4: Stats (Mobile Only Section) */}
-                    <div className="sm:hidden border-t border-slate-100 dark:border-neutral-800/50 bg-slate-50/50 dark:bg-white/[0.02]">
-                        {isPlayer && (
+                    {/* Row 4: Stats (Mobile Only Section) - Players Only */}
+                    {isPlayer && (
+                        <div className="sm:hidden border-t border-slate-100 dark:border-neutral-800/50 bg-slate-50/50 dark:bg-white/[0.02]">
                             <div className="flex flex-wrap items-center gap-x-6 sm:gap-x-8 gap-y-2 px-4 py-2.5">
                                 {metadata?.nationality && (
                                     <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
@@ -583,24 +583,8 @@ export function EntityHeader({
                                     </div>
                                 )}
                             </div>
-                        )}
-                        {isClub && (
-                            <div className="flex flex-wrap items-center gap-x-6 sm:gap-x-8 gap-y-2 px-4 py-2.5">
-                                {metadata?.stadium && (
-                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
-                                        <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
-                                        <span>{metadata.stadium}</span>
-                                    </div>
-                                )}
-                                {metadata?.founded && (
-                                    <div className="flex items-center gap-1.5 font-semibold text-slate-500 dark:text-neutral-400 text-[11px] shrink-0">
-                                        <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-neutral-500" />
-                                        <span>Est. {metadata.founded}</span>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     {/* Footer - Opaque background to block watermark */}
                     <div className="relative z-20 bg-white dark:bg-neutral-900 px-4 sm:px-5 md:px-6 py-2.5 sm:py-3 md:py-3.5 border-t-2 border-slate-200 dark:border-neutral-800 flex items-center justify-between">
