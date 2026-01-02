@@ -53,6 +53,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
                         alt={item.title}
                         fill
                         sizes="40px"
+                        unoptimized={true}
                         className={isPlayer ? '' : 'object-contain'}
                         {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
                     />
