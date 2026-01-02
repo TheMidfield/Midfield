@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Bell, X } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { Bell, X, Loader2 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/Sheet";
 import { IconButton } from "@/components/ui/IconButton";
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type Notification } from "@/app/actions/notifications";
@@ -33,12 +33,21 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     const [open, setOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(false);
+    const [offset, setOffset] = useState(0);
     const [isWelcomeOpen, setIsWelcomeOpen] = useState(false);
     const [selectedBadge, setSelectedBadge] = useState<string | null>(null);
+
+    const LIMIT = 15;
 
     const handleOpenChange = (isOpen: boolean) => {
         setOpen(isOpen);
         onOpenChange?.(isOpen);
+        if (!isOpen) {
+            // Reset pagination when closing
+            setOffset(0);
+        }
     };
 
     const closeSidebar = () => handleOpenChange(false);
@@ -60,13 +69,27 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     useEffect(() => {
         if (open) {
             setLoading(true);
-            getNotifications(0, 30).then((res) => {
+            setOffset(0);
+            getNotifications(0, LIMIT).then((res) => {
                 setNotifications(res.notifications);
+                setHasMore(res.hasMore);
                 setLoading(false);
                 refreshUnreadCount();
             });
         }
     }, [open, lastNotificationTrigger, refreshUnreadCount]);
+
+    const loadMore = useCallback(async () => {
+        if (loadingMore || !hasMore) return;
+
+        setLoadingMore(true);
+        const newOffset = offset + LIMIT;
+        const res = await getNotifications(newOffset, LIMIT);
+        setNotifications(prev => [...prev, ...res.notifications]);
+        setHasMore(res.hasMore);
+        setOffset(newOffset);
+        setLoadingMore(false);
+    }, [loadingMore, hasMore, offset]);
 
     const handleMarkAllRead = async () => {
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
@@ -84,7 +107,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     return (
         <>
-            {/* modal={false} allows navbar to remain interactive */}
             <Sheet open={open} onOpenChange={handleOpenChange} modal={false}>
                 <SheetTrigger asChild>
                     <div className="relative">
@@ -118,7 +140,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                     Mark all read
                                 </button>
                             )}
-                            {/* Close button with text on mobile */}
                             <SheetClose asChild>
                                 <button className="flex items-center gap-1.5 rounded-md px-2 py-1.5 sm:p-1.5 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 active:bg-slate-200 dark:active:bg-neutral-700 cursor-pointer">
                                     <span className="text-xs font-medium sm:hidden">Close</span>
@@ -155,6 +176,24 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                         }}
                                     />
                                 ))}
+
+                                {/* Load more button */}
+                                {hasMore && (
+                                    <button
+                                        onClick={loadMore}
+                                        disabled={loadingMore}
+                                        className="w-full py-3 mt-2 text-[12px] font-medium text-slate-400 dark:text-neutral-500 hover:text-slate-600 dark:hover:text-neutral-300 transition-colors cursor-pointer flex items-center justify-center gap-2"
+                                    >
+                                        {loadingMore ? (
+                                            <>
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                Loading...
+                                            </>
+                                        ) : (
+                                            'Load more'
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             <div className="py-16 px-6 text-center">

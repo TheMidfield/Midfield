@@ -51,14 +51,15 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                 <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                     {hasImage ? (
                         entity.type === 'player' ? (
-                            // Player cutout: zoom heavily on head/face with buffer at top
-                            // Using a wrapper with pt-2 for top buffer, scale-200 for face zoom
-                            <div className="w-full h-full relative overflow-hidden">
+                            // Player cutout: zoom on face with buffer at top
+                            // pt-1 gives top buffer, items-end pushes image down
+                            <div className="w-full h-full flex items-end justify-center pt-1 overflow-hidden">
                                 <Image
                                     src={entity.imageUrl!}
                                     alt={entity.title}
-                                    fill
-                                    className="object-cover object-[center_15%] scale-[2]"
+                                    width={80}
+                                    height={80}
+                                    className="w-[180%] h-auto object-contain"
                                     unoptimized
                                 />
                             </div>
@@ -149,7 +150,7 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         }
     };
 
-    // Modal-type notifications: DO NOT close sidebar, just mark as read and open modal
+    // Modal-type notifications: DO NOT close sidebar
     if (notification.type === 'system_welcome') {
         return (
             <div
@@ -179,8 +180,12 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         );
     }
 
-    // Navigation notifications: close sidebar
-    const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
+    // Navigation notifications: go to the post directly with highlight
+    // resource_id contains the post ID, resource_slug contains the topic slug
+    const postId = notification.resource_id;
+    const href = notification.resource_slug
+        ? `/topic/${notification.resource_slug}${postId ? `?post=${postId}` : ''}`
+        : '#';
 
     return (
         <Link

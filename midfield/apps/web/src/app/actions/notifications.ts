@@ -9,14 +9,13 @@ export interface Notification {
     type: NotificationType;
     is_read: boolean;
     created_at: string;
-    resource_id?: string;
-    resource_slug?: string;
+    resource_id?: string;      // The post ID for reply/upvote notifications
+    resource_slug?: string;    // The topic slug
     actor?: {
         username: string;
         avatar_url: string | null;
     } | null;
     badge_id?: string;
-    // Entity data for reply/upvote notifications
     entity?: {
         title: string;
         type: 'player' | 'club' | 'league';
@@ -26,12 +25,13 @@ export interface Notification {
 
 /**
  * Get paginated notifications for the current user
+ * Only fetches recent notifications (limit enforced for performance)
  */
-export async function getNotifications(offset: number = 0, limit: number = 20) {
+export async function getNotifications(offset: number = 0, limit: number = 15) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return { notifications: [], count: 0 };
+    if (!user) return { notifications: [], count: 0, hasMore: false };
 
     const { data, count, error } = await supabase
         .from('notifications')
@@ -48,7 +48,7 @@ export async function getNotifications(offset: number = 0, limit: number = 20) {
 
     if (error) {
         console.error('Error fetching notifications:', error);
-        return { notifications: [], count: 0 };
+        return { notifications: [], count: 0, hasMore: false };
     }
 
     // Enrich notifications with entity data
@@ -75,7 +75,6 @@ export async function getNotifications(offset: number = 0, limit: number = 20) {
 
             if (topic) {
                 const metadata = topic.metadata as any;
-                // Get appropriate image based on entity type
                 let imageUrl: string | null = null;
                 if (topic.type === 'player') {
                     imageUrl = metadata?.photo_url || null;
@@ -99,7 +98,9 @@ export async function getNotifications(offset: number = 0, limit: number = 20) {
         return n;
     }));
 
-    return { notifications, count: count || 0 };
+    const hasMore = (count || 0) > offset + limit;
+
+    return { notifications, count: count || 0, hasMore };
 }
 
 /**
@@ -155,4 +156,27 @@ export async function markAllNotificationsRead() {
         .eq('is_read', false);
 
     return { success: !error };
+}
+
+/**
+ * Delete old notifications (>30 days)
+ * Called by scheduled job
+ */
+export async function purgeOldNotifications() {
+    const supabase = await createClient();
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .lt('created_at', thirtyDaysAgo.toISOString());
+
+    if (error) {
+        console.error('Error purging old notifications:', error);
+        return { success: false };
+    }
+
+    return { success: true };
 }
