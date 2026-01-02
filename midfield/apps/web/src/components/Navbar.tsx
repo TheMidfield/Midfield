@@ -174,9 +174,7 @@ export function Navbar() {
                         </DropdownMenu>
 
                         <div className="flex items-center gap-1">
-                            <div className={`transition-opacity duration-150 ${isNotificationOpen ? 'opacity-50' : 'opacity-100'}`}>
-                                <ThemeToggle />
-                            </div>
+                            <ThemeToggle />
                             {isAuthenticated && !isLoading && (
                                 <NotificationBell onOpenChange={setIsNotificationOpen} />
                             )}
@@ -184,7 +182,7 @@ export function Navbar() {
 
                         {!isLoading ? (
                             isAuthenticated ? (
-                                <div className={`flex items-center ml-2 transition-opacity duration-150 ${isNotificationOpen ? 'opacity-50' : 'opacity-100'}`}>
+                                <div className="flex items-center ml-2">
                                     <Link href="/profile" className="active:scale-95 lg:active:scale-100 transition-transform">
                                         {userAvatar ? (
                                             <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">

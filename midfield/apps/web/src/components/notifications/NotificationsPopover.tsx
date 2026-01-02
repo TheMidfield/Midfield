@@ -28,6 +28,9 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
         onOpenChange?.(isOpen);
     };
 
+    // Close sidebar helper
+    const closeSidebar = () => handleOpenChange(false);
+
     useEffect(() => {
         if (open) {
             setLoading(true);
@@ -74,7 +77,7 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                     </div>
                 </SheetTrigger>
                 <SheetContent side="right" className="flex flex-col">
-                    {/* Header with close button */}
+                    {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
                         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
                             Notifications
@@ -110,12 +113,13 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                         key={n.id}
                                         notification={n}
                                         onRead={() => handleRead(n.id)}
+                                        onNavigate={closeSidebar}
                                         onWelcomeClick={() => {
-                                            handleOpenChange(false);
+                                            closeSidebar();
                                             setIsWelcomeOpen(true);
                                         }}
                                         onBadgeClick={(badgeId) => {
-                                            handleOpenChange(false);
+                                            closeSidebar();
                                             setSelectedBadge(badgeId);
                                         }}
                                     />

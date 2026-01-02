@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Flame, Shield, Sparkles, User } from "lucide-react";
+import { MessageSquare, Heart, Shield, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Notification } from "@/app/actions/notifications";
@@ -10,28 +10,28 @@ import { cn } from "@/lib/utils";
 interface NotificationItemProps {
     notification: Notification;
     onRead: () => void;
+    onNavigate: () => void;
     onWelcomeClick: () => void;
     onBadgeClick: (badgeId: string) => void;
 }
 
-export function NotificationItem({ notification, onRead, onWelcomeClick, onBadgeClick }: NotificationItemProps) {
+export function NotificationItem({ notification, onRead, onNavigate, onWelcomeClick, onBadgeClick }: NotificationItemProps) {
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
     const baseClasses = "flex items-center gap-2.5 p-2.5 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
 
-    // Unread indicator - blue dot, vertically centered with items-center
     const UnreadDot = () => !isRead ? (
         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
     ) : <div className="w-1.5 shrink-0" />;
 
-    // Get type-specific icon - all same color for cohesion
+    // Get type-specific icon
     const getTypeIcon = () => {
         switch (notification.type) {
             case 'reply':
                 return MessageSquare;
             case 'upvote':
-                return Flame;
+                return Heart; // Reaction icon
             case 'badge_received':
                 return Shield;
             case 'system_welcome':
@@ -96,7 +96,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
                         <EntityImage />
                         <div className="flex-1 min-w-0">
                             <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
-                                <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> upvoted your take
+                                <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> reacted to your take
                             </p>
                             <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
@@ -161,7 +161,11 @@ export function NotificationItem({ notification, onRead, onWelcomeClick, onBadge
     const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
 
     return (
-        <Link href={href} onClick={onRead} className={baseClasses}>
+        <Link
+            href={href}
+            onClick={() => { onRead(); onNavigate(); }}
+            className={baseClasses}
+        >
             {renderContent()}
         </Link>
     );

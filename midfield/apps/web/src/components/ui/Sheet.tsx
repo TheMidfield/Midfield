@@ -16,10 +16,11 @@ const SheetOverlay = React.forwardRef<
     <DialogPrimitive.Overlay
         ref={ref}
         className={cn(
-            // z-30 so it sits BELOW navbar (z-50)
-            "fixed inset-x-0 bottom-0 z-30 bg-black/40",
-            // Start exactly at navbar bottom - no gap
-            "top-[71px]",
+            // Position: below navbar, to the left of sidebar
+            "fixed z-30 bg-black/40",
+            "top-[72px] left-0 bottom-0",
+            // Right edge stops before sidebar (320px = w-[340px])
+            "right-[340px]",
             "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             className
         )}
@@ -30,24 +31,27 @@ SheetOverlay.displayName = "SheetOverlay"
 
 interface SheetContentProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
     side?: "right" | "left"
-    hideCloseButton?: boolean
 }
 
 const SheetContent = React.forwardRef<
     React.ElementRef<typeof DialogPrimitive.Content>,
     SheetContentProps
->(({ className, children, side = "right", hideCloseButton = false, ...props }, ref) => (
+>(({ className, children, side = "right", ...props }, ref) => (
     <SheetPortal>
         <SheetOverlay />
         <DialogPrimitive.Content
             ref={ref}
             className={cn(
-                // z-40 so content is above overlay but below navbar
+                // z-40 above overlay
                 "fixed z-40 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
-                // Start exactly at navbar bottom
-                "top-[71px] bottom-0",
+                // Position below navbar
+                "top-[72px] bottom-0",
                 side === "right" && [
-                    "right-0 w-80",
+                    // Width adjusted: bell is roughly 70px from right edge, so ~140px from center
+                    // If bell is at right-0, and we want it centered: sidebar width = 2 * (bell center to right edge)
+                    // Bell button is ~36px wide, at right edge with ~12px gap = ~30px center from right
+                    // For visual centering, w-[340px] with bell at ~170px from left edge of sidebar
+                    "right-0 w-[340px]",
                     "border-l border-slate-200 dark:border-neutral-800",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
                     "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
