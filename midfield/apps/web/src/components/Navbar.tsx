@@ -176,7 +176,7 @@ export function Navbar() {
 
                         {!isLoading ? (
                             isAuthenticated ? (
-                                <div className="flex items-center gap-2 sm:gap-3">
+                                <div className="flex items-center gap-1">
                                     <NotificationBell />
                                     <Link href="/profile" className="active:scale-95 lg:active:scale-100 transition-transform">
                                         {userAvatar ? (

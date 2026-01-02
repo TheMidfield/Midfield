@@ -4,39 +4,46 @@ import { formatDistanceToNow } from "date-fns";
 import { MessageSquare, Flame, Shield, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Notification } from "@/app/actions/notifications";
-import { cn } from "@/lib/utils"; // Assuming utils exists, or use clsx/tailwind-merge directly if not
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 
 interface NotificationItemProps {
     notification: Notification;
     onRead: () => void;
     onWelcomeClick: () => void;
+    onBadgeClick: (badgeId: string) => void;
 }
 
-export function NotificationItem({ notification, onRead, onWelcomeClick }: NotificationItemProps) {
+export function NotificationItem({ notification, onRead, onWelcomeClick, onBadgeClick }: NotificationItemProps) {
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-    // Determine content based on type
+    const baseClasses = cn(
+        "flex items-start gap-3 p-2.5 rounded-md transition-colors cursor-pointer",
+        isRead
+            ? "bg-transparent hover:bg-slate-50 dark:hover:bg-neutral-800/50"
+            : "bg-slate-50 dark:bg-neutral-800/30 hover:bg-slate-100 dark:hover:bg-neutral-800/50"
+    );
+
     const renderContent = () => {
         switch (notification.type) {
             case 'reply':
                 return (
                     <>
                         <div className="relative shrink-0">
-                            <Avatar className="w-9 h-9 border border-slate-200 dark:border-neutral-700">
+                            <Avatar className="w-8 h-8">
                                 <AvatarImage src={notification.actor?.avatar_url || ''} />
-                                <AvatarFallback>{notification.actor?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                                <AvatarFallback className="text-[10px]">{notification.actor?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
                             </Avatar>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-blue-500 text-white flex items-center justify-center border-2 border-white dark:border-neutral-900">
-                                <MessageSquare className="w-2.5 h-2.5" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                                <MessageSquare className="w-2 h-2" />
                             </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm text-slate-800 dark:text-neutral-200">
-                                <span className="font-semibold text-slate-900 dark:text-white">{notification.actor?.username}</span> replied to your take
+                            <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
+                                <span className="font-semibold text-slate-800 dark:text-neutral-100">{notification.actor?.username}</span> replied to your take
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                     </>
                 );
@@ -44,19 +51,19 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
                 return (
                     <>
                         <div className="relative shrink-0">
-                            <Avatar className="w-9 h-9 border border-slate-200 dark:border-neutral-700">
+                            <Avatar className="w-8 h-8">
                                 <AvatarImage src={notification.actor?.avatar_url || ''} />
-                                <AvatarFallback>{notification.actor?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
+                                <AvatarFallback className="text-[10px]">{notification.actor?.username?.[0]?.toUpperCase() || '?'}</AvatarFallback>
                             </Avatar>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center border-2 border-white dark:border-neutral-900">
-                                <Flame className="w-2.5 h-2.5" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+                                <Flame className="w-2 h-2" />
                             </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm text-slate-800 dark:text-neutral-200">
-                                <span className="font-semibold text-slate-900 dark:text-white">{notification.actor?.username}</span> upvoted your take
+                            <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
+                                <span className="font-semibold text-slate-800 dark:text-neutral-100">{notification.actor?.username}</span> upvoted your take
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                     </>
                 );
@@ -66,28 +73,28 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
                     : 'New Badge';
                 return (
                     <>
-                        <div className="relative shrink-0 w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center border border-amber-200 dark:border-amber-800">
-                            <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
+                            <Shield className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm text-slate-800 dark:text-neutral-200">
-                                You unlocked the <span className="font-bold text-amber-600 dark:text-amber-400">{badgeText}</span> badge!
+                            <p className="text-xs text-slate-600 dark:text-neutral-300 leading-relaxed">
+                                You unlocked <span className="font-semibold text-amber-600 dark:text-amber-400">{badgeText}</span>
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                     </>
                 );
             case 'system_welcome':
                 return (
                     <>
-                        <div className="relative shrink-0 w-9 h-9 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center border border-emerald-200 dark:border-emerald-800">
-                            <Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
+                            <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            <p className="text-xs font-semibold text-slate-800 dark:text-neutral-100">
                                 Welcome to Midfield!
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-400 mt-1">Let's get you started.</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">Let's get you started</p>
                         </div>
                     </>
                 );
@@ -96,43 +103,36 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
         }
     };
 
-    // Wrapper Logic
+    // Unread indicator
+    const UnreadDot = () => !isRead ? (
+        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-2.5" />
+    ) : null;
+
     if (notification.type === 'system_welcome') {
         return (
-            <div
-                onClick={() => { onRead(); onWelcomeClick(); }}
-                className={cn(
-                    "flex items-start gap-3 p-3 transition-colors cursor-pointer border-b border-slate-50 dark:border-neutral-800/50 last:border-0",
-                    isRead ? "bg-white hover:bg-slate-50 dark:bg-neutral-900 dark:hover:bg-neutral-800" : "bg-emerald-50/30 hover:bg-emerald-50/50 dark:bg-emerald-900/5 dark:hover:bg-emerald-900/10"
-                )}
-            >
+            <div onClick={() => { onRead(); onWelcomeClick(); }} className={baseClasses}>
                 {renderContent()}
-                {!isRead && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                )}
+                <UnreadDot />
             </div>
         );
     }
 
-    const href = notification.type === 'badge_received'
-        ? `/profile`
-        : notification.resource_slug
-            ? `/topic/${notification.resource_slug}`
-            : '#';
+    if (notification.type === 'badge_received') {
+        const badgeId = notification.resource_slug || '';
+        return (
+            <div onClick={() => { onRead(); onBadgeClick(badgeId); }} className={baseClasses}>
+                {renderContent()}
+                <UnreadDot />
+            </div>
+        );
+    }
+
+    const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
 
     return (
-        <Link
-            href={href}
-            onClick={onRead}
-            className={cn(
-                "flex items-start gap-3 p-3 transition-colors border-b border-slate-50 dark:border-neutral-800/50 last:border-0",
-                isRead ? "bg-white hover:bg-slate-50 dark:bg-neutral-900 dark:hover:bg-neutral-800" : "bg-emerald-50/30 hover:bg-emerald-50/50 dark:bg-emerald-900/5 dark:hover:bg-emerald-900/10"
-            )}
-        >
+        <Link href={href} onClick={onRead} className={baseClasses}>
             {renderContent()}
-            {!isRead && (
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-            )}
+            <UnreadDot />
         </Link>
     );
 }
