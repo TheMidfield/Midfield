@@ -36,7 +36,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
                             <p className="text-sm text-slate-800 dark:text-neutral-200">
                                 <span className="font-semibold text-slate-900 dark:text-white">{notification.actor?.username}</span> replied to your take
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
                         </div>
                     </>
                 );
@@ -56,7 +56,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
                             <p className="text-sm text-slate-800 dark:text-neutral-200">
                                 <span className="font-semibold text-slate-900 dark:text-white">{notification.actor?.username}</span> upvoted your take
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
                         </div>
                     </>
                 );
@@ -73,7 +73,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
                             <p className="text-sm text-slate-800 dark:text-neutral-200">
                                 You unlocked the <span className="font-bold text-amber-600 dark:text-amber-400">{badgeText}</span> badge!
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-1">{timeAgo}</p>
                         </div>
                     </>
                 );
@@ -87,7 +87,7 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
                             <p className="text-sm font-semibold text-slate-900 dark:text-white">
                                 Welcome to Midfield!
                             </p>
-                            <p className="text-xs text-slate-500 dark:text-neutral-400 mt-0.5">Let's get you started.</p>
+                            <p className="text-[10px] text-slate-400 dark:text-neutral-400 mt-1">Let's get you started.</p>
                         </div>
                     </>
                 );
@@ -102,26 +102,22 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
             <div
                 onClick={() => { onRead(); onWelcomeClick(); }}
                 className={cn(
-                    "flex items-start gap-3 p-3 rounded-lg transition-colors cursor-pointer",
-                    isRead ? "bg-transparent hover:bg-slate-50 dark:hover:bg-neutral-800" : "bg-emerald-50/50 dark:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                    "flex items-start gap-3 p-3 transition-colors cursor-pointer border-b border-slate-50 dark:border-neutral-800/50 last:border-0",
+                    isRead ? "bg-white hover:bg-slate-50 dark:bg-neutral-900 dark:hover:bg-neutral-800" : "bg-emerald-50/30 hover:bg-emerald-50/50 dark:bg-emerald-900/5 dark:hover:bg-emerald-900/10"
                 )}
             >
                 {renderContent()}
                 {!isRead && (
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 )}
             </div>
         );
     }
 
-    // For Badge, where do we go? Profile -> Badges (bookmarks page is closest?) or just stay here?
-    // Let's go to Profile for now.
-    // For Reply/Upvote -> Topic page + resource ID if possible (scrolling).
-    // Post Link: /topic/[slug] (we might need post ID anchor #post-id)
     const href = notification.type === 'badge_received'
         ? `/profile`
         : notification.resource_slug
-            ? `/topic/${notification.resource_slug}` // Ideally #post-id but resource_id is the Post ID
+            ? `/topic/${notification.resource_slug}`
             : '#';
 
     return (
@@ -129,13 +125,13 @@ export function NotificationItem({ notification, onRead, onWelcomeClick }: Notif
             href={href}
             onClick={onRead}
             className={cn(
-                "flex items-start gap-3 p-3 rounded-lg transition-colors",
-                isRead ? "bg-transparent hover:bg-slate-50 dark:hover:bg-neutral-800" : "bg-emerald-50/50 dark:bg-emerald-900/10 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                "flex items-start gap-3 p-3 transition-colors border-b border-slate-50 dark:border-neutral-800/50 last:border-0",
+                isRead ? "bg-white hover:bg-slate-50 dark:bg-neutral-900 dark:hover:bg-neutral-800" : "bg-emerald-50/30 hover:bg-emerald-50/50 dark:bg-emerald-900/5 dark:hover:bg-emerald-900/10"
             )}
         >
             {renderContent()}
             {!isRead && (
-                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
             )}
         </Link>
     );

@@ -49,61 +49,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                     schema: 'public',
                     table: 'notifications',
                 },
-                async (payload) => {
-                    // Update unread count immediately (optimistic +1 or fetch)
-                    // Let's fetch to be accurate
+                async () => {
+                    // Update unread count immediately
                     await refreshUnreadCount();
                     refreshNotifications();
 
-                    // Handle Toast
-                    // We need to fetch details to show a nice message
-                    const newNotif = payload.new as any;
-
-                    try {
-                        // We fetch just the single new item to get actor/badge details
-                        // Alternatively, assume it's the latest one and fetch top 1
-
-                        let message = "You have a new notification";
-
-                        if (newNotif.type === 'system_welcome') {
-                            message = "✨ Welcome to Midfield!";
-                        } else if (newNotif.type === 'badge_received') {
-                            // Uses the resource_slug we patched into the trigger!
-                            const badgeName = newNotif.resource_slug
-                                ? newNotif.resource_slug.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
-                                : 'New Badge';
-                            message = `🏆 Unlocked: ${badgeName}!`;
-                        } else if (newNotif.type === 'reply') {
-                            // For reply/upvote we need actor name. 
-                            // Fetch via server action or simple client query
-                            const { data: actor } = await supabase
-                                .from('users')
-                                .select('username')
-                                .eq('id', newNotif.actor_id)
-                                .single();
-
-                            const actorName = actor?.username || 'Someone';
-                            message = `💬 ${actorName} replied to your take`;
-                        } else if (newNotif.type === 'upvote') {
-                            const { data: actor } = await supabase
-                                .from('users')
-                                .select('username')
-                                .eq('id', newNotif.actor_id)
-                                .single();
-
-                            const actorName = actor?.username || 'Someone';
-                            message = `🔥 ${actorName} upvoted your take`;
-                        }
-
-                        setToastMessage(message);
-                        setToastType('success');
-
-                        // Play sound? (Maybe later)
-
-                    } catch (e) {
-                        console.error("Error processing notification toast", e);
-                        setToastMessage("You have a new notification");
-                    }
+                    // Simple, reliable toast message
+                    setToastMessage("You have new notifications");
+                    setToastType('success');
                 }
             )
             .subscribe();

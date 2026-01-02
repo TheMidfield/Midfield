@@ -59,32 +59,27 @@ export function NotificationsPopover() {
                         >
                             <Bell className={cn(
                                 "w-4 h-4 transition-colors", // Icon size match
-                                unreadCount > 0 && "animate-bell-shake text-slate-900 dark:text-neutral-100",
-                                !unreadCount && "text-slate-500 dark:text-neutral-400"
+                                unreadCount > 0 ? "text-slate-900 dark:text-neutral-100" : "text-slate-500 dark:text-neutral-400"
                             )} />
                             {unreadCount > 0 && (
-                                <span className="absolute top-2 right-2 flex h-2.5 w-2.5 translate-x-1/2 -translate-y-1/2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-neutral-950"></span>
+                                <span className="absolute top-2 right-2 flex h-2 w-2 translate-x-1/2 -translate-y-1/2">
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500 border-2 border-white dark:border-neutral-950"></span>
                                 </span>
                             )}
                         </Button>
                     </div>
                 </PopoverTrigger>
-                <PopoverContent className="w-[380px] p-0 overflow-hidden" align="end" sideOffset={8}>
+                <PopoverContent className="w-80 p-0 overflow-hidden border-slate-200 dark:border-neutral-800 shadow-xl mt-2" align="end" sideOffset={8}>
                     {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800 bg-slate-50/50 dark:bg-neutral-900/50 backdrop-blur-sm">
-                        <h4 className="font-display font-semibold text-sm">Notifications</h4>
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 border-none">
+                        <h4 className="font-display font-medium text-xs uppercase tracking-wider text-slate-500 dark:text-neutral-500">Notifications</h4>
                         {notifications.some(n => !n.is_read) && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
+                            <button
                                 onClick={handleMarkAllRead}
-                                className="h-6 px-2 text-[10px] text-slate-500 hover:text-emerald-600"
+                                className="text-[10px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
                             >
-                                <CheckCheck className="w-3 h-3 mr-1" />
                                 Mark all read
-                            </Button>
+                            </button>
                         )}
                     </div>
 
