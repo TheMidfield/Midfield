@@ -32,7 +32,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
     return (
         <Link
             href={`/topic/${item.slug}`}
-            className="flex items-center gap-1.5 pl-6 pr-2 py-2 sm:py-2.5 rounded-md bg-slate-50 dark:bg-neutral-800/50 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-[0.96] lg:active:scale-100 cursor-pointer mb-2 last:mb-0"
+            className="group flex items-center gap-1.5 pl-6 pr-2 py-1.5 sm:py-2 rounded-md bg-slate-50 dark:bg-neutral-800/50 border border-slate-200 dark:border-neutral-800 hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/10 hover:shadow-sm transition-all active:scale-[0.96] lg:active:scale-100 cursor-pointer mb-2 last:mb-0"
         >
             {/* Rank - Top 3 highlighted */}
             <span className={`text-sm font-bold w-6 tabular-nums shrink-0 ${item.rank <= 3
@@ -43,22 +43,22 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
             </span>
 
             {/* Entity Image */}
-            <div className={`relative shrink-0 flex items-center justify-center ${isPlayer
-                ? 'w-10 h-10 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border border-slate-200 dark:border-neutral-700'
-                : 'w-10 h-10'
+            <div className={`relative shrink-0 flex items-center justify-center border transition-colors ${isPlayer
+                ? 'w-11 h-11 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border-slate-200 dark:border-neutral-700'
+                : 'w-11 h-11 bg-slate-50 dark:bg-neutral-800/50 rounded-md p-1.5 border-slate-200 dark:border-neutral-700 group-hover:border-slate-300 dark:group-hover:border-neutral-600'
                 }`}>
                 {item.imageUrl ? (
                     <NextImage
                         src={item.imageUrl}
                         alt={item.title}
                         fill
-                        sizes="40px"
+                        sizes="48px"
                         unoptimized={true}
-                        className={isPlayer ? '' : 'object-contain'}
+                        className={isPlayer ? '' : 'object-contain p-0.5'}
                         {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
                     />
                 ) : (
-                    <div className="w-full h-full bg-slate-200 dark:bg-neutral-700 rounded-full flex items-center justify-center">
+                    <div className="w-full h-full flex items-center justify-center">
                         <span className="text-xs font-bold text-slate-400 dark:text-neutral-500">#</span>
                     </div>
                 )}
@@ -66,7 +66,7 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
 
             {/* Title + Badges */}
             <div className="flex-1 min-w-0">
-                <div className="font-bold text-sm text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate mb-1">
+                <div className="font-bold text-[15px] sm:text-base text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors truncate mb-0.5">
                     {item.title}
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -128,24 +128,24 @@ export function HomeTrendingRows() {
 
     return (
         <div className="space-y-0">
-                {loading ? (
-                    <>
-                        <SkeletonItem />
-                        <SkeletonItem />
-                        <SkeletonItem />
-                        <SkeletonItem />
-                        <SkeletonItem />
-                        <SkeletonItem />
-                    </>
-                ) : trending && trending.length > 0 ? (
-                    trending.map((item) => (
-                        <TrendingItemRow key={item.id} item={item} />
-                    ))
-                ) : (
-                    <div className="text-center py-8 text-sm text-slate-500 dark:text-neutral-500">
-                        No trending topics yet
-                    </div>
-                )}
-            </div>
+            {loading ? (
+                <>
+                    <SkeletonItem />
+                    <SkeletonItem />
+                    <SkeletonItem />
+                    <SkeletonItem />
+                    <SkeletonItem />
+                    <SkeletonItem />
+                </>
+            ) : trending && trending.length > 0 ? (
+                trending.map((item) => (
+                    <TrendingItemRow key={item.id} item={item} />
+                ))
+            ) : (
+                <div className="text-center py-8 text-sm text-slate-500 dark:text-neutral-500">
+                    No trending topics yet
+                </div>
+            )}
+        </div>
     );
 }

@@ -639,27 +639,46 @@ const UEFA_CLUB_RANKINGS: Record<string, number> = {
     'west-ham-united': 24,
     'west-ham': 24,
     'juventus': 25,
+    'ac-milan': 15,
+    'milan': 15,
+    'napoli': 16,
+    'lazio': 25,
+    'monaco': 20,
+    'as-monaco': 20,
+    'lyon': 23,
+    'olympique-lyonnais': 23,
+    'marseille': 24,
+    'olympique-de-marseille': 24,
+    'lille': 25,
+    'losc-lille': 25,
+    'aston-villa': 26,
+    'newcastle': 27,
+    'newcastle-united': 27,
+    'brighton': 28,
+    'brighton-hove-albion': 28,
+    'rb-leipzig': 18,
+    'stuttgart': 30
 };
 
 // League prestige rankings - REBALANCED for diversity
 const LEAGUE_PRESTIGE: Record<string, number> = {
-    'english-premier-league': 5,
-    'premier-league': 5,
-    'la-liga': 5,  // Increased from 4
-    'spanish-la-liga': 5,  // Increased from 4
-    'serie-a': 5,  // Increased from 4
-    'italian-serie-a': 5,  // Increased from 4 (was 'italian-serie-a-4332')
-    'italian-serie-a-4332': 5,  // Support both slug formats
-    'spanish-la-liga-4335': 5,  // Support both slug formats
-    'french-ligue-1-4334': 4,  // Support both slug formats
-    'bundesliga': 4,  // Increased from 3
-    'german-bundesliga': 4,  // Increased from 3
-    'ligue-1': 4,  // Increased from 3
-    'french-ligue-1': 4,  // Increased from 3
-    'champions-league': 6,
-    'uefa-champions-league': 6,
-    'europa-league': 4,
-    'uefa-europa-league': 4,
+    'english-premier-league': 6, // Highest Tier
+    'premier-league': 6,
+    'la-liga': 5,  // Tier 2
+    'spanish-la-liga': 5,
+    'serie-a': 5,  // Tier 2
+    'italian-serie-a': 5,
+    'italian-serie-a-4332': 5,
+    'spanish-la-liga-4335': 5,
+    'french-ligue-1-4334': 4, // Tier 3
+    'bundesliga': 5,  // Tier 2 (Assumed)
+    'german-bundesliga': 5,
+    'ligue-1': 4,
+    'french-ligue-1': 4,
+    'champions-league': 7, // PINNACLE
+    'uefa-champions-league': 7,
+    'europa-league': 5, // Solid
+    'uefa-europa-league': 5,
 };
 
 export type MatchCenterFixture = {
@@ -747,7 +766,7 @@ const getCachedMatchCenterData = unstable_cache(
             .gte('date', threeDaysAgo.toISOString()) // Include last 3 days
             .lte('date', weekAhead.toISOString())
             .order('date', { ascending: true })
-            .limit(30); // REDUCED from 150 for bandwidth optimization
+            .limit(150); // Increased to ensure quality matches aren't cut off by chrono sort
 
         if (error || !fixtures?.length) {
             return [];
@@ -773,45 +792,80 @@ const getCachedMatchCenterData = unstable_cache(
 
             let importance = 0;
 
-            // 1. UEFA Rankings factor (0-30 points) - REDUCED from 40
-            const homeUefa = UEFA_CLUB_RANKINGS[homeTeam.slug] || 50;
-            const awayUefa = UEFA_CLUB_RANKINGS[awayTeam.slug] || 50;
-            const avgUefa = (homeUefa + awayUefa) / 2;
-            if (avgUefa <= 15) {
-                importance += Math.max(0, 30 - avgUefa);
-            } else if (avgUefa <= 30) {
-                importance += Math.max(0, 20 - (avgUefa - 15));
-            } else {
-                importance += Math.max(0, 8 - (avgUefa - 30) / 2);
-            }
+            // Helper to clean slug (remove ID suffix)
+            const cleanSlug = (s: string) => s.replace(/-\d+$/, '');
 
-            // 2. League prestige (0-25 points) - SAME weight as before
-            const leaguePrestige = LEAGUE_PRESTIGE[competition.slug] || 1;
+            // 1. UEFA Rankings factor (0-30 points) - REDUCED from 40
+            const homeSlug = cleanSlug(homeTeam.slug);
+            const awaySlug = cleanSlug(awayTeam.slug);
+
+            const homeUefa = UEFA_CLUB_RANKINGS[homeSlug] || UEFA_CLUB_RANKINGS[homeTeam.slug] || 50;
+            const awayUefa = UEFA_CLUB_RANKINGS[awaySlug] || UEFA_CLUB_RANKINGS[awayTeam.slug] || 50;
+            const avgUefa = (homeUefa + awayUefa) / 2;
+
+            // 1. Star Power (Best Team Rank)
+            // Reward matches that feature at least one giant, even if it's a mismatch
+            const bestUefaRank = Math.min(homeUefa, awayUefa);
+            if (bestUefaRank <= 10) importance += 20;      // Super Giant (Real, City, Arsenal...)
+            else if (bestUefaRank <= 20) importance += 12; // Top Tier (Roma, Monaco...)
+            else if (bestUefaRank <= 30) importance += 6;  // Solid Tier
+
+            // 2. Match Quality (Avg Rank)
+            // Rewards clashes between two good teams (Roma vs Atalanta)
+            if (avgUefa <= 20) importance += 10;
+            else if (avgUefa <= 40) importance += 5;
+
+            // 3. League Prestige (20-30 pts)
+            const leagueSlug = cleanSlug(competition.slug);
+            const leaguePrestige = LEAGUE_PRESTIGE[competition.slug] || LEAGUE_PRESTIGE[leagueSlug] || 1;
             importance += leaguePrestige * 5;
 
-            // 3. League standings proximity (0-20 points)
+            // 4. Standings Relevance (Context)
             const homeStanding = standingsMap.get(homeTeam.id);
             const awayStanding = standingsMap.get(awayTeam.id);
-            if (homeStanding && awayStanding && homeStanding.leagueId === awayStanding.leagueId) {
-                const posDiff = Math.abs(homeStanding.rank - awayStanding.rank);
-                importance += Math.max(0, 20 - posDiff * 2);
 
-                // Title race bonus: both teams in top 4
-                if (homeStanding.rank <= 4 && awayStanding.rank <= 4) {
+            if (homeStanding && awayStanding && homeStanding.leagueId === awayStanding.leagueId) {
+                // Proximity Bonus (Are they close in table?)
+                const posDiff = Math.abs(homeStanding.rank - awayStanding.rank);
+                let proximityBonus = Math.max(0, 15 - posDiff * 2);
+
+                // SCALE by Position: Top of table clashes matter more than mid-table
+                // 1st place -> 1.0 multiplier
+                // 10th place -> 0.5 multiplier
+                // 20th place -> 0.0 multiplier
+                const bestLeagueRank = Math.min(homeStanding.rank, awayStanding.rank);
+                const tableRelevance = Math.max(0, (20 - bestLeagueRank) / 20); // 0.0 to 1.0
+
+                importance += (proximityBonus * tableRelevance);
+
+                // Title Race / Top 4 Bonus (Hard points)
+                if (homeStanding.rank <= 5 && awayStanding.rank <= 5) {
                     importance += 10;
+                }
+            } else {
+                // Continental Bonus
+                if (leagueSlug.includes('champions') || leagueSlug.includes('europa') || leagueSlug.includes('cup')) {
+                    importance += 15;
                 }
             }
 
-            // 4. Big match bonus: two top 10 UEFA teams
-            const isBigMatch = homeUefa <= 10 && awayUefa <= 10;
-            if (isBigMatch) {
-                importance += 15;
-            }
+            // 5. Explicit "Big Match" Override
+            // If two Top 15 teams play, ensure it's high
+            if (homeUefa <= 15 && awayUefa <= 15) importance += 10;
 
-            // 5. Time factor: matches sooner are slightly more relevant
+            // 6. Time Factor (Recency Bias) - EXTREME UPDATE (v8)
+            // Goal: "Match Center" must be TODAY/TOMORROW.
+            // Arsenal vs Liverpool (next week) should NOT beat Como vs Udinese (Today).
             const hoursUntil = (new Date(f.date).getTime() - now) / (1000 * 60 * 60);
-            if (hoursUntil <= 48) {
-                importance += 5;
+
+            if (hoursUntil <= 24) {
+                importance += 40; // EXTREME boost for Today.
+            } else if (hoursUntil <= 48) {
+                importance += 20; // Big boost for Tomorrow.
+            } else if (hoursUntil > 96) {
+                importance -= 50; // Next week? You better be El Clasico or you're invisible.
+            } else {
+                importance -= 30; // 3-4 days away? Big penalty.
             }
 
             return {
@@ -870,7 +924,7 @@ const getCachedMatchCenterData = unstable_cache(
 
         return sorted;
     },
-    ['match-center-data'], // Base key
+    ['match-center-data-v8'], // Base key
     { revalidate: 300 } // 5 minutes cache
 );
 

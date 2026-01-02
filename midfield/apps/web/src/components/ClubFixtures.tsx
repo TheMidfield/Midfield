@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from "react";
 import NextImage from "next/image";
 import Link from "next/link";
 import { Home, Plane, Shield } from "lucide-react";
@@ -23,6 +24,8 @@ interface ClubFixturesProps {
 }
 
 export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = false }: ClubFixturesProps) {
+    const [hoveredOpponent, setHoveredOpponent] = useState<string | null>(null);
+
     if ((!fixtures || fixtures.length === 0) && !clubStanding) {
         return (
             <div className="text-center py-6 text-slate-500 dark:text-neutral-500 text-sm">
@@ -113,8 +116,8 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                 resultBorder = "border-l-2 border-l-slate-400";
             }
         } else if (isLive) {
-            resultBg = "bg-amber-50 dark:bg-amber-950/20";
-            resultBorder = "border-l-2 border-l-amber-500 animate-pulse";
+            resultBg = "bg-emerald-50 dark:bg-emerald-950/20";
+            resultBorder = "border-l-2 border-l-emerald-500 animate-pulse";
         } else if (isPostponed) {
             resultBg = "bg-slate-100 dark:bg-neutral-800";
             resultBorder = "border-l-2 border-l-slate-300";
@@ -217,13 +220,16 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                         {/* Last 5 Matches - Centered with equal spacing */}
                         {last5Matches.length > 0 && (
                             <div>
-                                <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-3 text-center">Last 5 Matches</span>
+                                <span className={`text-xs block mb-3 text-center transition-all duration-200 min-h-[1rem] ${hoveredOpponent ? 'text-emerald-600 dark:text-emerald-400 font-bold scale-105' : 'text-slate-400 dark:text-neutral-500'}`}>
+                                    {hoveredOpponent || "Last 5 Matches"}
+                                </span>
                                 <div className="flex items-center justify-center gap-4">
                                     {last5Matches.map((match, idx) => {
                                         const isHome = match.home_team_id === clubId;
                                         const opponent = isHome ? match.away_team : match.home_team;
                                         const clubScore = isHome ? match.home_score : match.away_score;
                                         const oppScore = isHome ? match.away_score : match.home_score;
+                                        const opponentName = opponent?.title || (isHome ? match.away_team_name : match.home_team_name) || "Unknown Team";
 
                                         const isWin = clubScore > oppScore;
                                         const isLoss = clubScore < oppScore;
@@ -241,7 +247,11 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                                                 : 'bg-slate-50 dark:bg-neutral-800/50 text-slate-700 dark:text-neutral-300 border-2 border-slate-400 dark:border-neutral-600';
 
                                         const BadgeContent = (
-                                            <div className="flex flex-col items-center gap-2">
+                                            <div
+                                                className="flex flex-col items-center gap-2 cursor-default"
+                                                onMouseEnter={() => setHoveredOpponent(opponentName)}
+                                                onMouseLeave={() => setHoveredOpponent(null)}
+                                            >
                                                 {/* Score Badge */}
                                                 <div className={`px-2 py-0.5 rounded font-black text-[11px] ${scoreBadgeStyle}`}>
                                                     {clubScore}–{oppScore}

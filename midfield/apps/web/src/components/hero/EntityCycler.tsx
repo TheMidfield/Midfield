@@ -195,7 +195,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
         if (shuffledEntities.length <= 1) return;
         const interval = setInterval(() => {
             setIndex((prev) => (prev + 1) % shuffledEntities.length);
-        }, 3000);
+        }, 2300);
         return () => clearInterval(interval);
     }, [shuffledEntities.length]);
 

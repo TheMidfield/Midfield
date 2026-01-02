@@ -9,14 +9,16 @@ import type { MatchCenterFixture } from "@/app/actions/fetch-widget-data";
 import { getClubAbbreviation } from "@midfield/logic/src/topics";
 
 // Format date for display - automatically converts to user's local timezone
-function formatMatchDate(dateStr: string): { dayMonth: string; time: string; fullDateTime: string } {
+function formatMatchDate(dateStr: string): { dayMonth: string; time: string; fullDateTime: string; isToday: boolean } {
     const date = new Date(dateStr);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
 
-    const dayMonth = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    const dayMonth = isToday ? 'Today' : date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
     const time = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     const fullDateTime = `${dayMonth} ${time}`;
 
-    return { dayMonth, time, fullDateTime };
+    return { dayMonth, time, fullDateTime, isToday };
 }
 
 // Skeleton for loading state
@@ -37,7 +39,7 @@ SkeletonFixture.displayName = 'SkeletonFixture';
 
 // Single fixture row with improved layout
 const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: MatchCenterFixture & { homeScore?: number; awayScore?: number }, showScore?: boolean, hideClubNames?: boolean }) => {
-    const { dayMonth, time, fullDateTime } = formatMatchDate(fixture.date);
+    const { dayMonth, time, fullDateTime, isToday } = formatMatchDate(fixture.date);
     const isLive = fixture.status === 'LIVE' || fixture.status === 'HT';
 
     if (hideClubNames) {
@@ -87,7 +89,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                             </>
                         ) : (
                             <>
-                                <span className="text-xs font-bold text-slate-600 dark:text-neutral-300 whitespace-nowrap leading-tight">
+                                <span className={`text-xs font-bold whitespace-nowrap leading-tight ${isToday ? 'text-slate-900 dark:text-neutral-100 uppercase text-[10px]' : 'text-slate-600 dark:text-neutral-300'}`}>
                                     {dayMonth}
                                 </span>
                                 <span className="text-[10px] font-medium text-slate-500 dark:text-neutral-400 whitespace-nowrap leading-tight">
@@ -177,7 +179,7 @@ const FixtureRow = memo(({ fixture, showScore, hideClubNames }: { fixture: Match
                         </>
                     ) : (
                         <>
-                            <span className="text-xs font-bold text-slate-600 dark:text-neutral-300 whitespace-nowrap leading-tight">
+                            <span className={`text-xs font-bold whitespace-nowrap leading-tight ${isToday ? 'text-slate-900 dark:text-neutral-100 uppercase text-[10px]' : 'text-slate-600 dark:text-neutral-300'}`}>
                                 {dayMonth}
                             </span>
                             <span className="text-[10px] font-medium text-slate-500 dark:text-neutral-400 whitespace-nowrap leading-tight">
@@ -251,8 +253,8 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
     // Upcoming: Exclude FT, LIVE, HT
     const upcoming = fixturesArray
         .filter(f => f.status === 'NS' || f.status === 'PST')
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        .slice(0, 6);
+        .slice(0, 6) // Select TOP 6 by Importance FIRST
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // THEN Sort by Date for display
 
     // Check for any currently live matches
     const hasLiveMatches = fixturesArray.some(f => f.status === 'LIVE' || f.status === 'HT');
