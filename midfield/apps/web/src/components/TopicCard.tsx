@@ -61,7 +61,7 @@ export function TopicCard({ topic, showWatermark = false }: { topic: any; showWa
 
         return (
 
-            <Link href={`/topic/${topic.slug}`}>
+            <Link href={`/topic/${topic.slug}`} className="block group">
                 <Card className={`group relative p-4 sm:p-5 h-[185px] flex flex-col overflow-hidden cursor-pointer transition-all duration-200 active:scale-[0.96] lg:active:scale-100 ${hoverBorderClass} ${hoverBgClass}`}>
                     {/* Trophy Watermark */}
                     {trophyUrl && (
@@ -155,7 +155,7 @@ export function TopicCard({ topic, showWatermark = false }: { topic: any; showWa
     const renderUrl = topic.metadata?.render_url || imageUrl;
 
     return (
-        <Link href={`/topic/${topic.slug}`}>
+        <Link href={`/topic/${topic.slug}`} className="block group">
             <Card variant="interactive" className="group relative p-4 sm:p-5 h-[185px] flex flex-col overflow-hidden">
                 {/* Player Artistic Watermark (Homepage Featured Only) */}
                 {isPlayer && showWatermark && renderUrl && (

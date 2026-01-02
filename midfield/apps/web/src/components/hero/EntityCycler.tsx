@@ -236,7 +236,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
                                 className="absolute left-0 top-1/2 -translate-y-1/2 w-full"
                                 style={{ width: '100%' }}
                             >
-                                <Link href={`/topic/${currentEntity.slug}`} className="block w-full">
+                                <Link href={`/topic/${currentEntity.slug}`} className="block w-full group">
                                     <MiniEntityCard entity={currentEntity} />
                                 </Link>
                             </motion.div>

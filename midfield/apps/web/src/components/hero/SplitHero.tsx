@@ -16,31 +16,36 @@ export function SplitHero({ entities }: { entities: HeroEntity[] }) {
             className="relative mb-10 lg:mb-14 pt-4 pb-6 lg:py-8 overflow-visible px-6 sm:px-8 lg:px-12"
             style={{ width: '100%' }}
         >
-            {/* Discrete emerald spotlight - top-left corner */}
-            <div
-                className="absolute pointer-events-none"
-                style={{
-                    top: '-10%',
-                    left: '5%',
-                    width: '400px',
-                    height: '400px',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
-                    filter: 'blur(40px)',
-                }}
-            />
+            {/* Ambient Background Container - Clips overflowing spotlights */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[inherit]">
+                {/* Discrete emerald spotlight - top-left corner */}
+                <div
+                    className="absolute"
+                    style={{
+                        top: '-10%',
+                        left: '5%',
+                        width: '80vw', // Use viewport units for safety on mobile
+                        maxWidth: '400px',
+                        height: '400px',
+                        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
+                        filter: 'blur(40px)',
+                    }}
+                />
 
-            {/* Discrete emerald spotlight - bottom-right corner */}
-            <div
-                className="absolute pointer-events-none"
-                style={{
-                    bottom: '-5%',
-                    right: '10%',
-                    width: '350px',
-                    height: '350px',
-                    background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
-                    filter: 'blur(50px)',
-                }}
-            />
+                {/* Discrete emerald spotlight - bottom-right corner */}
+                <div
+                    className="absolute"
+                    style={{
+                        bottom: '-5%',
+                        right: '0%', // Align to edge instead of pushing out
+                        width: '80vw',
+                        maxWidth: '350px',
+                        height: '350px',
+                        background: 'radial-gradient(circle, rgba(16, 185, 129, 0.06) 0%, transparent 70%)',
+                        filter: 'blur(50px)',
+                    }}
+                />
+            </div>
 
             {/* Fading grid background - simple radial mask */}
             <div

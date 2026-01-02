@@ -32,10 +32,10 @@ export default async function MyTakesPage() {
     }));
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-neutral-950">
-            <div className="w-full max-w-2xl mx-auto py-8 px-4">
+        <div className="min-h-screen">
+            <div style={{ width: '100%', maxWidth: '672px', margin: '0 auto', padding: '32px 16px' }}>
                 {/* Header */}
-                <div className="flex items-center gap-4 mb-8">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
                     <Link
                         href="/profile"
                         className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-neutral-400 transition-colors shrink-0"
@@ -60,7 +60,7 @@ export default async function MyTakesPage() {
                         </p>
                     </Card>
                 ) : (
-                    <div className="flex flex-col gap-3">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {postsWithBookmarks.map((post: any) => (
                             <TakeCard
                                 key={post.id}

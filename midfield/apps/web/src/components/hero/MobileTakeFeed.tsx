@@ -27,7 +27,7 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
     const isClub = take.topic.type === 'club';
 
     return (
-        <Link href={`/topic/${take.topic.slug}`} className="block">
+        <Link href={`/topic/${take.topic.slug}`} className="block group">
             <Card variant="interactive" className="p-2.5 flex flex-col gap-1.5">
                 {/* Header: Entity + Time */}
                 <div className="flex items-center justify-between">
@@ -73,6 +73,7 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
                                 width={14}
                                 height={14}
                                 className="w-full h-full object-cover"
+                                unoptimized={true}
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-neutral-500 font-bold text-[6px]">

@@ -381,7 +381,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                             )}
                         </div>
                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
-                        <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="sm" icon={Upload} disabled={isUploading || isPending}>
+                        <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="sm" icon={Upload} disabled={isUploading || isPending} className="active:text-emerald-600 active:border-emerald-600 active:bg-emerald-50 dark:active:bg-emerald-900/10 transition-colors">
                             {isUploading ? "Uploading..." : "Change photo"}
                         </Button>
                     </div>
@@ -453,7 +453,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     onClick={handleUsernameEdit}
                                     variant="ghost"
                                     size="sm"
-                                    className="h-8 w-8 p-0 text-slate-400 hover:text-slate-900 dark:hover:text-neutral-100" // Consistent styling
+                                    className="h-8 w-8 p-0 text-slate-400 hover:text-slate-900 dark:hover:text-neutral-100 active:text-emerald-600 transition-colors" // Consistent styling
                                 >
                                     <Pencil className="w-4 h-4" />
                                 </Button>
@@ -584,14 +584,14 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                         )}
                                     </div>
                                 </div>
-                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil}>
+                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Pencil} className="active:text-emerald-600 active:border-emerald-600 active:bg-emerald-50 dark:active:bg-emerald-900/10 transition-colors">
                                     Change
                                 </Button>
                             </div>
                         ) : (
                             <div>
                                 <p className="text-xs text-slate-500 dark:text-neutral-400 mb-2">Not set</p>
-                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield}>
+                                <Button onClick={() => setIsEditingClub(true)} variant="outline" size="sm" icon={Shield} className="active:text-emerald-600 active:border-emerald-600 active:bg-emerald-50 dark:active:bg-emerald-900/10 transition-colors">
                                     Select
                                 </Button>
                             </div>
@@ -763,7 +763,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </Button>
                 </Card>
 
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
