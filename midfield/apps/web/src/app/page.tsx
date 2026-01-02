@@ -220,8 +220,13 @@ export default async function Home() {
             {/* Split Hero - SSR data, no loading state */}
             <SplitHero entities={heroEntities} />
 
+            {/* Mobile Feed - Immediately after Hero */}
+            <div className="lg:hidden mt-6 mb-8">
+                <MobileTakeFeed />
+            </div>
+
             {/* Trending + Match Center - Two Column Layout */}
-            <section className="mb-20">
+            <section className="mb-10 lg:mb-20">
                 {/* Trending Header - Outside grid so it doesn't affect centering */}
                 <div className="flex items-center gap-2 mb-3 sm:mb-4">
                     <TrendingUp className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />
@@ -239,8 +244,8 @@ export default async function Home() {
                 </div>
             </section>
 
-            {/* Mobile Layout */}
-            <div className="lg:hidden flex flex-col gap-8 pb-20">
+            {/* Mobile Layout - Match Center Only */}
+            <div className="lg:hidden flex flex-col gap-6 pb-12">
                 <MatchCenterWidget />
             </div>
 

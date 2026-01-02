@@ -270,7 +270,7 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
 
                 {/* Discrete subtitle */}
                 <p className="text-slate-500 dark:text-neutral-500 text-sm mt-8 max-w-[360px]">
-                    Discuss players, clubs, and leagues with fans worldwide.
+                    Discuss players, clubs, and leagues <br /> with fans worldwide.
                 </p>
             </div >
         </>
