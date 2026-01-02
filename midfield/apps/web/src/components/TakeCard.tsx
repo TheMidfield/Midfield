@@ -359,7 +359,10 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                         className="w-5 h-5 object-contain mr-1.5 flex-shrink-0"
                                     />
                                 )}
-                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs xs:text-sm sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-95 lg:active:scale-100 cursor-pointer mr-0.5">{authorHandle}</span><span className="text-slate-300 dark:text-neutral-600 text-[11px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2">•</span><span className="text-[11px] xs:text-xs">{formatDate(new Date(post.created_at))}</span>{wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs xs:text-sm sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-95 lg:active:scale-100 cursor-pointer mr-0.5 truncate">{authorHandle}</span>
+                                <span className={cn("text-slate-300 dark:text-neutral-600 text-[11px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2", showMenu ? "hidden sm:inline" : "inline")}>•</span>
+                                <span className={cn("text-[11px] xs:text-xs", showMenu ? "hidden sm:inline" : "inline")}>{formatDate(new Date(post.created_at))}</span>
+                                {wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
                             </div>
                             {isOwner && !isEditing && (
                                 <div className="flex items-center flex-shrink-0">

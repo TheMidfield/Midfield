@@ -25,15 +25,14 @@ export default async function BookmarksPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-neutral-950">
-            <div style={{ width: '100%', maxWidth: '672px', margin: '0 auto', padding: '32px 16px' }}>
+            <div className="w-full max-w-2xl mx-auto py-8 px-4">
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+                <div className="flex items-center gap-4 mb-8">
                     <Link
                         href="/profile"
-                        className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-neutral-400 transition-colors"
-                        style={{ flexShrink: 0 }}
+                        className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-800 text-slate-500 dark:text-neutral-400 transition-colors shrink-0"
                     >
-                        <ArrowLeft className="w-5 h-5" style={{ flexShrink: 0 }} />
+                        <ArrowLeft className="w-5 h-5 shrink-0" />
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">Bookmarks</h1>
@@ -43,9 +42,9 @@ export default async function BookmarksPage() {
 
                 {/* Bookmarked Posts */}
                 {bookmarkedPosts.length === 0 ? (
-                    <Card style={{ padding: '48px', textAlign: 'center' }}>
-                        <div style={{ width: '48px', height: '48px', margin: '0 auto 16px' }} className="rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
-                            <Bookmark className="w-6 h-6 text-slate-400 dark:text-neutral-500" style={{ flexShrink: 0 }} />
+                    <Card className="p-12 text-center">
+                        <div className="w-12 h-12 mx-auto mb-4 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
+                            <Bookmark className="w-6 h-6 text-slate-400 dark:text-neutral-500 shrink-0" />
                         </div>
                         <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-2">No bookmarks yet</h3>
                         <p className="text-sm text-slate-500 dark:text-neutral-400">
@@ -53,7 +52,7 @@ export default async function BookmarksPage() {
                         </p>
                     </Card>
                 ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="flex flex-col gap-3">
                         {bookmarkedPosts.map((post: any) => (
                             <TakeCard
                                 key={post.id}
