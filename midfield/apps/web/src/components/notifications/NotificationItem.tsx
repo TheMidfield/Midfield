@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { MessageSquare, Heart, Shield, Sparkles, User } from "lucide-react";
+import { MessageSquare, Smile, Shield, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Notification } from "@/app/actions/notifications";
@@ -19,7 +19,7 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
     const isRead = notification.is_read;
     const timeAgo = formatDistanceToNow(new Date(notification.created_at), { addSuffix: true });
 
-    const baseClasses = "flex items-center gap-2.5 p-2.5 rounded-md transition-colors cursor-pointer hover:bg-slate-50 dark:hover:bg-neutral-800/50";
+    const baseClasses = "flex items-center gap-3 p-3 rounded-md transition-colors cursor-pointer hover:bg-slate-100 dark:hover:bg-neutral-800/50";
 
     const UnreadDot = () => !isRead ? (
         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
@@ -31,7 +31,7 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
             case 'reply':
                 return MessageSquare;
             case 'upvote':
-                return Heart; // Reaction icon
+                return Smile; // Reaction smiley
             case 'badge_received':
                 return Shield;
             case 'system_welcome':
@@ -50,25 +50,28 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
 
         return (
             <div className="relative shrink-0">
-                <div className="w-9 h-9 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
+                <div className="w-10 h-10 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center overflow-hidden">
                     {hasImage ? (
                         <Image
                             src={entity.imageUrl!}
                             alt={entity.title}
-                            width={36}
-                            height={36}
+                            width={40}
+                            height={40}
                             className={cn(
                                 "object-contain",
-                                entity.type === 'player' ? "object-top scale-[1.8] translate-y-1.5" : ""
+                                // Player cutout: zoom on head with top margin
+                                entity.type === 'player'
+                                    ? "object-top scale-[2.2] translate-y-2"
+                                    : "p-0.5"
                             )}
                             unoptimized
                         />
                     ) : (
-                        <User className="w-4 h-4 text-slate-300 dark:text-neutral-600" />
+                        <User className="w-5 h-5 text-slate-400 dark:text-neutral-600" />
                     )}
                 </div>
                 {/* Type badge - square with rounded-md, unified slate color */}
-                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-md bg-slate-600 dark:bg-neutral-600 flex items-center justify-center">
+                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-md bg-slate-700 dark:bg-neutral-600 flex items-center justify-center">
                     <Icon className="w-2.5 h-2.5 text-white" />
                 </div>
             </div>
@@ -82,10 +85,10 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                     <>
                         <EntityImage />
                         <div className="flex-1 min-w-0">
-                            <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
-                                <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> replied to your take
+                            <p className="text-[13px] text-slate-700 dark:text-neutral-300 leading-snug">
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100">@{notification.actor?.username}</span> replied to your take
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -95,10 +98,10 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                     <>
                         <EntityImage />
                         <div className="flex-1 min-w-0">
-                            <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
-                                <span className="font-semibold text-slate-700 dark:text-neutral-200">@{notification.actor?.username}</span> reacted to your take
+                            <p className="text-[13px] text-slate-700 dark:text-neutral-300 leading-snug">
+                                <span className="font-semibold text-slate-900 dark:text-neutral-100">@{notification.actor?.username}</span> reacted to your take
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -109,14 +112,14 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                     : 'New Badge';
                 return (
                     <>
-                        <div className="shrink-0 w-9 h-9 rounded-md bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center">
-                            <Shield className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                        <div className="shrink-0 w-10 h-10 rounded-md bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
+                            <Shield className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[12px] text-slate-600 dark:text-neutral-300 leading-snug">
-                                You unlocked <span className="font-semibold text-amber-600 dark:text-amber-400">{badgeText}</span>
+                            <p className="text-[13px] text-slate-700 dark:text-neutral-300 leading-snug">
+                                You unlocked <span className="font-semibold text-amber-700 dark:text-amber-400">{badgeText}</span>
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
+                            <p className="text-[11px] text-slate-500 dark:text-neutral-500 mt-0.5">{timeAgo}</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -124,14 +127,14 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
             case 'system_welcome':
                 return (
                     <>
-                        <div className="shrink-0 w-9 h-9 rounded-md bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center">
-                            <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                        <div className="shrink-0 w-10 h-10 rounded-md bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                            <Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-semibold text-slate-700 dark:text-neutral-200">
+                            <p className="text-[13px] font-semibold text-slate-900 dark:text-neutral-100">
                                 Welcome to Midfield!
                             </p>
-                            <p className="text-[10px] text-slate-400 dark:text-neutral-500 mt-0.5">Let's get you started</p>
+                            <p className="text-[11px] text-slate-500 dark:text-neutral-500 mt-0.5">Let's get you started</p>
                         </div>
                         <UnreadDot />
                     </>
@@ -141,6 +144,7 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         }
     };
 
+    // Modals and badges keep sidebar open
     if (notification.type === 'system_welcome') {
         return (
             <div onClick={() => { onRead(); onWelcomeClick(); }} className={baseClasses}>
@@ -158,6 +162,7 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
         );
     }
 
+    // Navigation notifications close sidebar
     const href = notification.resource_slug ? `/topic/${notification.resource_slug}` : '#';
 
     return (

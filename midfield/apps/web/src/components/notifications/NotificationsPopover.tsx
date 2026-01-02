@@ -58,7 +58,7 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     return (
         <>
-            <Sheet open={open} onOpenChange={handleOpenChange}>
+            <Sheet open={open} onOpenChange={handleOpenChange} modal={false}>
                 <SheetTrigger asChild>
                     <div className="relative">
                         <IconButton
