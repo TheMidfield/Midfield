@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import { useOnboarding } from "./OnboardingProvider";
 import { useSearch } from "@/context/SearchContext";
 import { Logo } from "@/components/Logo";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/DropdownMenu";
+import { simulateNotification } from "@/app/actions/dev";
 
 export function Navbar() {
     const pathname = usePathname();
@@ -90,6 +92,10 @@ export function Navbar() {
         return pathname?.startsWith(path);
     };
 
+    const handleDevAction = async (type: 'reply' | 'upvote' | 'badge_received' | 'system_welcome') => {
+        await simulateNotification(type);
+    };
+
     const { isOnboardingOpen } = useOnboarding();
 
     return (
@@ -138,11 +144,33 @@ export function Navbar() {
                             <NavbarSearch />
                         </div>
 
-                        <Link href="/design-system" className="hidden xl:block">
-                            <Button variant="ghost" size="sm" icon={Terminal}>
-                                Dev
-                            </Button>
-                        </Link>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="hidden xl:flex gap-2">
+                                    <Terminal className="w-4 h-4" />
+                                    <span>Dev</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem asChild>
+                                    <Link href="/design-system" className="cursor-pointer">Design System</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>Simulate Notification</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleDevAction('system_welcome')}>
+                                    Welcome / Signup
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDevAction('reply')}>
+                                    New Reply
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDevAction('upvote')}>
+                                    New Upvote
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDevAction('badge_received')}>
+                                    Badge Award
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
 
                         <ThemeToggle />
 

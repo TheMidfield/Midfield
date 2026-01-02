@@ -51,17 +51,25 @@ export function NotificationsPopover() {
         <>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
-                    <Button variant="ghost" size="icon" className="relative group hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all rounded-full w-10 h-10">
-                        <Bell className={cn(
-                            "w-5 h-5 text-slate-600 dark:text-neutral-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors",
-                            unreadCount > 0 && "animate-bell-shake" // Need to add keyframes or remove if not desired
-                        )} />
-                        {unreadCount > 0 && (
-                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-neutral-950 transform translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-[10px] text-white font-bold">
-                                {/* Optional: Number if large? Just dot for simplicity as per design usually */}
-                            </span>
-                        )}
-                    </Button>
+                    <div className="relative">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-9 h-9 rounded-md" // Exact match to ThemeToggle/IconButton size="sm"
+                        >
+                            <Bell className={cn(
+                                "w-4 h-4 transition-colors", // Icon size match
+                                unreadCount > 0 && "animate-bell-shake text-slate-900 dark:text-neutral-100",
+                                !unreadCount && "text-slate-500 dark:text-neutral-400"
+                            )} />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-2 right-2 flex h-2.5 w-2.5 translate-x-1/2 -translate-y-1/2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border-2 border-white dark:border-neutral-950"></span>
+                                </span>
+                            )}
+                        </Button>
+                    </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-[380px] p-0 overflow-hidden" align="end" sideOffset={8}>
                     {/* Header */}
