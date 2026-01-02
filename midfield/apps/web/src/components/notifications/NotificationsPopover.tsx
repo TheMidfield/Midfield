@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, X } from "lucide-react";
+import { Bell, X, ChevronLeft } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/Sheet";
 import { IconButton } from "@/components/ui/IconButton";
 import { getNotifications, markAllNotificationsRead, markNotificationRead, type Notification } from "@/app/actions/notifications";
@@ -28,7 +28,6 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
         onOpenChange?.(isOpen);
     };
 
-    // Close sidebar helper
     const closeSidebar = () => handleOpenChange(false);
 
     useEffect(() => {
@@ -77,21 +76,30 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                     </div>
                 </SheetTrigger>
                 <SheetContent side="right" className="flex flex-col">
-                    {/* Header */}
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-neutral-800">
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-neutral-500">
-                            Notifications
-                        </span>
+                    {/* Header - different layout for mobile */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-neutral-800">
+                        {/* Mobile: back arrow. Desktop: title */}
+                        <div className="flex items-center gap-2">
+                            <SheetClose asChild className="sm:hidden">
+                                <button className="rounded-md p-1 -ml-1 text-slate-500 dark:text-neutral-400 transition-colors hover:text-slate-700 dark:hover:text-neutral-200 cursor-pointer">
+                                    <ChevronLeft className="h-5 w-5" />
+                                </button>
+                            </SheetClose>
+                            <span className="text-sm sm:text-[11px] font-semibold sm:uppercase tracking-normal sm:tracking-wider text-slate-800 dark:text-neutral-200 sm:text-slate-500 sm:dark:text-neutral-500">
+                                Notifications
+                            </span>
+                        </div>
                         <div className="flex items-center gap-3">
                             {hasUnread && (
                                 <button
                                     onClick={handleMarkAllRead}
-                                    className="text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                    className="text-[12px] sm:text-[11px] font-medium text-emerald-600 hover:text-emerald-700 dark:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                                 >
                                     Mark all read
                                 </button>
                             )}
-                            <SheetClose asChild>
+                            {/* Desktop only: X close button */}
+                            <SheetClose asChild className="hidden sm:block">
                                 <button className="rounded-md p-1 text-slate-400 dark:text-neutral-500 transition-colors hover:text-slate-600 dark:hover:text-neutral-300 hover:bg-slate-100 dark:hover:bg-neutral-800 cursor-pointer">
                                     <X className="h-4 w-4" />
                                 </button>
@@ -107,7 +115,7 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                 <div className="animate-pulse h-3 w-20 bg-slate-100 dark:bg-neutral-800 rounded mx-auto" />
                             </div>
                         ) : notifications.length > 0 ? (
-                            <div className="py-2 px-2">
+                            <div className="py-2 px-2 sm:px-2">
                                 {notifications.map((n) => (
                                     <NotificationItem
                                         key={n.id}
@@ -115,11 +123,11 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                                         onRead={() => handleRead(n.id)}
                                         onNavigate={closeSidebar}
                                         onWelcomeClick={() => {
-                                            closeSidebar();
+                                            // Keep sidebar open for modals
                                             setIsWelcomeOpen(true);
                                         }}
                                         onBadgeClick={(badgeId) => {
-                                            closeSidebar();
+                                            // Keep sidebar open for badges
                                             setSelectedBadge(badgeId);
                                         }}
                                     />
@@ -127,8 +135,8 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
                             </div>
                         ) : (
                             <div className="py-16 px-6 text-center">
-                                <Bell className="w-6 h-6 mx-auto mb-2 text-slate-200 dark:text-neutral-700" />
-                                <p className="text-xs text-slate-400 dark:text-neutral-500">All caught up!</p>
+                                <Bell className="w-8 h-8 sm:w-6 sm:h-6 mx-auto mb-3 text-slate-200 dark:text-neutral-700" />
+                                <p className="text-sm sm:text-xs text-slate-400 dark:text-neutral-500">All caught up!</p>
                             </div>
                         )}
                     </div>

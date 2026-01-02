@@ -18,34 +18,32 @@ const SheetContent = React.forwardRef<
     SheetContentProps
 >(({ className, children, side = "right", ...props }, ref) => (
     <SheetPortal>
-        {/* Overlay - covers content area, NOT the navbar */}
+        {/* Overlay - covers content area only, not navbar or sidebar */}
         <DialogPrimitive.Overlay
             className={cn(
                 "fixed z-30 bg-black/40",
-                "top-[72px] left-0 bottom-0",
-                "right-[340px]",
+                // Match navbar height: h-[62px] mobile, sm:h-16 (64px)
+                "top-[62px] sm:top-16 left-0 bottom-0",
+                // Desktop: stop at sidebar. Mobile: full width (sidebar is full screen)
+                "right-0 sm:right-[340px]",
                 "data-[state=open]:animate-in data-[state=closed]:animate-out",
                 "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
             )}
         />
         <DialogPrimitive.Content
             ref={ref}
-            // modal=false allows navbar interaction while sheet is open
-            onPointerDownOutside={(e) => {
-                // Allow clicks on navbar by checking if click is above the sheet top
-                const rect = (e.target as HTMLElement).getBoundingClientRect?.();
-                if (rect && rect.top < 72) {
-                    e.preventDefault();
-                }
-            }}
             className={cn(
                 "fixed z-40 flex flex-col bg-white dark:bg-neutral-900 shadow-xl transition-all duration-200 ease-out",
-                "top-[72px] bottom-0",
+                // Match navbar height
+                "top-[62px] sm:top-16 bottom-0",
                 side === "right" && [
-                    "right-0 w-[340px]",
-                    "border-l border-slate-200 dark:border-neutral-800",
+                    // Mobile: full width. Desktop: fixed width for bell centering
+                    "right-0 left-0 sm:left-auto sm:w-[340px]",
+                    "border-t sm:border-t-0 sm:border-l border-slate-200 dark:border-neutral-800",
                     "data-[state=open]:animate-in data-[state=closed]:animate-out",
-                    "data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+                    // Mobile: slide from bottom. Desktop: slide from right
+                    "data-[state=closed]:slide-out-to-bottom sm:data-[state=closed]:slide-out-to-right",
+                    "data-[state=open]:slide-in-from-bottom sm:data-[state=open]:slide-in-from-right",
                 ],
                 side === "left" && [
                     "left-0 w-80",
