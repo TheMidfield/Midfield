@@ -87,7 +87,7 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
                         onClick={() => handleReaction(type)}
                         className={`
                             h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium
-                            transition-all cursor-pointer border active:scale-90
+                            transition-all cursor-pointer border active:scale-90 lg:active:scale-100
                             ${isActive
                                 ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 hover:border-emerald-300 dark:hover:border-emerald-700'
                                 : 'bg-transparent text-slate-600 dark:text-neutral-400 border-transparent hover:bg-slate-50 dark:hover:bg-neutral-800'
@@ -108,7 +108,7 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
                 <button
                     onClick={() => setIsPickerOpen(!isPickerOpen)}
                     className={`
-                        h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border active:scale-90
+                        h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border active:scale-90 lg:active:scale-100
                         ${isPickerOpen
                             ? 'bg-slate-100 dark:bg-neutral-800 text-emerald-600 dark:text-emerald-400 border-slate-300 dark:border-neutral-600 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500'
                             : 'bg-transparent text-slate-400 dark:text-neutral-500 border-transparent hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
@@ -141,7 +141,7 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
                             key={type}
                             onClick={() => handleReaction(type)}
                             className={`
-                                w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all text-lg leading-none cursor-pointer flex-shrink-0 active:scale-125 active:bg-slate-200 dark:active:bg-neutral-700
+                                w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all text-lg leading-none cursor-pointer flex-shrink-0 active:scale-125 lg:active:scale-100 active:bg-slate-200 dark:active:bg-neutral-700
                                 ${isPickerOpen ? 'visible' : 'invisible'}
                             `}
                             style={{

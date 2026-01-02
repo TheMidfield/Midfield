@@ -113,7 +113,7 @@ export function Navbar() {
                             }`}
                         style={{ zIndex: 60 }}
                     >
-                        <Link href="/" className="flex items-center gap-2.5 shrink-0 group active:scale-95 transition-transform">
+                        <Link href="/" className="flex items-center gap-2.5 shrink-0 group active:scale-95 lg:active:scale-100 transition-transform">
                             <Logo className="h-[34px] w-[34px] sm:h-8 sm:w-8 transition-transform duration-300 group-hover:scale-110" />
                             <span className="font-display font-light text-xl sm:text-xl md:text-2xl tracking-tight text-slate-900 dark:text-neutral-100">
                                 Midfield
@@ -147,7 +147,7 @@ export function Navbar() {
 
                         {!isLoading ? (
                             isAuthenticated ? (
-                                <Link href="/profile" className="active:scale-95 transition-transform">
+                                <Link href="/profile" className="active:scale-95 lg:active:scale-100 transition-transform">
                                     {userAvatar ? (
                                         <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-md overflow-hidden border-2 border-slate-200 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all cursor-pointer">
                                             <img src={userAvatar} alt="Profile" className="w-full h-full object-cover" />
@@ -180,7 +180,7 @@ export function Navbar() {
 
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="lg:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 active:scale-90 active:bg-slate-200 dark:active:bg-neutral-700 transition-all cursor-pointer"
+                            className="lg:hidden relative w-10 h-10 flex flex-col items-center justify-center gap-1.5 rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 active:scale-90 lg:active:scale-100 active:bg-slate-200 dark:active:bg-neutral-700 transition-all cursor-pointer"
                             aria-label="Menu"
                             aria-expanded={isMobileMenuOpen}
                         >
@@ -232,7 +232,7 @@ function NavLink({ href, children, active, onClick }: { href: string; children: 
             href={href}
             onClick={onClick}
             className={`
-                px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 active:scale-95
+                px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 active:scale-95 lg:active:scale-100
                 ${active
                     ? "text-slate-900 dark:text-neutral-100 bg-slate-100 dark:bg-neutral-800"
                     : "text-slate-500 dark:text-neutral-400 hover:text-slate-900 dark:hover:text-neutral-100 hover:bg-slate-50 dark:hover:bg-neutral-800"
@@ -262,7 +262,7 @@ function MobileNavLink({
             href={href}
             onClick={onClick}
             className={`
-                flex items-center gap-3 px-4 py-3.5 rounded-md text-[15px] font-semibold transition-all duration-200 active:scale-[0.97] active:bg-slate-200 dark:active:bg-neutral-800
+                flex items-center gap-3 px-4 py-3.5 rounded-md text-[15px] font-semibold transition-all duration-200 active:scale-[0.97] lg:active:scale-100 active:bg-slate-200 dark:active:bg-neutral-800
                 ${active
                     ? "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30"
                     : "text-slate-700 dark:text-neutral-300 hover:text-slate-900 dark:hover:text-neutral-100 hover:bg-slate-100 dark:hover:bg-neutral-800"

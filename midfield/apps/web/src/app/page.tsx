@@ -256,7 +256,7 @@ export default async function Home() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {featuredPlayers.map((player) => (
-                        <TopicCard key={player.id} topic={player} />
+                        <TopicCard key={player.id} topic={player} showWatermark={true} />
                     ))}
                 </div>
             </section>

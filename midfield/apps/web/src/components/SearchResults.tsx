@@ -28,7 +28,7 @@ export function SearchResults() {
                 </div>
                 <button
                     onClick={closeSearch}
-                    className="flex flex-col items-center gap-1 group shrink-0 active:scale-90 transition-all"
+                    className="flex flex-col items-center gap-1 group shrink-0 active:scale-90 lg:active:scale-100 transition-all"
                     aria-label="Close search"
                 >
                     <div className="w-10 h-10 rounded-full border-2 border-slate-200 dark:border-neutral-700 flex items-center justify-center text-slate-400 dark:text-neutral-500 group-hover:border-emerald-500 dark:group-hover:border-emerald-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">

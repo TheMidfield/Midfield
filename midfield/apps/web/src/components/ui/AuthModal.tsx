@@ -193,7 +193,7 @@ export function AuthModal({
                                 onClick={handleGoogleLogin}
                                 disabled={isPending}
                                 style={{ width: '100%' }}
-                                className="inline-flex items-center justify-center gap-2 sm:gap-3 h-10 sm:h-11 md:h-12 px-4 sm:px-6 rounded-md border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 font-bold hover:border-slate-400 dark:hover:border-neutral-500 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-sm sm:text-base"
+                                className="inline-flex items-center justify-center gap-2 sm:gap-3 h-10 sm:h-11 md:h-12 px-4 sm:px-6 rounded-md border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 font-bold hover:border-slate-400 dark:hover:border-neutral-500 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all active:scale-[0.98] lg:active:scale-100 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-sm sm:text-base"
                             >
                                 <svg viewBox="0 0 24 24" className="w-4 sm:w-5 h-4 sm:h-5 shrink-0">
                                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

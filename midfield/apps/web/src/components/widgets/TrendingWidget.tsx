@@ -40,7 +40,7 @@ const TrendingItem = memo(({ item }: { item: TrendingTopic }) => {
 
     return (
         <Link href={`/topic/${item.slug}`} className="block group">
-            <div className="flex items-center gap-3 py-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 -mx-2 px-2">
+            <div className="flex items-center gap-2 py-2 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-neutral-800/50 px-3">
                 {/* Rank number - centered with fixed width */}
                 <span className={`text-sm font-bold w-5 tabular-nums text-center transition-colors ${item.rank <= 3
                     ? 'text-emerald-600 dark:text-emerald-400'

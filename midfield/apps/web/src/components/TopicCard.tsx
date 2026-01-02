@@ -14,9 +14,10 @@ const COUNTRY_FLAG_IMAGES: Record<string, string> = {
     "France": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/france.png",
 };
 
-export function TopicCard({ topic }: { topic: any }) {
+export function TopicCard({ topic, showWatermark = false }: { topic: any; showWatermark?: boolean }) {
     const isClub = topic.type === 'club';
     const isLeague = topic.type === 'league';
+    const isPlayer = topic.type === 'player';
     const ratingRaw = topic.fc26_data?.overall || topic.rating;
     const rating = (ratingRaw && ratingRaw !== "?" && ratingRaw !== "0") ? ratingRaw : null;
     const imageUrl = topic.metadata?.photo_url || topic.metadata?.badge_url;
@@ -151,9 +152,28 @@ export function TopicCard({ topic }: { topic: any }) {
     }
 
     // Player/Club rendering (existing code)
+    const renderUrl = topic.metadata?.render_url || imageUrl;
+
     return (
         <Link href={`/topic/${topic.slug}`}>
             <Card variant="interactive" className="group relative p-4 sm:p-5 h-[185px] flex flex-col overflow-hidden">
+                {/* Player Artistic Watermark (Homepage Featured Only) */}
+                {isPlayer && showWatermark && renderUrl && (
+                    <div className="absolute right-0 top-0 w-36 h-36 sm:w-40 sm:h-40 opacity-[0.08] group-hover:opacity-[0.12] transition-opacity duration-500 pointer-events-none select-none grayscale">
+                        <NextImage
+                            src={renderUrl}
+                            alt=""
+                            fill
+                            className="object-contain scale-[1.8]"
+                            style={{
+                                objectPosition: '50% 0%',
+                                transformOrigin: '50% 0%'
+                            }}
+                            unoptimized={true}
+                        />
+                    </div>
+                )}
+
                 {/* Club Artistic Watermark */}
                 {isClub && imageUrl && (
                     <div className="absolute -right-8 -bottom-8 w-48 h-48 opacity-[0.04] group-hover:opacity-[0.08] transition-opacity duration-500 grayscale pointer-events-none select-none rotate-12">

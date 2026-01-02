@@ -618,7 +618,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                         onClick={() => setSelectedBadge(badgeKey)}
                                         onMouseEnter={() => setHoveredBadgeTitle(info.title)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
-                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 active:scale-95 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
+                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 active:scale-95 lg:active:scale-100 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
                                         style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                         title={info.title}
                                     >

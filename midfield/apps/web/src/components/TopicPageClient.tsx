@@ -66,10 +66,14 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
     // Check if this is a manager/coach (stored as player type but with manager position)
     const isManager = isPlayer && (metadata?.position?.toLowerCase().includes('manager') || metadata?.position?.toLowerCase().includes('coach'));
 
-    // Clubs section always open for leagues, Players for clubs, Team Form for managers, Ratings for players
+    // Determine default expanded section for players
+    const hasFC26Ratings = isPlayer && !isManager && (metadata?.rating || topic.fc26_data?.overall);
+
+    // Clubs section always open for leagues, Players for clubs, Team Form for managers
+    // For players: open Ratings if available, otherwise open About
     // Note: Ratings/Players default state on mobile will be adjusted in useEffect
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(
-        isLeague ? ["clubs"] : isClub ? ["players"] : isManager ? ["team-form"] : ["ratings"]
+        isLeague ? ["clubs"] : isClub ? ["players"] : isManager ? ["team-form"] : hasFC26Ratings ? ["ratings"] : ["about"]
     ));
 
     // Collapse sections on mobile by default to save space
