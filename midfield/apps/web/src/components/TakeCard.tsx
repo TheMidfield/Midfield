@@ -371,10 +371,10 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 <span className={cn("text-[11px] xs:text-xs", showMenu ? "hidden sm:inline" : "inline")}>{formatDate(new Date(post.created_at))}</span>
                                 {post.topic && (
                                     <>
-                                        <span className="text-slate-300 dark:text-neutral-600 text-xs mx-1.5 sm:mx-2">•</span>
+                                        <span className="text-slate-300 dark:text-neutral-600 text-xs mx-1.5 sm:mx-2 hidden sm:inline">•</span>
                                         <Link
                                             href={`/topic/${post.topic.slug}`}
-                                            className="inline-flex items-center gap-1 group/topic"
+                                            className="hidden sm:inline-flex items-center gap-1 group/topic"
                                         >
                                             <span className="text-[10px] xs:text-[11px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80 group-hover/topic:text-emerald-600 dark:group-hover/topic:text-emerald-400 transition-colors">
                                                 {post.topic.title}
@@ -438,6 +438,20 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 </div>
                             )}
                         </div>
+
+                        {/* Entity topic - mobile only, below header */}
+                        {post.topic && (
+                            <div className="mb-2 sm:hidden">
+                                <Link
+                                    href={`/topic/${post.topic.slug}`}
+                                    className="inline-flex items-center gap-1 group/topic"
+                                >
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80 group-hover/topic:text-emerald-600 dark:group-hover/topic:text-emerald-400 transition-colors">
+                                        {post.topic.title}
+                                    </span>
+                                </Link>
+                            </div>
+                        )}
 
                         {/* Post Text */}
                         {isEditing ? (

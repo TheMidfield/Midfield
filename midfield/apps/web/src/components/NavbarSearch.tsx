@@ -3,17 +3,29 @@
 import { useSearch } from "@/context/SearchContext";
 import { Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from "react";
 
 interface NavbarSearchProps {
     onSearchStart?: () => void;
     autoFocus?: boolean;
+    className?: string;
 }
 
-export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {}) {
+export interface NavbarSearchHandle {
+    focus: () => void;
+}
+
+export const NavbarSearch = forwardRef<NavbarSearchHandle, NavbarSearchProps>(({ onSearchStart, autoFocus, className }, ref) => {
     const { query, setQuery, isSearching, closeSearch } = useSearch();
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Expose focus method via ref
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            inputRef.current?.focus();
+        }
+    }));
 
     // Global shortcut to focus search
     useEffect(() => {
@@ -33,11 +45,11 @@ export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {
     useEffect(() => {
         if (autoFocus && inputRef.current) {
             // Longer delay for mobile to ensure menu animation completes
+            // Reduced to 150ms for snappier feel while still allowing animation
             const timer = setTimeout(() => {
                 inputRef.current?.focus();
-                // Additional mobile-specific trigger
-                inputRef.current?.click();
-            }, 350);
+                inputRef.current?.click(); // Mobile quirk trigger
+            }, 150);
             return () => clearTimeout(timer);
         }
     }, [autoFocus]);
@@ -49,6 +61,7 @@ export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {
         } else if (e.key === "Enter") {
             // Submit search but collapse the bar
             inputRef.current?.blur();
+            if (onSearchStart) onSearchStart();
         }
     };
 
@@ -56,7 +69,8 @@ export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {
         <div
             className={cn(
                 "relative transition-all duration-300 ease-out w-full",
-                isFocused || isSearching ? "md:w-[400px]" : "md:w-64"
+                isFocused || isSearching ? "md:w-[400px]" : "md:w-64",
+                className
             )}
         >
             <div
@@ -77,9 +91,7 @@ export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {
                         const newValue = e.target.value;
                         setQuery(newValue);
                         // Trigger callback when search becomes active (2+ chars)
-                        if (newValue.length >= 2 && query.length < 2 && onSearchStart) {
-                            onSearchStart();
-                        }
+                        // Note: We don't auto-trigger onSearchStart here to avoid closing menu while typing
                     }}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
@@ -118,4 +130,6 @@ export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {
             </div>
         </div>
     );
-}
+});
+
+NavbarSearch.displayName = "NavbarSearch";
