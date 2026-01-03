@@ -6,7 +6,8 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-syncDailySchedules,
+import {
+    syncDailySchedules,
     syncClubSchedules,
     syncLeagueStandings
 } from '../packages/logic/src/sync/simple-fixture-sync';
