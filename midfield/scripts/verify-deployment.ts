@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Load environment variables
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), 'midfield/.env') });
+dotenv.config({ path: path.resolve(process.cwd(), 'midfield/.env.local') });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -24,7 +24,7 @@ async function verifyDeployment() {
 
     const { data: recentFixtures, error: fixturesError } = await supabase
         .from('fixtures')
-        .select('id, home_team_name, away_team_name, status, minute, updated_at')
+        .select('id, home_team_name, away_team_name, status, updated_at')
         .gt('updated_at', fifteenMinutesAgo)
         .limit(5);
 
@@ -33,7 +33,7 @@ async function verifyDeployment() {
     } else if (recentFixtures && recentFixtures.length > 0) {
         console.log('✅ [LIVESCORES] Working! Found fixtures updated in last 15 mins:');
         recentFixtures.forEach(f => {
-            console.log(`   - ${f.home_team_name} vs ${f.away_team_name} [${f.status} ${f.minute || ''}] (@ ${new Date(f.updated_at).toLocaleTimeString()})`);
+            console.log(`   - ${f.home_team_name} vs ${f.away_team_name} [${f.status}] (@ ${new Date(f.updated_at).toLocaleTimeString()})`);
         });
     } else {
         console.log('⚠️ [LIVESCORES] No fixtures updated in last 15 mins.');
