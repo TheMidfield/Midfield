@@ -614,17 +614,19 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     );
                                 }
 
-                                // Placeholder for unearned badges
+                                // Placeholder for unearned badges - now clickable!
                                 return (
-                                    <div
+                                    <button
                                         key={`placeholder-${badgeKey}`}
-                                        className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40"
+                                        onClick={() => setSelectedBadge(badgeKey)}
+                                        className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40 hover:opacity-60 transition-opacity cursor-pointer"
                                         style={{ width: '40px', height: '40px' }}
-                                        onMouseEnter={() => setHoveredBadgeTitle(`Locked: ${info.title}`)}
+                                        onMouseEnter={() => setHoveredBadgeTitle(`🔒 ${info.title}`)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
+                                        title={`Locked: ${info.unlockRequirement}`}
                                     >
                                         <Icon className="w-5 h-5 text-slate-300 dark:text-neutral-700" strokeWidth={1} />
-                                    </div>
+                                    </button>
                                 );
                             });
                         })()}
@@ -642,6 +644,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                 <BadgeModal
                     badgeId={selectedBadge}
                     onClose={() => setSelectedBadge(null)}
+                    isUnlocked={selectedBadge ? (profile?.badges || []).includes(selectedBadge) : true}
                 />
 
                 {/* Account Info Card */}
