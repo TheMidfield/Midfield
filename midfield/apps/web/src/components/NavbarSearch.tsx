@@ -7,9 +7,10 @@ import { useRef, useState, useEffect } from "react";
 
 interface NavbarSearchProps {
     onSearchStart?: () => void;
+    autoFocus?: boolean;
 }
 
-export function NavbarSearch({ onSearchStart }: NavbarSearchProps = {}) {
+export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {}) {
     const { query, setQuery, isSearching, closeSearch } = useSearch();
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +28,14 @@ export function NavbarSearch({ onSearchStart }: NavbarSearchProps = {}) {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isFocused, isSearching]);
+
+    // Auto-focus on mount if requested
+    useEffect(() => {
+        if (autoFocus) {
+            // Small delay to ensure DOM is ready
+            setTimeout(() => inputRef.current?.focus(), 100);
+        }
+    }, [autoFocus]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Escape") {

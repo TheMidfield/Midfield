@@ -23,6 +23,7 @@ export function Navbar() {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [openedViaSearch, setOpenedViaSearch] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
@@ -82,6 +83,8 @@ export function Navbar() {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
+            // Reset search flag when menu closes
+            setOpenedViaSearch(false);
         }
         return () => {
             document.body.style.overflow = '';
@@ -179,13 +182,18 @@ export function Navbar() {
 
                         <div className="flex items-center gap-1">
                             {/* Search icon - mobile only */}
-                            <button
-                                onClick={() => setIsMobileMenuOpen(true)}
-                                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors"
-                                aria-label="Search"
-                            >
-                                <Search className="w-5 h-5" />
-                            </button>
+                            <div className="lg:hidden">
+                                <IconButton
+                                    icon={Search}
+                                    variant="ghost"
+                                    size="sm"
+                                    aria-label="Search"
+                                    onClick={() => {
+                                        setOpenedViaSearch(true);
+                                        setIsMobileMenuOpen(true);
+                                    }}
+                                />
+                            </div>
                             {/* Theme toggle - desktop only */}
                             <div className="hidden lg:block">
                                 <ThemeToggle />
@@ -263,7 +271,10 @@ export function Navbar() {
                 <div className="bg-white dark:bg-neutral-900">
                     <div className="px-4 py-4 space-y-1 max-h-[calc(100vh-5rem)] overflow-y-auto">
                         <div className="mb-4 md:hidden">
-                            <NavbarSearch onSearchStart={() => setIsMobileMenuOpen(false)} />
+                            <NavbarSearch
+                                onSearchStart={() => setIsMobileMenuOpen(false)}
+                                autoFocus={openedViaSearch}
+                            />
                         </div>
                         <MobileNavLink href="/" icon={Home} active={isActive("/")} onClick={() => setIsMobileMenuOpen(false)}>Home</MobileNavLink>
                         <MobileNavLink href="/players" icon={Users} active={isActive("/players")} onClick={() => setIsMobileMenuOpen(false)}>Players</MobileNavLink>

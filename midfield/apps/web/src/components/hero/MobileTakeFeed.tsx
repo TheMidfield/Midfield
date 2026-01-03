@@ -171,13 +171,21 @@ export function MobileTakeFeed() {
 
     // Staggered reveal animation - first 4 cards instant, then 2 with 1.5s delays
     useEffect(() => {
-        if (!takes || takes.length === 0 || loading) return;
+        console.debug('[MobileAnimation] Effect triggered:', { takesLength: takes?.length, loading, hasRun: hasInitialAnimationRun.current });
+
+        if (!takes || takes.length === 0 || loading) {
+            console.debug('[MobileAnimation] Skipping - no takes or loading');
+            return;
+        }
 
         // Animation already ran - just show all cards
         if (hasInitialAnimationRun.current) {
+            console.debug('[MobileAnimation] Animation already ran, showing all cards');
             setVisibleCards(takes.length);
             return;
         }
+
+        console.debug('[MobileAnimation] Starting first-time animation');
 
         // First-time animation setup
         setVisibleCards(0);
@@ -187,12 +195,14 @@ export function MobileTakeFeed() {
 
         // After 50ms, show first 4 cards instantly
         timers.push(setTimeout(() => {
+            console.debug('[MobileAnimation] Showing first 4 cards');
             setVisibleCards(Math.min(4, takes.length));
         }, 50));
 
         // After 1.5s, show card 5 with animation
         if (takes.length >= 5) {
             timers.push(setTimeout(() => {
+                console.debug('[MobileAnimation] Showing card 5 with animation');
                 setVisibleCards(5);
             }, 1550));
         }
@@ -200,6 +210,7 @@ export function MobileTakeFeed() {
         // After 3s, show card 6 with animation
         if (takes.length >= 6) {
             timers.push(setTimeout(() => {
+                console.debug('[MobileAnimation] Showing card 6 with animation');
                 setVisibleCards(6);
                 hasInitialAnimationRun.current = true;
                 setTimeout(() => setAnimatingCardIndices(new Set()), 500);
@@ -207,12 +218,16 @@ export function MobileTakeFeed() {
         } else {
             // Mark complete after last card
             timers.push(setTimeout(() => {
+                console.debug('[MobileAnimation] Animation complete');
                 hasInitialAnimationRun.current = true;
                 setAnimatingCardIndices(new Set());
             }, takes.length >= 5 ? 2050 : 100));
         }
 
-        return () => timers.forEach(timer => clearTimeout(timer));
+        return () => {
+            console.debug('[MobileAnimation] Cleaning up timers');
+            timers.forEach(timer => clearTimeout(timer));
+        };
     }, [takes, loading]);
 
     if (loading) {
