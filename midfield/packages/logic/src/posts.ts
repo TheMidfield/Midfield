@@ -142,9 +142,29 @@ export async function getTakesPaginatedLogic(
 
     // Next cursor is the created_at of the last post
     const nextCursor = posts.length > 0 ? posts[posts.length - 1].created_at : null;
-
     return { posts, hasMore, nextCursor };
 }
+
+export async function getPostByIdLogic(supabase: any, postId: string) {
+    const { data, error } = await supabase
+        .from('posts')
+        .select(`
+            *,
+            author:users(username, avatar_url, display_name, favorite_club:topics!favorite_club_id(title, slug, metadata)),
+            topic:topics(title, slug, type, metadata)
+        `)
+        .eq('id', postId)
+        .eq('is_deleted', false)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error fetching post by ID:', error);
+        return null;
+    }
+
+    return data;
+}
+
 
 export async function getRepliesLogic(supabase: any, rootPostId: string) {
     // Try fetching with threaded context first

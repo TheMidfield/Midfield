@@ -195,8 +195,35 @@ async function generateImage(body: any, origin: string) {
                         borderRadius: 12,
                         border: `1px solid ${border}`,
                         overflow: 'hidden',
+                        position: 'relative', // For the grid
                     }}
                 >
+                    {/* Homepage-style Grid Background */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            opacity: isDark ? 0.04 : 0.08,
+                            backgroundImage: `linear-gradient(to right, ${textSecondary} 1px, transparent 1px), linear-gradient(to bottom, ${textSecondary} 1px, transparent 1px)`,
+                            backgroundSize: '32px 32px',
+                            maskImage: 'radial-gradient(circle at 50% 50%, black 30%, transparent 90%)',
+                        }}
+                    />
+
+                    {/* Ambient Spotlights */}
+                    <div
+                        style={{
+                            position: 'absolute',
+                            top: -100,
+                            left: -100,
+                            width: 600,
+                            height: 600,
+                            background: `radial-gradient(circle, ${accent}15 0%, transparent 70%)`,
+                            filter: 'blur(60px)',
+                            borderRadius: '100%',
+                        }}
+                    />
+
                     {/* HEADER ZONE - Reduced for long takes */}
                     <div
                         style={{
@@ -413,16 +440,27 @@ async function generateImage(body: any, origin: string) {
                                         alt=""
                                     />
                                 ) : (
-                                    <span
-                                        style={{
-                                            fontSize: 36,
-                                            fontWeight: 700,
-                                            color: '#ffffff',
-                                            fontFamily: '"Onest", -apple-system, sans-serif',
-                                        }}
-                                    >
-                                        {authorUsername.charAt(0).toUpperCase()}
-                                    </span>
+                                    authorUsername === 'midfield' ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={logoUrl}
+                                            width={50}
+                                            height={50}
+                                            style={{ objectFit: 'contain' }}
+                                            alt=""
+                                        />
+                                    ) : (
+                                        <span
+                                            style={{
+                                                fontSize: 36,
+                                                fontWeight: 700,
+                                                color: '#ffffff',
+                                                fontFamily: '"Onest", -apple-system, sans-serif',
+                                            }}
+                                        >
+                                            {authorUsername.charAt(0).toUpperCase()}
+                                        </span>
+                                    )
                                 )}
                             </div>
 

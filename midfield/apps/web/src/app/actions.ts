@@ -48,7 +48,8 @@ import {
     updatePostLogic,
     deletePostLogic,
     getUserPostsPaginatedLogic,
-    getBookmarkedPostsPaginatedLogic
+    getBookmarkedPostsPaginatedLogic,
+    getPostByIdLogic
 } from "@midfield/logic/src/posts";
 
 /**
@@ -197,6 +198,14 @@ export async function deletePost(postId: string) {
     }
 
     return await deletePostLogic(supabase, postId, user.id);
+}
+
+/**
+ * Get a single post by ID
+ */
+export async function getPostById(postId: string) {
+    const supabase = await createClient();
+    return await getPostByIdLogic(supabase, postId);
 }
 
 // ============================================

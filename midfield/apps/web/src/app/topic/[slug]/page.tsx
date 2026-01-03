@@ -2,7 +2,7 @@ import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getL
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 import { notFound } from "next/navigation";
 import { TopicPageClient } from "@/components/TopicPageClient";
-import { getTakes } from "@/app/actions";
+import { getTakes, getPostById } from "@/app/actions";
 import { getUserProfile } from "@/app/profile/actions";
 import { getTopicVotes } from "@/app/actions/vote-topic";
 import { cache } from "react";
@@ -18,39 +18,58 @@ const cachedGetClubFixtures = cache(getClubFixtures);
 const cachedGetLeagueTable = cache(getLeagueTable);
 const cachedGetClubStanding = cache(getClubStanding);
 const cachedGetContinentalLeagueFixtures = cache(getContinentalLeagueFixtures);
+const cachedGetPostById = cache(getPostById);
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: { params: { slug: string }, searchParams: { post?: string } }): Promise<Metadata> {
     const { slug } = await params;
+    const { post: postId } = await searchParams;
     const topic = await cachedGetTopicBySlug(slug);
 
     if (!topic) return {};
 
-    const shareSentence = await (async () => {
-        if (topic.type === 'player') {
-            const club = await cachedGetPlayerClub(topic.id);
-            if (club) {
-                return getTopicShareSentence({
-                    ...topic,
-                    metadata: {
-                        ...(topic.metadata as any),
-                        clubName: club.title
-                    }
-                });
-            }
-        }
-        return getTopicShareSentence(topic);
-    })();
+    // Determine content and title based on whether we're sharing a specific post or a topic
+    let content = "";
+    let authorUsername = "midfield";
+    let authorAvatar = undefined;
 
-    const title = `${topic.title} - Midfield`;
+    if (postId) {
+        const post = await cachedGetPostById(postId);
+        if (post) {
+            content = post.content;
+            authorUsername = post.author?.username || "anonymous";
+            authorAvatar = post.author?.avatar_url;
+        }
+    }
+
+    if (!content) {
+        content = await (async () => {
+            if (topic.type === 'player') {
+                const club = await cachedGetPlayerClub(topic.id);
+                if (club) {
+                    return getTopicShareSentence({
+                        ...topic,
+                        metadata: {
+                            ...(topic.metadata as any),
+                            clubName: club.title
+                        }
+                    });
+                }
+            }
+            return getTopicShareSentence(topic);
+        })();
+    }
+
+    const title = postId ? `${authorUsername}'s take on ${topic.title} - Midfield` : `${topic.title} - Midfield`;
 
     // Construct OG Image URL using our share-card API
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://midfield.one';
     const ogImageUrl = new URL(`${baseUrl}/api/share-card`);
     ogImageUrl.searchParams.set('topicTitle', topic.title);
     ogImageUrl.searchParams.set('topicType', topic.type);
-    ogImageUrl.searchParams.set('authorUsername', 'midfield');
-    ogImageUrl.searchParams.set('content', shareSentence);
+    ogImageUrl.searchParams.set('authorUsername', authorUsername);
+    ogImageUrl.searchParams.set('content', content);
     ogImageUrl.searchParams.set('theme', 'dark');
+    if (authorAvatar) ogImageUrl.searchParams.set('authorAvatarUrl', authorAvatar);
 
     const metadata = topic.metadata as any;
     if (topic.type === 'player') {
@@ -70,21 +89,22 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
     return {
         title,
-        description: shareSentence,
+        description: content,
         openGraph: {
             title,
-            description: shareSentence,
+            description: content,
             images: [{ url: ogImageUrl.toString(), width: 1080, height: 1080 }],
             type: 'website',
         },
         twitter: {
             card: 'summary_large_image',
             title,
-            description: shareSentence,
+            description: content,
             images: [ogImageUrl.toString()],
         }
     };
 }
+
 
 export default async function TopicPage({
     params,

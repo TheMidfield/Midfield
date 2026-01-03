@@ -17,6 +17,7 @@ interface ShareModalProps {
     clubName?: string;
     clubBadgeUrl?: string;
     topicPosition?: string;
+    postId?: string;
 }
 
 type ActionState = "idle" | "loading" | "success";
@@ -43,6 +44,7 @@ export function ShareModal({
     clubName,
     clubBadgeUrl,
     topicPosition,
+    postId,
 }: ShareModalProps) {
     const [imageUrl, setImageUrl] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -176,9 +178,17 @@ export function ShareModal({
 
     // X (Twitter) share handler
     const handleShareToX = () => {
-        const text = encodeURIComponent(`My take on ${topicTitle || 'Midfield'}: ${content.substring(0, 100)}...`);
-        const url = encodeURIComponent(window.location.href);
-        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+        const text = encodeURIComponent(`" ${content.length > 140 ? content.substring(0, 137) + '...' : content} "\n\n${authorUsername}'s take on ${topicTitle || 'Midfield'}`);
+
+        // Construct unique URL for this post if ID available
+        let url = window.location.href;
+        if (postId) {
+            const urlObj = new URL(url);
+            urlObj.searchParams.set('post', postId);
+            url = urlObj.toString();
+        }
+        const shareUrl = encodeURIComponent(url);
+        window.open(`https://twitter.com/intent/tweet?text=${text}&url=${shareUrl}`, '_blank');
     };
 
     if (!isOpen) return null;

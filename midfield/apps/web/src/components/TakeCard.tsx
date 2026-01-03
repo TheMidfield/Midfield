@@ -749,6 +749,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     clubName={clubName || (post.topic?.type === 'club' ? post.topic.title : undefined)}
                     clubBadgeUrl={clubBadgeUrl || (post.topic?.type === 'club' ? post.topic.metadata?.badge_url || post.topic.metadata?.logo_url : undefined)}
                     topicPosition={topicPosition}
+                    postId={post.id}
                 />
             </article>
         </>
