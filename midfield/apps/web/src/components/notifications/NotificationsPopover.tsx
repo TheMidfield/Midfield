@@ -58,6 +58,10 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
         return () => window.removeEventListener('dev:open-welcome-modal', handleOpenWelcome);
     }, []);
 
+    const [notificationsCache, setNotificationsCache] = useState<Notification[]>([]);
+    const [cacheTimestamp, setCacheTimestamp] = useState<number>(0);
+    const CACHE_DURATION = 30000; // 30 seconds cache
+
     useEffect(() => {
         if (open) {
             const isMobile = window.matchMedia('(max-width: 639px)').matches;
@@ -72,18 +76,35 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
         };
     }, [open]);
 
+    // Smart fetch: only load if cache is empty, stale, or new notifications arrived
     useEffect(() => {
-        if (open) {
+        if (!open) return;
+
+        const now = Date.now();
+        const cacheIsStale = now - cacheTimestamp > CACHE_DURATION;
+        const hasCache = notificationsCache.length > 0;
+
+        // Only fetch if:
+        // 1. No cache exists, OR
+        // 2. Cache is stale, OR  
+        // 3. New notification arrived (lastNotificationTrigger changed)
+        if (!hasCache || cacheIsStale || lastNotificationTrigger > cacheTimestamp) {
             setLoading(true);
             setOffset(0);
             getNotifications(0, LIMIT).then((res) => {
                 setNotifications(res.notifications);
+                setNotificationsCache(res.notifications); // Update cache
+                setCacheTimestamp(Date.now()); // Update cache timestamp
                 setHasMore(res.hasMore);
                 setLoading(false);
                 refreshUnreadCount();
             });
+        } else {
+            // Use cached data - instant display!
+            setNotifications(notificationsCache);
+            setLoading(false);
         }
-    }, [open, lastNotificationTrigger, refreshUnreadCount]);
+    }, [open]);
 
     const loadMore = useCallback(async () => {
         if (loadingMore || !hasMore) return;
@@ -99,7 +120,9 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     const handleMarkAllRead = async () => {
         // Optimistic UI updates
-        setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        const updatedNotifications = notifications.map(n => ({ ...n, is_read: true }));
+        setNotifications(updatedNotifications);
+        setNotificationsCache(updatedNotifications); // Update cache too
 
         // Perform server update
         const result = await markAllNotificationsRead();
@@ -112,7 +135,9 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
 
     const handleRead = async (id: string) => {
         // Optimistic UI update
-        setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+        const updatedNotifications = notifications.map(n => n.id === id ? { ...n, is_read: true } : n);
+        setNotifications(updatedNotifications);
+        setNotificationsCache(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n)); // Update cache too
 
         // Perform server update
         const result = await markNotificationRead(id);
