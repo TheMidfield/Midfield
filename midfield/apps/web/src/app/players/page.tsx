@@ -27,8 +27,13 @@ export default async function PlayersPage() {
     const filteredPlayers = (playerRelationships || [])
         .filter((player: any) => {
             const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
-            const league = (clubData?.metadata as any)?.league;
-            return ALLOWED_LEAGUES.includes(league);
+            const league = clubData?.metadata?.league;
+
+            // Strict type checking and trimming for league matching
+            if (!league || typeof league !== 'string') return false;
+
+            // Check if the league is in ALLOWED_LEAGUES (exact match, case-sensitive)
+            return ALLOWED_LEAGUES.includes(league.trim());
         });
 
     const playersWithClubs = filteredPlayers.map((player: any) => {
