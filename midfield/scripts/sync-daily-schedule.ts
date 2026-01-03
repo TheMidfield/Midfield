@@ -6,14 +6,27 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import {
-    syncDailySchedules,
+syncDailySchedules,
     syncClubSchedules,
     syncLeagueStandings
 } from '../packages/logic/src/sync/simple-fixture-sync';
-import { CORE_LEAGUES, getLeagueName } from '../packages/logic/src/config/leagues';
 import { TheSportsDBClient } from '../packages/logic/src/sync/client';
 import { config } from 'dotenv';
+
+// CONSTANTS INLINED TO AVOID CI PATH ALIAS ISSUES
+const CORE_LEAGUES = ['4328', '4335', '4331', '4332', '4334', '4480', '4481'];
+const getLeagueName = (id: string) => {
+    const map: Record<string, string> = {
+        '4328': 'English Premier League',
+        '4335': 'Spanish La Liga',
+        '4331': 'German Bundesliga',
+        '4332': 'Italian Serie A',
+        '4334': 'French Ligue 1',
+        '4480': 'UEFA Champions League',
+        '4481': 'UEFA Europa League'
+    };
+    return map[id] || id;
+};
 
 config();
 
