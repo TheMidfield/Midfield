@@ -1,16 +1,11 @@
-
-[functions.sync-ratings]
+[functions.cron-livescores]
 enabled = true
 verify_jwt = true
-import_map = "./functions/sync-ratings/deno.json"
-entrypoint = "./functions/sync-ratings/index.ts"
+import_map = "./functions/cron-livescores/deno.json"
+entrypoint = "./functions/cron-livescores/index.ts"
 
-[functions.sync-scheduler]
+[functions.cron-purge-notifications]
 enabled = true
 verify_jwt = true
-import_map = "./functions/sync-scheduler/deno.json"
-entrypoint = "./functions/sync-scheduler/index.ts"
-schedule = "0 0 * * *"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/sync-ratings/*.html" ]
+import_map = "./functions/cron-purge-notifications/deno.json"
+entrypoint = "./functions/cron-purge-notifications/index.ts"
