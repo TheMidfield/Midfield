@@ -1,11 +1,14 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import { Flame, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import NextImage from "next/image";
 import { Card } from "@/components/ui/Card";
 import { PLAYER_IMAGE_STYLE } from "@/lib/entity-helpers";
 import { useHeroTakes } from "@/lib/hooks/use-cached-data";
+import { createClient } from "@/lib/supabase/client";
 import type { HeroTake } from "@/app/actions/hero-data";
 
 // Format relative time
@@ -24,6 +27,7 @@ function timeAgo(dateStr: string): string {
 function MobileTakeCard({ take }: { take: HeroTake }) {
     const isPlayer = take.topic.type === 'player';
     const isClub = take.topic.type === 'club';
+    const isLeague = take.topic.type === 'league';
 
     return (
         <Link href={`/topic/${take.topic.slug}`} className="block group">
@@ -33,15 +37,37 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
                     <div className="flex items-center gap-1.5 min-w-0">
                         <div className={`relative shrink-0 overflow-hidden ${isPlayer ? 'w-4 h-4 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800' : 'w-4 h-4'}`}>
                             {take.topic.imageUrl ? (
-                                <NextImage
-                                    src={take.topic.imageUrl}
-                                    alt={take.topic.title}
-                                    fill
-                                    sizes="16px"
-                                    className={isClub ? 'object-contain' : PLAYER_IMAGE_STYLE.className}
-                                    {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
-                                    unoptimized={true}
-                                />
+                                <>
+                                    {/* Light mode image */}
+                                    <NextImage
+                                        src={take.topic.imageUrl}
+                                        alt={take.topic.title}
+                                        fill
+                                        sizes="16px"
+                                        className={(isClub || isLeague) ? 'object-contain p-0.5 dark:hidden' : PLAYER_IMAGE_STYLE.className}
+                                        {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
+                                        unoptimized={true}
+                                        onError={(e) => {
+                                            console.error('[Mobile] Image failed to load:', take.topic.imageUrl, 'for', take.topic.title, 'type:', take.topic.type);
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                    {/* Dark mode image (for leagues) */}
+                                    {isLeague && (
+                                        <NextImage
+                                            src={take.topic.imageDarkUrl || take.topic.imageUrl}
+                                            alt={take.topic.title}
+                                            fill
+                                            sizes="16px"
+                                            unoptimized={true}
+                                            className="object-contain p-0.5 hidden dark:block"
+                                            onError={(e) => {
+                                                console.error('[Mobile Dark] Image failed to load:', take.topic.imageDarkUrl || take.topic.imageUrl);
+                                                e.currentTarget.style.display = 'none';
+                                            }}
+                                        />
+                                    )}
+                                </>
                             ) : (
                                 <div className="w-full h-full bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
                                     <span className="text-[6px] opacity-50">#</span>
@@ -91,11 +117,103 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
 
 /**
  * MobileTakeFeed - Lightweight take feed for mobile
- * Uses the same SWR hook as LiveFeed but without realtime subscriptions
- * Displays as horizontal scroll carousel
+ * Uses the same SWR hook as LiveFeed with realtime subscriptions
+ * Displays as horizontal scroll carousel with delayed pop-in animation for last 2 cards
  */
 export function MobileTakeFeed() {
-    const { data: takes, isLoading: loading } = useHeroTakes(6);
+    const { data: swrTakes, isLoading: loading, mutate } = useHeroTakes(6);
+    const [takes, setTakes] = useState<HeroTake[]>([]);
+    const [visibleCards, setVisibleCards] = useState<number>(0);
+    const [animatingCardIndices, setAnimatingCardIndices] = useState<Set<number>>(new Set());
+    const hasInitialAnimationRun = useRef(false);
+    const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
+
+    // Initialize Supabase client
+    useEffect(() => {
+        supabaseRef.current = createClient();
+    }, []);
+
+    // Update takes when SWR data changes
+    useEffect(() => {
+        if (swrTakes) {
+            setTakes(swrTakes);
+        }
+    }, [swrTakes]);
+
+    // Supabase Realtime subscription for instant updates (same as desktop)
+    useEffect(() => {
+        if (!supabaseRef.current) return;
+
+        const channel = supabaseRef.current
+            .channel('public:posts:mobile')
+            .on(
+                'postgres_changes',
+                {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'posts',
+                    filter: 'is_deleted=eq.false'
+                },
+                async (payload) => {
+                    console.log('New take detected (mobile):', payload);
+                    // Delay to ensure DB propagation
+                    setTimeout(() => {
+                        mutate();
+                    }, 2000);
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabaseRef.current?.removeChannel(channel);
+        };
+    }, [mutate]);
+
+    // Staggered reveal animation - first 4 cards instant, then 2 with 1.5s delays
+    useEffect(() => {
+        if (!takes || takes.length === 0 || loading) return;
+
+        // Animation already ran - just show all cards
+        if (hasInitialAnimationRun.current) {
+            setVisibleCards(takes.length);
+            return;
+        }
+
+        // First-time animation setup
+        setVisibleCards(0);
+        setAnimatingCardIndices(new Set([4, 5]));
+
+        const timers: NodeJS.Timeout[] = [];
+
+        // After 50ms, show first 4 cards instantly
+        timers.push(setTimeout(() => {
+            setVisibleCards(Math.min(4, takes.length));
+        }, 50));
+
+        // After 1.5s, show card 5 with animation
+        if (takes.length >= 5) {
+            timers.push(setTimeout(() => {
+                setVisibleCards(5);
+            }, 1550));
+        }
+
+        // After 3s, show card 6 with animation
+        if (takes.length >= 6) {
+            timers.push(setTimeout(() => {
+                setVisibleCards(6);
+                hasInitialAnimationRun.current = true;
+                setTimeout(() => setAnimatingCardIndices(new Set()), 500);
+            }, 3050));
+        } else {
+            // Mark complete after last card
+            timers.push(setTimeout(() => {
+                hasInitialAnimationRun.current = true;
+                setAnimatingCardIndices(new Set());
+            }, takes.length >= 5 ? 2050 : 100));
+        }
+
+        return () => timers.forEach(timer => clearTimeout(timer));
+    }, [takes, loading]);
 
     if (loading) {
         return (
@@ -138,13 +256,35 @@ export function MobileTakeFeed() {
                 </span>
             </div>
 
-            {/* Horizontal scroll container for mobile */}
+            {/* Horizontal scroll container with staggered animation */}
             <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-hide">
-                {takes.map((take) => (
-                    <div key={take.id} className="shrink-0 w-[220px] snap-start">
-                        <MobileTakeCard take={take} />
-                    </div>
-                ))}
+                <AnimatePresence mode="popLayout">
+                    {takes.map((take, index) => {
+                        // Only show if visible based on staggered reveal
+                        if (index >= visibleCards) return null;
+
+                        // First 4 cards (0-3): no animation, just appear
+                        // Cards 5-6 (indices 4-5): animated pop-in
+                        const shouldAnimate = animatingCardIndices.has(index);
+
+                        return (
+                            <motion.div
+                                key={take.id}
+                                className="shrink-0 w-[220px] snap-start"
+                                initial={shouldAnimate ? { opacity: 0, x: -30, scale: 0.94 } : false}
+                                animate={{ opacity: 1, x: 0, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                                transition={shouldAnimate ? {
+                                    opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
+                                    x: { type: 'spring', stiffness: 400, damping: 28 },
+                                    scale: { type: 'spring', stiffness: 450, damping: 25 },
+                                } : undefined}
+                            >
+                                <MobileTakeCard take={take} />
+                            </motion.div>
+                        );
+                    })}
+                </AnimatePresence>
             </div>
         </div>
     );

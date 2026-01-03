@@ -27,6 +27,7 @@ function timeAgo(dateStr: string): string {
 function TakeCard({ take }: { take: HeroTake }) {
     const isPlayer = take.topic.type === 'player';
     const isClub = take.topic.type === 'club';
+    const isLeague = take.topic.type === 'league';
 
     return (
         <Link href={`/topic/${take.topic.slug}`} className="block group">
@@ -36,16 +37,39 @@ function TakeCard({ take }: { take: HeroTake }) {
                     <ArrowDownWideNarrow className="w-3 h-3 text-slate-400 dark:text-neutral-500 shrink-0" />
                     <div className={`relative shrink-0 overflow-hidden ${isPlayer ? 'w-5 h-5 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800' : 'w-5 h-5'}`}>
                         {take.topic.imageUrl ? (
-                            <NextImage
-                                src={take.topic.imageUrl}
-                                alt={take.topic.title}
-                                fill
-                                sizes="20px"
-                                priority={true}
-                                unoptimized={true}
-                                className={isClub ? 'object-contain' : PLAYER_IMAGE_STYLE.className}
-                                {...(!isClub ? PLAYER_IMAGE_STYLE : {})}
-                            />
+                            <>
+                                {/* Light mode image */}
+                                <NextImage
+                                    src={take.topic.imageUrl}
+                                    alt={take.topic.title}
+                                    fill
+                                    sizes="20px"
+                                    priority={true}
+                                    unoptimized={true}
+                                    className={(isClub || isLeague) ? 'object-contain p-0.5 dark:hidden' : `${PLAYER_IMAGE_STYLE.className}`}
+                                    {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
+                                    onError={(e) => {
+                                        console.error('Image failed to load:', take.topic.imageUrl, 'for', take.topic.title, 'type:', take.topic.type);
+                                        e.currentTarget.style.display = 'none';
+                                    }}
+                                />
+                                {/* Dark mode image (for leagues) */}
+                                {isLeague && (
+                                    <NextImage
+                                        src={take.topic.imageDarkUrl || take.topic.imageUrl}
+                                        alt={take.topic.title}
+                                        fill
+                                        sizes="20px"
+                                        priority={true}
+                                        unoptimized={true}
+                                        className="object-contain p-0.5 hidden dark:block"
+                                        onError={(e) => {
+                                            console.error('[Dark] Image failed to load:', take.topic.imageDarkUrl || take.topic.imageUrl, 'for', take.topic.title);
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                )}
+                            </>
                         ) : (
                             <div className="w-full h-full bg-slate-200 dark:bg-neutral-700 flex items-center justify-center">
                                 <span className="text-[8px] opacity-50">#</span>

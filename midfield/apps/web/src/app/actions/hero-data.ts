@@ -13,6 +13,7 @@ export type HeroEntity = {
     type: string;
     displayName: string;
     imageUrl?: string;
+    imageDarkUrl?: string; // Dark mode variant (for leagues)
     position?: string;
     rating?: number;
     subtitle?: string;
@@ -37,6 +38,7 @@ export type HeroTake = {
         slug: string;
         type: string;
         imageUrl?: string;
+        imageDarkUrl?: string; // Dark mode variant (for leagues)
     };
     reactionCount: number;
 };
@@ -200,6 +202,7 @@ export async function getHeroEntities(): Promise<HeroEntity[]> {
             imageUrl: t.type === 'player'
                 ? t.metadata?.photo_url
                 : t.metadata?.badge_url || t.metadata?.logo_url,
+            imageDarkUrl: t.type === 'league' ? t.metadata?.logo_url_dark : undefined,
             position: t.metadata?.position,
             rating: t.metadata?.rating ? Number(t.metadata.rating) : undefined,
             subtitle: t.type === 'club' ? t.metadata?.league_name : undefined,
@@ -319,7 +322,13 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
                     title: String(topic.title),
                     slug: String(topic.slug),
                     type: String(topic.type),
-                    imageUrl: topic.metadata?.photo_url || topic.metadata?.badge_url
+                    // For Premier League, use badge_url (matches trending widget); for other leagues use logo_url
+                    imageUrl: topic.type === 'player'
+                        ? topic.metadata?.photo_url
+                        : topic.slug === 'english-premier-league'
+                            ? topic.metadata?.badge_url
+                            : topic.metadata?.badge_url || topic.metadata?.logo_url,
+                    imageDarkUrl: topic.type === 'league' ? topic.metadata?.logo_url_dark : undefined
                 }
             };
         })

@@ -44,15 +44,43 @@ function MiniEntityCard({ entity }: { entity: HeroEntity }) {
             ) : (
                 <div className="relative w-10 h-10 sm:w-9 sm:h-9 shrink-0">
                     {entity.imageUrl ? (
-                        <NextImage
-                            src={entity.imageUrl}
-                            alt={entity.title}
-                            fill
-                            sizes="36px"
-                            priority={true}
-                            unoptimized={true}
-                            className="object-contain"
-                        />
+                        <>
+                            {entity.type === 'league' ? (
+                                <>
+                                    {/* Light mode image for leagues */}
+                                    <NextImage
+                                        src={entity.imageUrl}
+                                        alt={entity.title}
+                                        fill
+                                        sizes="36px"
+                                        priority={true}
+                                        unoptimized={true}
+                                        className="object-contain dark:hidden"
+                                    />
+                                    {/* Dark mode image for leagues */}
+                                    <NextImage
+                                        src={entity.imageDarkUrl || entity.imageUrl}
+                                        alt={entity.title}
+                                        fill
+                                        sizes="36px"
+                                        priority={true}
+                                        unoptimized={true}
+                                        className="object-contain hidden dark:block"
+                                    />
+                                </>
+                            ) : (
+                                /* Clubs and Premier League: single image, both modes */
+                                <NextImage
+                                    src={entity.imageUrl}
+                                    alt={entity.title}
+                                    fill
+                                    sizes="36px"
+                                    priority={true}
+                                    unoptimized={true}
+                                    className="object-contain"
+                                />
+                            )}
+                        </>
                     ) : (
                         <Shield className="w-full h-full text-slate-300 dark:text-neutral-600" />
                     )}

@@ -130,7 +130,17 @@ export default async function LeaguesPage() {
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
               {nationalLeagues.map((league: any) => {
-                const countryFlagImg = COUNTRY_FLAG_IMAGES[league.metadata?.country || ""];
+                // Get country - try metadata first, then extract from title
+                let country = league.metadata?.country;
+                if (!country && league.title) {
+                  // Extract from title: "English Premier League" -> "England", "French Ligue 1" -> "France"
+                  if (league.title.includes('English')) country = 'England';
+                  else if (league.title.includes('Spanish')) country = 'Spain';
+                  else if (league.title.includes('Italian')) country = 'Italy';
+                  else if (league.title.includes('German')) country = 'Germany';
+                  else if (league.title.includes('French')) country = 'France';
+                }
+                const countryFlagImg = COUNTRY_FLAG_IMAGES[country || ""];
 
                 return (
                   <Link key={league.id} href={`/topic/${league.slug}`}>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { User as UserIcon, Terminal, Home, Users, Shield, Trophy } from "lucide-react";
+import { User as UserIcon, Terminal, Home, Users, Shield, Trophy, Search } from "lucide-react";
 import { ThemeToggle } from "./ui/ThemeToggle";
 import { Button } from "./ui/Button";
 import { IconButton } from "./ui/IconButton";
@@ -178,7 +178,18 @@ export function Navbar() {
                         </DropdownMenu>
 
                         <div className="flex items-center gap-1">
-                            <ThemeToggle />
+                            {/* Search icon - mobile only */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(true)}
+                                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-md text-slate-600 dark:text-neutral-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors"
+                                aria-label="Search"
+                            >
+                                <Search className="w-5 h-5" />
+                            </button>
+                            {/* Theme toggle - desktop only */}
+                            <div className="hidden lg:block">
+                                <ThemeToggle />
+                            </div>
                             {isAuthenticated && !isLoading && (
                                 <NotificationBell onOpenChange={setIsNotificationOpen} />
                             )}
@@ -259,6 +270,11 @@ export function Navbar() {
                         <MobileNavLink href="/clubs" icon={Shield} active={isActive("/clubs")} onClick={() => setIsMobileMenuOpen(false)}>Clubs</MobileNavLink>
                         <MobileNavLink href="/leagues" icon={Trophy} active={isActive("/leagues")} onClick={() => setIsMobileMenuOpen(false)}>Leagues</MobileNavLink>
                         <div className="my-3 border-t border-slate-200 dark:border-neutral-800" />
+                        {/* Theme Toggle in mobile menu */}
+                        <div className="flex items-center justify-between px-4 py-3">
+                            <span className="text-[15px] font-semibold text-slate-700 dark:text-neutral-300">Theme</span>
+                            <ThemeToggle />
+                        </div>
                         <MobileNavLink href="/design-system" icon={Terminal} active={isActive("/design-system")} onClick={() => setIsMobileMenuOpen(false)}>Showcase</MobileNavLink>
 
                         {/* Mobile Dev Tools */}
