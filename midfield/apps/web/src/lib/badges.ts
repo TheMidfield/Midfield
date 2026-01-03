@@ -1,4 +1,4 @@
-import { Crown, Medal, Trophy, Zap, MessageSquare, Heart, Share2, Star } from "lucide-react";
+import { Crown, Medal, Trophy, Zap, MessageSquare, Heart, Share2, Star, Flame } from "lucide-react";
 
 export interface BadgeMetadata {
     title: string;
@@ -73,6 +73,17 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         category: 'social',
         rank: 1
     },
+    'hat-trick': {
+        title: 'Hat-Trick',
+        description: 'Quality confirmed. One of your takes received 3 reactions.',
+        icon: Flame,
+        color: 'orange',
+        bg: 'bg-orange-100 dark:bg-orange-900/30',
+        border: 'border-orange-200 dark:border-orange-800',
+        text: 'text-orange-600 dark:text-orange-400',
+        category: 'social',
+        rank: 2
+    },
     'influencer': {
         title: 'Influencer',
         description: 'Enticed a debate. You received your first reply from another user.',
@@ -82,6 +93,6 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         border: 'border-indigo-200 dark:border-indigo-800',
         text: 'text-indigo-600 dark:text-indigo-400',
         category: 'social',
-        rank: 2
+        rank: 3
     }
 };

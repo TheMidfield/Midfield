@@ -58,7 +58,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                     .on(
                         'postgres_changes',
                         {
-                            event: 'INSERT',
+                            event: '*', // Listen to INSERT, UPDATE, DELETE
                             schema: 'public',
                             table: 'notifications',
                             filter: `recipient_id=eq.${user.id}`,
@@ -68,9 +68,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                             if (!mounted) return;
 
                             await refreshUnreadCount();
-                            refreshNotifications();
-                            setToastMessage("You have new notifications");
-                            setToastType('notification');
+
+                            // Only trigger the "new notification" toast for INSERT events
+                            if (payload.eventType === 'INSERT') {
+                                refreshNotifications();
+                                setToastMessage("You have new notifications");
+                                setToastType('notification');
+                            }
                         }
                     )
                     .subscribe((status, err) => {
