@@ -21,7 +21,8 @@ export default async function PlayersPage() {
             )
         `)
         .eq('type', 'player')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .limit(5000); // Override default 1000 row limit
 
     // Process players with club data AND filter by allowed leagues
     const filteredPlayers = (playerRelationships || [])

@@ -18,7 +18,8 @@ export default async function PlayerDebugPage() {
             )
         `)
         .eq('type', 'player')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .limit(5000); // Override default 1000 row limit
 
     if (error) {
         return <div>Error: {error.message}</div>;
