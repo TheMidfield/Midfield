@@ -187,7 +187,8 @@ export function ShareModal({
 
     // X (Twitter) share handler
     const handleShareToX = () => {
-        const text = encodeURIComponent(`" ${content.length > 140 ? content.substring(0, 137) + '...' : content} "\n\n${authorUsername}'s take on ${topicTitle || 'Midfield'}`);
+        const snippet = content.length > 100 ? content.substring(0, 97) + '...' : content;
+        const text = encodeURIComponent(`" ${snippet} "\n\nCooking or finished? @${authorUsername} has a lot to say about ${topicTitle || 'this'}. ⚽️🏟️`);
 
         // Construct unique URL for this post if ID available
         let url = window.location.href;
@@ -202,7 +203,8 @@ export function ShareModal({
 
     // Reddit share handler
     const handleShareToReddit = () => {
-        const title = encodeURIComponent(`${authorUsername}'s take on ${topicTitle || 'football'}: "${content.length > 100 ? content.substring(0, 97) + '...' : content}"`);
+        const snippet = content.length > 80 ? content.substring(0, 77) + '...' : content;
+        const title = encodeURIComponent(`Valid or finished? @${authorUsername}'s latest take on ${topicTitle || 'football'}: "${snippet}"`);
 
         // Construct unique URL for this post if ID available
         let url = window.location.href;

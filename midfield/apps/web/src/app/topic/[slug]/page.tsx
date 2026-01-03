@@ -69,6 +69,7 @@ export async function generateMetadata({ params, searchParams }: { params: { slu
     ogImageUrl.searchParams.set('authorUsername', authorUsername);
     ogImageUrl.searchParams.set('content', content);
     ogImageUrl.searchParams.set('theme', 'dark');
+    ogImageUrl.searchParams.set('mode', postId ? 'take' : 'branding');
     if (authorAvatar) ogImageUrl.searchParams.set('authorAvatarUrl', authorAvatar);
 
     const metadata = topic.metadata as any;

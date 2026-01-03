@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
         theme: searchParams.get('theme') || 'dark',
         clubName: searchParams.get('clubName') || undefined,
         clubBadgeUrl: searchParams.get('clubBadgeUrl') || undefined,
-        topicPosition: searchParams.get('topicPosition') || undefined
+        topicPosition: searchParams.get('topicPosition') || undefined,
+        mode: searchParams.get('mode') || 'take' // 'take' or 'branding'
     };
     return generateImage(data, request.nextUrl.origin);
 }
@@ -84,11 +85,13 @@ async function generateImage(body: any, origin: string) {
         theme = 'dark',
         clubName,
         clubBadgeUrl,
-        topicPosition
+        topicPosition,
+        mode = 'take'
     } = body;
 
     const isDark = theme === 'dark';
     const isClub = topicType === 'club';
+    const isBranding = mode === 'branding';
 
     // App color palette - exact match (Referencing globals.css)
     // Dark: Neutral #1A1A1A / #1D1D1D | Light: Slate/White #f8fafc / #ffffff
@@ -224,287 +227,395 @@ async function generateImage(body: any, origin: string) {
                         }}
                     />
 
-                    {/* HEADER ZONE - Reduced for long takes */}
-                    <div
-                        style={{
-                            display: 'flex',
-                            padding: isLongTake ? '24px 56px' : (isClub ? '48px 56px' : '0px 56px 0 56px'),
-                            borderBottom: `1px solid ${border}`,
-                            gap: isLongTake ? 24 : 40,
-                            alignItems: isClub || isLongTake ? 'center' : 'flex-end',
-                            position: 'relative',
-                            overflow: 'hidden', // Contain the watermark
-                        }}
-                    >
-                        {/* Watermark - Only for clubs/teams */}
-                        {isClub && topicImageUrl && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                                src={topicImageUrl}
-                                width={600}
-                                height={600}
-                                style={{
-                                    position: 'absolute',
-                                    right: -150,
-                                    top: -150,
-                                    opacity: watermarkOpacity,
-                                    transform: 'rotate(15deg)',
-                                    pointerEvents: 'none',
-                                }}
-                                alt=""
-                            />
-                        )}
-
-                        {/* Player/Club Image */}
+                    {isBranding ? (
                         <div
                             style={{
-                                display: 'flex',
-                                position: 'relative',
-                                width: isLongTake ? (isClub ? 100 : 140) : (isClub ? 200 : 250),
-                                height: isLongTake ? (isClub ? 100 : 180) : (isClub ? 200 : 340),
-                                alignItems: 'flex-end',
-                                justifyContent: 'center',
-                                marginBottom: isClub || isLongTake ? 0 : -44,
-                            }}
-                        >
-                            {topicImageUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                    src={topicImageUrl}
-                                    width={isLongTake ? (isClub ? 100 : 140) : (isClub ? 200 : 250)}
-                                    height={isLongTake ? (isClub ? 100 : 180) : (isClub ? 200 : 340)}
-                                    style={{
-                                        objectFit: 'contain',
-                                        objectPosition: isClub ? 'center' : 'bottom',
-                                        display: 'block',
-                                    }}
-                                    alt=""
-                                />
-                            ) : (
-                                <div
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        backgroundColor: isDark ? '#262626' : '#f5f5f5',
-                                        borderRadius: isClub ? 24 : 12,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        fontSize: 84,
-                                        fontWeight: 700,
-                                        color: textMuted,
-                                        fontFamily: '"Onest", -apple-system, sans-serif',
-                                        marginBottom: 48,
-                                    }}
-                                >
-                                    {topicTitle.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Entity Info */}
-                        <div
-                            style={{
+                                flex: 1,
                                 display: 'flex',
                                 flexDirection: 'column',
-                                gap: 24,
-                                flex: 1,
+                                alignItems: 'center',
                                 justifyContent: 'center',
-                                marginBottom: isClub ? 0 : 34, // Reset text lift for clubs
+                                padding: 80,
+                                position: 'relative',
                             }}
                         >
-                            {/* Title */}
-                            <h1
-                                style={{
-                                    fontSize: isLongTake ? 40 : 56,
-                                    fontWeight: 700,
-                                    color: textPrimary,
-                                    margin: 0,
-                                    lineHeight: 1.05,
-                                    letterSpacing: '-0.02em',
-                                    fontFamily: '"Onest", -apple-system, sans-serif',
-                                }}
-                            >
-                                {topicTitle}
-                            </h1>
-
-                            {/* Club Badge & Name (Prominent) + Metadata */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-
-                                {/* CLUB ENTITY - League Badge */}
-                                {/* PLAYER ENTITY - Club Info */}
-                                {!isClub && clubName && clubBadgeUrl && (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={clubBadgeUrl}
-                                            width={isLongTake ? 32 : 44}
-                                            height={isLongTake ? 32 : 44}
-                                            style={{ objectFit: 'contain' }}
-                                            alt=""
-                                        />
-                                        <span
-                                            style={{
-                                                fontSize: isLongTake ? 24 : 32,
-                                                color: textSecondary,
-                                                fontWeight: 500,
-                                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                            }}
-                                        >
-                                            {clubName}
-                                        </span>
-                                    </div>
-                                )}
-
-                                {/* Badges row */}
-                                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                                    {/* Type badge */}
-                                    <div
-                                        style={{
-                                            backgroundColor: isDark ? '#262626' : '#f5f5f5',
-                                            color: textSecondary,
-                                            padding: '8px 16px',
-                                            borderRadius: 8,
-                                            fontSize: isLongTake ? 16 : 20,
-                                            fontWeight: 600,
-                                            textTransform: 'capitalize',
-                                            fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                        }}
-                                    >
-                                        {isClub ? 'Club' : 'Player'}
-                                    </div>
-
-                                    {/* Position / League badge */}
-                                    {(topicPosition || !isClub) && (
-                                        <div
-                                            style={{
-                                                backgroundColor: accentBg,
-                                                color: accent,
-                                                padding: '8px 16px',
-                                                borderRadius: 8,
-                                                fontSize: isLongTake ? 16 : 20,
-                                                fontWeight: 600,
-                                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                            }}
-                                        >
-                                            {topicPosition || 'Player'}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* TAKE ZONE - Expanded & Refined */}
-                    <div
-                        style={{
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            padding: isLongTake ? '32px 56px' : '48px 56px',
-                        }}
-                    >
-                        {/* Top: Avatar, Username, Date */}
-                        <div
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center', // This ensures vertical centering for the whole row
-                                gap: 16,
-                                marginBottom: 32,
-                            }}
-                        >
-                            {/* Avatar */}
+                            {/* Central Logo */}
                             <div
                                 style={{
-                                    width: 80,
-                                    height: 80,
-                                    borderRadius: 16,
-                                    backgroundColor: accent,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    overflow: 'hidden',
+                                    marginBottom: 60,
+                                    position: 'relative',
                                 }}
                             >
-                                {authorAvatarUrl ? (
-                                    // eslint-disable-next-line @next/next/no-img-element
-                                    <img
-                                        src={authorAvatarUrl}
-                                        width={80}
-                                        height={80}
-                                        style={{
-                                            objectFit: 'cover',
-                                            width: '100%',
-                                            height: '100%',
-                                        }}
-                                        alt=""
+                                {/* Glowing backdrop for logo */}
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        width: 200,
+                                        height: 200,
+                                        background: `radial-gradient(circle, ${accent}30 0%, transparent 70%)`,
+                                        filter: 'blur(30px)',
+                                    }}
+                                />
+                                <svg
+                                    width="180"
+                                    height="180"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke={logoRing}
+                                        strokeWidth="1.2"
+                                        fill="none"
                                     />
-                                ) : (
-                                    authorUsername === 'midfield' ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
-                                            src={logoUrl}
-                                            width={50}
-                                            height={50}
-                                            style={{ objectFit: 'contain' }}
-                                            alt=""
-                                        />
-                                    ) : (
-                                        <span
-                                            style={{
-                                                fontSize: 36,
-                                                fontWeight: 700,
-                                                color: '#ffffff',
-                                                fontFamily: '"Onest", -apple-system, sans-serif',
-                                            }}
-                                        >
-                                            {authorUsername.charAt(0).toUpperCase()}
-                                        </span>
-                                    )
-                                )}
+                                    <path
+                                        d="M6.5 12C6.5 8.96 8.96 6.5 12 6.5"
+                                        stroke={logoArc}
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+                                    <path
+                                        d="M17.5 12C17.5 15.04 15.04 17.5 12 17.5"
+                                        stroke={logoArc}
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                    />
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="2.5"
+                                        fill={logoDot}
+                                    />
+                                </svg>
                             </div>
 
-                            {/* Username & Date */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            {/* Wordmark */}
+                            <span
+                                style={{
+                                    fontSize: 84,
+                                    fontWeight: 300,
+                                    color: textPrimary,
+                                    letterSpacing: '-0.04em',
+                                    fontFamily: '"Onest", -apple-system, sans-serif',
+                                    marginBottom: 20,
+                                }}
+                            >
+                                Midfield
+                            </span>
+
+                            {/* Topic Insight */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    padding: '12px 32px',
+                                    backgroundColor: accentBg,
+                                    borderRadius: 16,
+                                    border: `1px solid ${accent}40`,
+                                }}
+                            >
                                 <span
                                     style={{
-                                        fontSize: isLongTake ? 28 : 36,
+                                        fontSize: 32,
                                         fontWeight: 600,
                                         color: accent,
                                         fontFamily: '"Onest", -apple-system, sans-serif',
+                                        letterSpacing: '-0.01em',
                                     }}
                                 >
-                                    @{authorUsername}
-                                </span>
-                                <span style={{ color: isDark ? '#404040' : '#d4d4d8', fontSize: 24, marginTop: 4, marginLeft: 12 }}>•</span>
-                                <span
-                                    style={{
-                                        fontSize: isLongTake ? 24 : 28,
-                                        color: textMuted,
-                                        fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                                        marginTop: 2,
-                                    }}
-                                >
-                                    {formatDate(createdAt)}
+                                    {topicTitle} Insider
                                 </span>
                             </div>
                         </div>
+                    ) : (
+                        <>
+                            {/* HEADER ZONE - Reduced for long takes */}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    padding: isLongTake ? '24px 56px' : (isClub ? '48px 56px' : '0px 56px 0 56px'),
+                                    borderBottom: `1px solid ${border}`,
+                                    gap: isLongTake ? 24 : 40,
+                                    alignItems: isClub || isLongTake ? 'center' : 'flex-end',
+                                    position: 'relative',
+                                    overflow: 'hidden', // Contain the watermark
+                                }}
+                            >
+                                {/* Watermark - Only for clubs/teams */}
+                                {isClub && topicImageUrl && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src={topicImageUrl}
+                                        width={600}
+                                        height={600}
+                                        style={{
+                                            position: 'absolute',
+                                            right: -150,
+                                            top: -150,
+                                            opacity: watermarkOpacity,
+                                            transform: 'rotate(15deg)',
+                                            pointerEvents: 'none',
+                                        }}
+                                        alt=""
+                                    />
+                                )}
 
-                        {/* Take content - full width, no indent */}
-                        <p
-                            style={{
-                                fontSize: contentFontSize,
-                                lineHeight: 1.4,
-                                color: textPrimary,
-                                margin: 0,
-                                fontWeight: 400,
-                                whiteSpace: 'pre-wrap',
-                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                            }}
-                        >
-                            {content}
-                        </p>
-                    </div>
+                                {/* Player/Club Image */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        position: 'relative',
+                                        width: isLongTake ? (isClub ? 100 : 140) : (isClub ? 200 : 250),
+                                        height: isLongTake ? (isClub ? 100 : 180) : (isClub ? 200 : 340),
+                                        alignItems: 'flex-end',
+                                        justifyContent: 'center',
+                                        marginBottom: isClub || isLongTake ? 0 : -44,
+                                    }}
+                                >
+                                    {topicImageUrl ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                            src={topicImageUrl}
+                                            width={isLongTake ? (isClub ? 100 : 140) : (isClub ? 200 : 250)}
+                                            height={isLongTake ? (isClub ? 100 : 180) : (isClub ? 200 : 340)}
+                                            style={{
+                                                objectFit: 'contain',
+                                                objectPosition: isClub ? 'center' : 'bottom',
+                                                display: 'block',
+                                            }}
+                                            alt=""
+                                        />
+                                    ) : (
+                                        <div
+                                            style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                backgroundColor: isDark ? '#262626' : '#f5f5f5',
+                                                borderRadius: isClub ? 24 : 12,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                fontSize: 84,
+                                                fontWeight: 700,
+                                                color: textMuted,
+                                                fontFamily: '"Onest", -apple-system, sans-serif',
+                                                marginBottom: 48,
+                                            }}
+                                        >
+                                            {topicTitle.charAt(0).toUpperCase()}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Entity Info */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 24,
+                                        flex: 1,
+                                        justifyContent: 'center',
+                                        marginBottom: isClub ? 0 : 34, // Reset text lift for clubs
+                                    }}
+                                >
+                                    {/* Title */}
+                                    <h1
+                                        style={{
+                                            fontSize: isLongTake ? 40 : 56,
+                                            fontWeight: 700,
+                                            color: textPrimary,
+                                            margin: 0,
+                                            lineHeight: 1.05,
+                                            letterSpacing: '-0.02em',
+                                            fontFamily: '"Onest", -apple-system, sans-serif',
+                                        }}
+                                    >
+                                        {topicTitle}
+                                    </h1>
+
+                                    {/* Club Badge & Name (Prominent) + Metadata */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+                                        {/* CLUB ENTITY - League Badge */}
+                                        {/* PLAYER ENTITY - Club Info */}
+                                        {!isClub && clubName && clubBadgeUrl && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img
+                                                    src={clubBadgeUrl}
+                                                    width={isLongTake ? 32 : 44}
+                                                    height={isLongTake ? 32 : 44}
+                                                    style={{ objectFit: 'contain' }}
+                                                    alt=""
+                                                />
+                                                <span
+                                                    style={{
+                                                        fontSize: isLongTake ? 24 : 32,
+                                                        color: textSecondary,
+                                                        fontWeight: 500,
+                                                        fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                                    }}
+                                                >
+                                                    {clubName}
+                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Badges row */}
+                                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                            {/* Type badge */}
+                                            <div
+                                                style={{
+                                                    backgroundColor: isDark ? '#262626' : '#f5f5f5',
+                                                    color: textSecondary,
+                                                    padding: '8px 16px',
+                                                    borderRadius: 8,
+                                                    fontSize: isLongTake ? 16 : 20,
+                                                    fontWeight: 600,
+                                                    textTransform: 'capitalize',
+                                                    fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                                }}
+                                            >
+                                                {isClub ? 'Club' : 'Player'}
+                                            </div>
+
+                                            {/* Position / League badge */}
+                                            {(topicPosition || !isClub) && (
+                                                <div
+                                                    style={{
+                                                        backgroundColor: accentBg,
+                                                        color: accent,
+                                                        padding: '8px 16px',
+                                                        borderRadius: 8,
+                                                        fontSize: isLongTake ? 16 : 20,
+                                                        fontWeight: 600,
+                                                        fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                                    }}
+                                                >
+                                                    {topicPosition || 'Player'}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* TAKE ZONE - Expanded & Refined */}
+                            <div
+                                style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    padding: isLongTake ? '32px 56px' : '48px 56px',
+                                }}
+                            >
+                                {/* Top: Avatar, Username, Date */}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center', // This ensures vertical centering for the whole row
+                                        gap: 16,
+                                        marginBottom: 32,
+                                    }}
+                                >
+                                    {/* Avatar */}
+                                    <div
+                                        style={{
+                                            width: 80,
+                                            height: 80,
+                                            borderRadius: 16,
+                                            backgroundColor: accent,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            overflow: 'hidden',
+                                        }}
+                                    >
+                                        {authorAvatarUrl ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={authorAvatarUrl}
+                                                width={80}
+                                                height={80}
+                                                style={{
+                                                    objectFit: 'cover',
+                                                    width: '100%',
+                                                    height: '100%',
+                                                }}
+                                                alt=""
+                                            />
+                                        ) : (
+                                            authorUsername === 'midfield' ? (
+                                                // eslint-disable-next-line @next/next/no-img-element
+                                                <img
+                                                    src={logoUrl}
+                                                    width={50}
+                                                    height={50}
+                                                    style={{ objectFit: 'contain' }}
+                                                    alt=""
+                                                />
+                                            ) : (
+                                                <span
+                                                    style={{
+                                                        fontSize: 36,
+                                                        fontWeight: 700,
+                                                        color: '#ffffff',
+                                                        fontFamily: '"Onest", -apple-system, sans-serif',
+                                                    }}
+                                                >
+                                                    {authorUsername.charAt(0).toUpperCase()}
+                                                </span>
+                                            )
+                                        )}
+                                    </div>
+
+                                    {/* Username & Date */}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <span
+                                            style={{
+                                                fontSize: isLongTake ? 28 : 36,
+                                                fontWeight: 600,
+                                                color: accent,
+                                                fontFamily: '"Onest", -apple-system, sans-serif',
+                                            }}
+                                        >
+                                            @{authorUsername}
+                                        </span>
+                                        <span style={{ color: isDark ? '#404040' : '#d4d4d8', fontSize: 24, marginTop: 4, marginLeft: 12 }}>•</span>
+                                        <span
+                                            style={{
+                                                fontSize: isLongTake ? 24 : 28,
+                                                color: textMuted,
+                                                fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                                marginTop: 2,
+                                            }}
+                                        >
+                                            {formatDate(createdAt)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Take content - full width, no indent */}
+                                <p
+                                    style={{
+                                        fontSize: contentFontSize,
+                                        lineHeight: 1.4,
+                                        color: textPrimary,
+                                        margin: 0,
+                                        fontWeight: 400,
+                                        whiteSpace: 'pre-wrap',
+                                        fontFamily: '"DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                                    }}
+                                >
+                                    {content}
+                                </p>
+                            </div>
+                        </>
+                    )}
 
                     {/* FOOTER */}
                     <div
