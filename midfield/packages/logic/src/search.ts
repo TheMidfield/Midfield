@@ -113,12 +113,15 @@ export async function searchTopicsLogic(supabase: any, query: string, type?: str
 
         // VISIBILITY FILTER
         if (topic.type === 'club') {
-            if (!ALLOWED_LEAGUES.includes(topic.derivedLeague)) continue;
+            // Allow club if derivedLeague is in ALLOWED or if derivedLeague is missing (might be a stub/new club)
+            if (topic.derivedLeague && !ALLOWED_LEAGUES.includes(topic.derivedLeague)) continue;
         } else if (topic.type === 'player') {
-            if (!ALLOWED_LEAGUES.includes(topic.derivedLeague)) continue;
+            // Players require a club in allowed leagues  
+            if (!topic.derivedLeague || !ALLOWED_LEAGUES.includes(topic.derivedLeague)) continue;
         } else if (topic.type === 'league') {
             const isContinental = topic.metadata?.competition_type === 'continental';
             const isAllowed = ALLOWED_LEAGUES.includes(topic.title) || ALLOWED_LEAGUES.includes(topic.metadata?.league);
+            // Allow all continental leagues + allowed national leagues
             if (!isContinental && !isAllowed) continue;
         }
 
