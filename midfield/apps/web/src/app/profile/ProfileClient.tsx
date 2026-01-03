@@ -571,40 +571,63 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                         <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-1.5 py-0.5 rounded">More Soon!</span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', flexWrap: 'wrap', minHeight: '40px' }}>
-                        {Object.keys(BADGE_INFO).map((badgeKey) => {
-                            const isEarned = profile?.badges?.includes(badgeKey);
-                            const info = BADGE_INFO[badgeKey];
-                            const Icon = info.icon;
+                        {(() => {
+                            const earnedBadgeKeys = profile?.badges || [];
 
-                            if (isEarned) {
+                            // 1. Determine the highest rank earned in each category
+                            const maxRankPerCategory: Record<string, number> = {};
+                            earnedBadgeKeys.forEach(key => {
+                                const info = BADGE_INFO[key];
+                                if (info) {
+                                    maxRankPerCategory[info.category] = Math.max(
+                                        maxRankPerCategory[info.category] || 0,
+                                        info.rank
+                                    );
+                                }
+                            });
+
+                            return Object.keys(BADGE_INFO).map((badgeKey) => {
+                                const info = BADGE_INFO[badgeKey];
+                                const isEarned = earnedBadgeKeys.includes(badgeKey);
+                                const Icon = info.icon;
+
+                                // Category Mutually Exclusive Rule: 
+                                // Direct order from user: "if you have one of them, the rest should be ignored and not displayed"
+                                // Logic: If you've earned a higher rank in this category, hide this badge (both earned and placeholder)
+                                const hasHigherRankInIconCategory = (maxRankPerCategory[info.category] || 0) > info.rank;
+
+                                if (hasHigherRankInIconCategory) return null;
+
+                                if (isEarned) {
+                                    return (
+                                        <button
+                                            key={badgeKey}
+                                            onClick={() => setSelectedBadge(badgeKey)}
+                                            onMouseEnter={() => setHoveredBadgeTitle(info.title)}
+                                            onMouseLeave={() => setHoveredBadgeTitle(null)}
+                                            className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 active:scale-95 lg:active:scale-100 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
+                                            style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                            title={info.title}
+                                        >
+                                            <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-6`} strokeWidth={1.5} />
+                                        </button>
+                                    );
+                                }
+
+                                // Placeholder for unearned badges
                                 return (
-                                    <button
-                                        key={badgeKey}
-                                        onClick={() => setSelectedBadge(badgeKey)}
-                                        onMouseEnter={() => setHoveredBadgeTitle(info.title)}
+                                    <div
+                                        key={`placeholder-${badgeKey}`}
+                                        className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40"
+                                        style={{ width: '40px', height: '40px' }}
+                                        onMouseEnter={() => setHoveredBadgeTitle(`Locked: ${info.title}`)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
-                                        className={`group relative rounded-xl ${info.bg} border ${info.border} transition-all duration-300 active:scale-95 lg:active:scale-100 cursor-pointer ring-0 hover:ring-2 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-neutral-900 ${info.text.replace('text-', 'ring-').split(' ')[0]}`}
-                                        style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        title={info.title}
                                     >
-                                        <Icon className={`w-5 h-5 ${info.text} transition-transform duration-300 group-hover:-rotate-6`} strokeWidth={1.5} />
-                                    </button>
+                                        <Icon className="w-5 h-5 text-slate-300 dark:text-neutral-700" strokeWidth={1} />
+                                    </div>
                                 );
-                            }
-
-                            // Placeholder / Rune Holder for unearned badges
-                            return (
-                                <div
-                                    key={`placeholder-${badgeKey}`}
-                                    className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40"
-                                    style={{ width: '40px', height: '40px' }}
-                                    onMouseEnter={() => setHoveredBadgeTitle(`Locked: ${info.title}`)}
-                                    onMouseLeave={() => setHoveredBadgeTitle(null)}
-                                >
-                                    <Icon className="w-5 h-5 text-slate-300 dark:text-neutral-700" strokeWidth={1} />
-                                </div>
-                            );
-                        })}
+                            });
+                        })()}
                     </div>
 
                     {/* Elegant footer text reveal */}

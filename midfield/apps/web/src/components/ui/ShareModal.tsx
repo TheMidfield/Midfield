@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { X, Download, Copy, Check, Loader2, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { awardAmbassadorBadge } from "@/app/actions/badges";
 
 interface ShareModalProps {
     isOpen: boolean;
@@ -192,6 +193,9 @@ export function ShareModal({
         }
         const shareUrl = encodeURIComponent(url);
         window.open(`https://twitter.com/intent/tweet?text=${text}&url=${shareUrl}`, '_blank');
+
+        // Award badge asynchronously
+        awardAmbassadorBadge();
     };
 
     // Reddit share handler
@@ -213,6 +217,9 @@ export function ShareModal({
 
         // Default to r/soccer
         window.open(`https://www.reddit.com/r/soccer/submit?title=${title}&text=${textBody}`, '_blank');
+
+        // Award badge asynchronously
+        awardAmbassadorBadge();
     };
 
     if (!isOpen) return null;
