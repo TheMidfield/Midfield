@@ -583,10 +583,22 @@ export async function syncClubSchedules(
     console.log(`Found ${coreClubs.length} Core Clubs (filtered from ${clubs.length} total topics).`);
 
     // 2. Iterate and sync in Parallel Batches
-    const CHUNK_SIZE = 10;
+    // RATE LIMIT OPTIMIZATION:
+    // API Limit: 100 req/min (Premium).
+    // Each club = 2 requests (Last + Next).
+    // Target: ~1.6 req/sec (96 req/min) to stay safe.
+    // Batch Size: 4 clubs (8 requests).
+    // Delay: 5 seconds.
+    // 8 reqs / 5s = 1.6 req/s.
+    const CHUNK_SIZE = 4;
     for (let i = 0; i < coreClubs.length; i += CHUNK_SIZE) {
         const chunk = coreClubs.slice(i, i + CHUNK_SIZE);
         console.log(`Processing Batch ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(coreClubs.length / CHUNK_SIZE)}...`);
+
+        // Rate Limit Throttle (Pre-batch delay, skip first one)
+        if (i > 0) {
+            await new Promise(r => setTimeout(r, 5000));
+        }
 
         await Promise.all(chunk.map(async (club) => {
             const tsdbId = club.metadata?.external?.thesportsdb_id;
@@ -788,6 +800,8 @@ export async function syncLeagueStandings(
     }
 
     console.log('🏆 Starting League Standings Sync...');
+    // Cool-down: Wait 5 seconds to let any previous burst bucket drain
+    await new Promise(r => setTimeout(r, 5000));
     const results = {
         leaguesProcessed: 0,
         standingsUpdated: 0,
