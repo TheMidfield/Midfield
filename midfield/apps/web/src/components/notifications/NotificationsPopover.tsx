@@ -92,18 +92,33 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     }, [loadingMore, hasMore, offset]);
 
     const handleMarkAllRead = async () => {
+        // Optimistic UI updates
         setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-        refreshUnreadCount();
-        await markAllNotificationsRead();
+
+        // Perform server update
+        const result = await markAllNotificationsRead();
+
+        // Sync global count after server confirmation
+        if (result.success) {
+            await refreshUnreadCount();
+        }
     };
 
     const handleRead = async (id: string) => {
+        // Optimistic UI update
         setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-        await markNotificationRead(id);
-        refreshUnreadCount();
+
+        // Perform server update
+        const result = await markNotificationRead(id);
+
+        // Sync global count after server confirmation
+        if (result.success) {
+            await refreshUnreadCount();
+        }
     };
 
-    const hasUnread = notifications.some(n => !n.is_read);
+    // Use the global unreadCount for consistent UI regardless of current pagination window
+    const hasUnread = unreadCount > 0;
 
     return (
         <>

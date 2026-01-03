@@ -59,7 +59,8 @@ export async function generateMetadata({ params, searchParams }: { params: { slu
         })();
     }
 
-    const title = postId ? `${authorUsername}'s take on ${topic.title} - Midfield` : `${topic.title} - Midfield`;
+    const browserTitle = postId ? `${authorUsername}'s take on ${topic.title} - Midfield` : `${topic.title} - Midfield`;
+    const shareTitle = postId ? browserTitle : `Check out ${topic.title} on Midfield. 🏟️`;
 
     // Construct OG Image URL using our share-card API
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://midfield.one';
@@ -69,7 +70,6 @@ export async function generateMetadata({ params, searchParams }: { params: { slu
     ogImageUrl.searchParams.set('authorUsername', authorUsername);
     ogImageUrl.searchParams.set('content', content);
     ogImageUrl.searchParams.set('theme', 'dark');
-    ogImageUrl.searchParams.set('mode', postId ? 'take' : 'branding');
     if (authorAvatar) ogImageUrl.searchParams.set('authorAvatarUrl', authorAvatar);
 
     const metadata = topic.metadata as any;
@@ -89,18 +89,18 @@ export async function generateMetadata({ params, searchParams }: { params: { slu
     }
 
     return {
-        title,
-        description: content,
+        title: browserTitle,
+        description: postId ? content : `Join the ${topic.title} debate on Midfield. 🏟️⚽️`,
         openGraph: {
-            title,
-            description: content,
+            title: shareTitle,
+            description: postId ? content : `Join the ${topic.title} debate on Midfield. 🏟️⚽️`,
             images: [{ url: ogImageUrl.toString(), width: 1080, height: 1080 }],
             type: 'website',
         },
         twitter: {
             card: 'summary_large_image',
-            title,
-            description: content,
+            title: shareTitle,
+            description: postId ? content : `Join the ${topic.title} debate on Midfield. 🏟️⚽️`,
             images: [ogImageUrl.toString()],
         }
     };

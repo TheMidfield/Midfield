@@ -31,14 +31,7 @@ function XIcon({ className }: { className?: string }) {
     );
 }
 
-// Custom Reddit Logo
-function RedditIcon({ className }: { className?: string }) {
-    return (
-        <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-            <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.056 1.597.04.21.065.422.065.641 0 2.454-2.874 4.453-6.416 4.453-3.542 0-6.415-1.999-6.415-4.453 0-.192.02-.38.05-.565a1.753 1.753 0 0 1-1.026-1.583c0-.968.784-1.754 1.754-1.754.463 0 .883.18 1.189.47 1.187-.82 2.798-1.35 4.568-1.447l.886-4.156c.01-.042.04-.075.078-.087l3.353.746c.113-.374.457-.646.864-.646zm-6.255 7.15c-.69 0-1.252.56-1.252 1.25s.562 1.25 1.252 1.25c.69 0 1.252-.56 1.252-1.25s-.562-1.25-1.252-1.25zm4.5 0c-.69 0-1.25.56-1.25 1.25s.56 1.25 1.25 1.25c.69 0 1.252-.56 1.252-1.25s-.562-1.25-1.252-1.25zm-2.185 3.012c-.25 0-.491.03-.715.084a4.1 4.1 0 0 0-1.474-.46c-.22 0-.4.18-.4.4s.18.4.4.4c.01 0 .61.03 1.28.31.064.026.13.04.197.04.254 0 .491-.033.71-.09l.004.01c.07.031.146.046.222.046.22 0 .4-.18.4-.4s-.18-.4-.4-.4z" />
-        </svg>
-    );
-}
+
 
 export function ShareModal({
     isOpen,
@@ -187,8 +180,8 @@ export function ShareModal({
 
     // X (Twitter) share handler
     const handleShareToX = () => {
-        const snippet = content.length > 100 ? content.substring(0, 97) + '...' : content;
-        const text = encodeURIComponent(`" ${snippet} "\n\nCooking or finished? @${authorUsername} has a lot to say about ${topicTitle || 'this'}. ⚽️🏟️`);
+        const snippet = content.length > 200 ? content.substring(0, 197) + '...' : content;
+        const text = encodeURIComponent(`@${authorUsername}'s take on ${topicTitle || 'this'}:\n\n“${snippet}”`);
 
         // Construct unique URL for this post if ID available
         let url = window.location.href;
@@ -203,8 +196,8 @@ export function ShareModal({
 
     // Reddit share handler
     const handleShareToReddit = () => {
-        const snippet = content.length > 80 ? content.substring(0, 77) + '...' : content;
-        const title = encodeURIComponent(`Valid or finished? @${authorUsername}'s latest take on ${topicTitle || 'football'}: "${snippet}"`);
+        const title = encodeURIComponent(`@${authorUsername}'s take on ${topicTitle || 'football'}`);
+        const snippet = content.length > 500 ? content.substring(0, 497) + '...' : content;
 
         // Construct unique URL for this post if ID available
         let url = window.location.href;
@@ -215,8 +208,11 @@ export function ShareModal({
         }
         const encodedUrl = encodeURIComponent(url);
 
-        // Default to r/soccer as it's the biggest relevant community
-        window.open(`https://www.reddit.com/r/soccer/submit?url=${encodedUrl}&title=${title}`, '_blank');
+        // Use text post (kind=self) to include both title and content/link
+        const textBody = encodeURIComponent(`"${snippet}"\n\n@${authorUsername}'s take on ${topicTitle || 'football'}\n\n${url}`);
+
+        // Default to r/soccer
+        window.open(`https://www.reddit.com/r/soccer/submit?title=${title}&text=${textBody}`, '_blank');
     };
 
     if (!isOpen) return null;
@@ -304,9 +300,13 @@ export function ShareModal({
                                     </button>
                                     <button
                                         onClick={handleShareToReddit}
-                                        className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 rounded-md font-medium bg-[#FF4500] text-white hover:brightness-110 transition-all border border-neutral-700 cursor-pointer text-xs sm:text-sm"
+                                        className="flex-1 flex items-center justify-center gap-1 sm:gap-1 py-0 sm:py-0 rounded-md font-medium bg-[#ff4500] text-white hover:bg-[#ff5714] transition-all border border-[#838383] cursor-pointer text-xs sm:text-sm"
                                     >
-                                        <RedditIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+                                        <img
+                                            src="https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/utils/reddit-logo.png"
+                                            className="w-10 sm:w-10 h-10 sm:h10 object-contain"
+                                            alt="Reddit"
+                                        />
                                         <span>Post on Reddit</span>
                                     </button>
                                 </div>
