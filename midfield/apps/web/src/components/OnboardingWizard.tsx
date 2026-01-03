@@ -79,7 +79,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                     .from('users')
                     .update({
                         username: username.trim(),
-                        avatar_url: avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+                        avatar_url: avatarUrl || null,
                         favorite_club_id: selectedClub?.id || null,
                         onboarding_completed: true
                     })

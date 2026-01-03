@@ -20,7 +20,7 @@ export const mockUsers: UserInsert[] = [
     username: 'roycim',
     display_name: 'Roy',
     bio: 'Building Midfield 🚀',
-    avatar_url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=roycim',
+    avatar_url: null,
   },
 ];
 

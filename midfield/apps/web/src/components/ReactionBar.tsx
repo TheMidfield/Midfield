@@ -16,9 +16,16 @@ interface ReactionBarProps {
     initialCounts?: Record<ReactionType, number>;
     userReaction?: ReactionType | null;
     onPickerToggle?: (isOpen: boolean) => void;
+    children?: React.ReactNode;
 }
 
-export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, userReaction: initialUserReaction, onPickerToggle }: ReactionBarProps) {
+export const ReactionBar = memo(function ReactionBar({
+    postId,
+    initialCounts,
+    userReaction: initialUserReaction,
+    onPickerToggle,
+    children
+}: ReactionBarProps) {
     const [counts, setCounts] = useState<Record<ReactionType, number>>(
         initialCounts || { fire: 0, hmm: 0, fair: 0, dead: 0 }
     );
@@ -76,12 +83,12 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
 
     return (
         <div
-            className={`flex ${activeReactions.length > 0 ? 'flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2' : 'flex-row items-center gap-2'}`}
+            className={`flex w-full ${activeReactions.length > 0 ? 'flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4' : 'flex-row items-center gap-2'}`}
             ref={pickerRef}
         >
             {/* Active Reactions Pills (Always Visible) */}
             {activeReactions.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5 sm:flex-shrink-0">
                     {activeReactions.map(({ type, emoji, label }) => {
                         const count = counts[type];
                         const isActive = userReaction === type;
@@ -108,68 +115,72 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
                 </div>
             )}
 
-            {/* Inline Reveal System */}
-            <div className="relative flex items-center group">
+            {/* Row with React button + picker + actions (children) */}
+            <div className={`flex items-center gap-1 w-full ${activeReactions.length > 0 ? 'sm:flex-1' : 'flex-1'}`}>
+                <div className="relative flex items-center group">
 
-                {/* React Toggle Button - pill-shaped like emoji buttons */}
-                <button
-                    onClick={() => setIsPickerOpen(!isPickerOpen)}
-                    className={`
-                        h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border active:scale-90 lg:active:scale-100
-                        ${isPickerOpen
-                            ? 'bg-slate-100 dark:bg-neutral-800 text-emerald-600 dark:text-emerald-400 border-slate-300 dark:border-neutral-600 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500'
-                            : 'bg-transparent text-slate-400 dark:text-neutral-500 border-transparent hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
-                        }
-                    `}
-                    title="Add reaction"
-                >
-                    <Smile className="w-4 h-4" />
-                    <span className="text-xs font-semibold">React</span>
-                </button>
-                {/* Sliding Drawer (No Container/Border) */}
-                {/* faster duration-200 */}
-                {/* group-hover: width opens slightly to show arrow */}
-                <div
-                    className={`
-                        flex items-center gap-1 h-8 overflow-hidden transition-all duration-200 ease-out origin-left
-                        ${isPickerOpen
-                            ? 'w-auto opacity-100 pl-2'
-                            : 'w-0 group-hover:w-6 opacity-0 group-hover:opacity-100 pl-0 group-hover:pl-1'
-                        }
-                    `}
-                >
-                    {/* Elegant Separator Arrow */}
-                    <ChevronRight className="w-3 h-3 text-slate-300 dark:text-neutral-600 flex-shrink-0" />
+                    {/* React Toggle Button - pill-shaped like emoji buttons */}
+                    <button
+                        onClick={() => setIsPickerOpen(!isPickerOpen)}
+                        className={`
+                            h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium transition-all cursor-pointer border active:scale-90 lg:active:scale-100
+                            ${isPickerOpen
+                                ? 'bg-slate-100 dark:bg-neutral-800 text-emerald-600 dark:text-emerald-400 border-slate-300 dark:border-neutral-600 hover:bg-slate-200 dark:hover:bg-neutral-700 hover:border-slate-400 dark:hover:border-neutral-500'
+                                : 'bg-transparent text-slate-400 dark:text-neutral-500 border-transparent hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800'
+                            }
+                        `}
+                        title="Add reaction"
+                    >
+                        <Smile className="w-4 h-4" />
+                        <span className="text-xs font-semibold">React</span>
+                    </button>
+                    {/* Sliding Drawer (No Container/Border) */}
+                    <div
+                        className={`
+                            flex items-center gap-1 h-8 overflow-hidden transition-all duration-200 ease-out origin-left
+                            ${isPickerOpen
+                                ? 'w-auto opacity-100 pl-2'
+                                : 'w-0 group-hover:w-6 opacity-0 group-hover:opacity-100 pl-0 group-hover:pl-1'
+                            }
+                        `}
+                    >
+                        {/* Elegant Separator Arrow */}
+                        <ChevronRight className="w-3 h-3 text-slate-300 dark:text-neutral-600 flex-shrink-0" />
 
-                    {/* Reaction Options (Only visible when fully open) */}
-                    {/* We hide these on just hover/peek using opacity logic dependent on isPickerOpen */}
-                    {REACTIONS.map(({ type, emoji, label }, index) => (
-                        <button
-                            key={type}
-                            onClick={() => handleReaction(type)}
-                            className={`
-                                w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all text-lg leading-none cursor-pointer flex-shrink-0 active:scale-125 lg:active:scale-100 active:bg-slate-200 dark:active:bg-neutral-700
-                                ${isPickerOpen ? 'visible' : 'invisible'}
-                            `}
-                            style={{
-                                animation: isPickerOpen ? `fadeIn 200ms ease-out ${index * 40}ms forwards` : 'none',
-                                opacity: 0
-                            }}
-                            title={label}
-                        >
-                            {emoji}
-                        </button>
-                    ))}
+                        {/* Reaction Options (Only visible when fully open) */}
+                        {REACTIONS.map(({ type, emoji, label }, index) => (
+                            <button
+                                key={type}
+                                onClick={() => handleReaction(type)}
+                                className={`
+                                    w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all text-lg leading-none cursor-pointer flex-shrink-0 active:scale-125 lg:active:scale-100 active:bg-slate-200 dark:active:bg-neutral-700
+                                    ${isPickerOpen ? 'visible' : 'invisible'}
+                                `}
+                                style={{
+                                    animation: isPickerOpen ? `fadeIn 200ms ease-out ${index * 40}ms forwards` : 'none',
+                                    opacity: 0
+                                }}
+                                title={label}
+                            >
+                                {emoji}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
-                    {/* Inline Keyframes for staggered fade in */}
-                    <style jsx>{`
-                        @keyframes fadeIn {
-                            from { opacity: 0; transform: translateX(-4px); }
-                            to { opacity: 1; transform: translateX(0); }
-                        }
-                    `}</style>
+                {/* Actions Row (Reply, Bookmark, Share moved here via children) */}
+                <div className={`flex items-center gap-1 sm:gap-2 ml-auto sm:ml-auto transition-all duration-300 ${isPickerOpen ? 'hidden xs:flex opacity-0 sm:opacity-100 pointer-events-none sm:pointer-events-auto' : 'flex opacity-100'}`}>
+                    {children}
                 </div>
             </div>
+
+            {/* Inline Keyframes for staggered fade in */}
+            <style jsx>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateX(-4px); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+            `}</style>
         </div>
     );
 });

@@ -476,25 +476,13 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                         )}
 
                         {/* Action Bar */}
-                        <div className={cn(
-                            "flex",
-                            (reactionCounts && Object.values(reactionCounts).some(c => c > 0))
-                                ? "flex-col items-start gap-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0"
-                                : "flex-row items-center justify-between"
-                        )}>
+                        <div className="flex w-full">
                             <ReactionBar
                                 postId={post.id}
                                 initialCounts={reactionCounts}
                                 userReaction={userReaction}
                                 onPickerToggle={setIsReactionPickerOpen}
-                            />
-
-
-                            <div className={cn(
-                                "flex items-center gap-1 sm:gap-2 transition-all duration-300",
-                                isReactionPickerOpen ? 'hidden xs:flex opacity-0 pointer-events-none w-0 sm:w-auto overflow-hidden sm:overflow-visible' : 'flex opacity-100',
-                                (reactionCounts && Object.values(reactionCounts).some(c => c > 0)) ? "w-full justify-between sm:w-auto sm:justify-start" : ""
-                            )}>
+                            >
                                 <button
                                     onClick={handleReplyClick}
                                     className="h-8 sm:h-8 px-2 sm:px-2 flex items-center justify-center gap-1.5 sm:gap-1.5 rounded-md text-slate-400 dark:text-neutral-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-all active:scale-90 lg:active:scale-100 cursor-pointer"
@@ -521,7 +509,7 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 >
                                     <Share className="w-4 sm:w-4 h-4 sm:h-4" />
                                 </button>
-                            </div>
+                            </ReactionBar>
                         </div>
                     </div>
 

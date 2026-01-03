@@ -29,12 +29,7 @@ const nextConfig: NextConfig = {
                 port: '',
                 pathname: '/**',
             },
-            {
-                protocol: 'https',
-                hostname: 'api.dicebear.com',
-                port: '',
-                pathname: '/**',
-            },
+
             {
                 protocol: 'https',
                 hostname: 'media.api-sports.io',
