@@ -75,31 +75,38 @@ export const ReactionBar = memo(function ReactionBar({ postId, initialCounts, us
     const activeReactions = REACTIONS.filter(r => counts[r.type] > 0 || userReaction === r.type);
 
     return (
-        <div className="flex items-center gap-2" ref={pickerRef}>
+        <div
+            className={`flex ${activeReactions.length > 0 ? 'flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-2' : 'flex-row items-center gap-2'}`}
+            ref={pickerRef}
+        >
             {/* Active Reactions Pills (Always Visible) */}
-            {activeReactions.map(({ type, emoji, label }) => {
-                const count = counts[type];
-                const isActive = userReaction === type;
+            {activeReactions.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5">
+                    {activeReactions.map(({ type, emoji, label }) => {
+                        const count = counts[type];
+                        const isActive = userReaction === type;
 
-                return (
-                    <button
-                        key={type}
-                        onClick={() => handleReaction(type)}
-                        className={`
-                            h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium
-                            transition-all cursor-pointer border active:scale-90 lg:active:scale-100
-                            ${isActive
-                                ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 hover:border-emerald-300 dark:hover:border-emerald-700'
-                                : 'bg-transparent text-slate-600 dark:text-neutral-400 border-transparent hover:bg-slate-50 dark:hover:bg-neutral-800'
-                            }
-                        `}
-                        title={label}
-                    >
-                        <span className="text-base leading-none">{emoji}</span>
-                        <span className="text-xs font-semibold">{count}</span>
-                    </button>
-                );
-            })}
+                        return (
+                            <button
+                                key={type}
+                                onClick={() => handleReaction(type)}
+                                className={`
+                                    h-7 px-2.5 flex items-center gap-1.5 rounded-full text-sm font-medium
+                                    transition-all cursor-pointer border active:scale-90 lg:active:scale-100
+                                    ${isActive
+                                        ? 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100/80 dark:hover:bg-emerald-900/60 hover:border-emerald-300 dark:hover:border-emerald-700'
+                                        : 'bg-transparent text-slate-600 dark:text-neutral-400 border-transparent hover:bg-slate-50 dark:hover:bg-neutral-800'
+                                    }
+                                `}
+                                title={label}
+                            >
+                                <span className="text-base leading-none">{emoji}</span>
+                                <span className="text-xs font-semibold">{count}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
 
             {/* Inline Reveal System */}
             <div className="relative flex items-center group">
