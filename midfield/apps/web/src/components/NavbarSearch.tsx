@@ -29,11 +29,16 @@ export function NavbarSearch({ onSearchStart, autoFocus }: NavbarSearchProps = {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [isFocused, isSearching]);
 
-    // Auto-focus on mount if requested
+    // Auto-focus when autoFocus prop becomes true (menu opens via search icon)
     useEffect(() => {
-        if (autoFocus) {
-            // Small delay to ensure DOM is ready
-            setTimeout(() => inputRef.current?.focus(), 100);
+        if (autoFocus && inputRef.current) {
+            // Longer delay for mobile to ensure menu animation completes
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+                // Additional mobile-specific trigger
+                inputRef.current?.click();
+            }, 350);
+            return () => clearTimeout(timer);
         }
     }, [autoFocus]);
 

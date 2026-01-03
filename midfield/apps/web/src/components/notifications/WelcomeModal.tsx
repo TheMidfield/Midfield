@@ -52,7 +52,7 @@ export function WelcomeModal({ isOpen, onClose }: WelcomeModalProps) {
 
                 <div className="px-8 pt-8 pb-6 bg-white dark:bg-neutral-900">
                     <div className="flex flex-col items-center text-center mb-6">
-                        <div className="flex items-center justify-center gap-1.5 text-slate-500 dark:text-neutral-400 mb-2">
+                        <div className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 text-slate-500 dark:text-neutral-400 mb-2">
                             <p className="text-sm font-normal leading-relaxed">
                                 A place for conversation around the beautiful game
                             </p>

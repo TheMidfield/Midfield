@@ -3,9 +3,10 @@ import {
     IconTrophy,
     IconMedal,
     IconBolt,
-    IconHeart,
-    IconFlame,
-    IconMessageCircle
+    IconShoe,
+    IconBuildingStadium,
+    IconGitBranchDeleted,
+    IconCircleDashedNumber3
 } from "@tabler/icons-react";
 
 export interface BadgeMetadata {
@@ -62,10 +63,10 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
 
     // ENGAGEMENT & QUALITY
     'trendsetter': {
-        title: 'Trendsetter',
+        title: 'Playmaker',
         description: 'You started the conversation! Awarded for being the first to post a take on any topic.',
         unlockRequirement: 'Be the first to post a take on any topic page',
-        icon: IconBolt,
+        icon: IconShoe,
         color: 'emerald',
         bg: 'bg-emerald-100 dark:bg-emerald-900/30',
         border: 'border-emerald-200 dark:border-emerald-800',
@@ -76,10 +77,10 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
 
     // SOCIAL & COMMUNITY
     'playmaker': {
-        title: 'Playmaker',
-        description: 'Driving the play. You received your first reaction from another user.',
+        title: 'Crowd Provoker',
+        description: 'Got the crowd going. You received your first reaction from another user.',
         unlockRequirement: 'Receive your first reaction on any of your takes',
-        icon: IconHeart,
+        icon: IconBuildingStadium,
         color: 'rose',
         bg: 'bg-rose-100 dark:bg-rose-900/30',
         border: 'border-rose-200 dark:border-rose-800',
@@ -89,9 +90,9 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     },
     'hat-trick': {
         title: 'Hat-Trick',
-        description: 'Quality confirmed. One of your takes received 3 reactions.',
-        unlockRequirement: 'Get 3 reactions on a single take',
-        icon: IconFlame,
+        description: 'Triple threat! You received 3 replies on your takes.',
+        unlockRequirement: 'Receive 3 replies on your takes',
+        icon: IconCircleDashedNumber3,
         color: 'orange',
         bg: 'bg-orange-100 dark:bg-orange-900/30',
         border: 'border-orange-200 dark:border-orange-800',
@@ -100,10 +101,10 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         rank: 2
     },
     'influencer': {
-        title: 'Influencer',
-        description: 'Enticed a debate. You received your first reply from another user.',
+        title: 'Regista',
+        description: 'Deep playmaker. You received your first reply from another user.',
         unlockRequirement: 'Receive your first reply on any of your takes',
-        icon: IconMessageCircle,
+        icon: IconGitBranchDeleted,
         color: 'indigo',
         bg: 'bg-indigo-100 dark:bg-indigo-900/30',
         border: 'border-indigo-200 dark:border-indigo-800',

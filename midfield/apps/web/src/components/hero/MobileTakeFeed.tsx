@@ -123,9 +123,7 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
 export function MobileTakeFeed() {
     const { data: swrTakes, isLoading: loading, mutate } = useHeroTakes(6);
     const [takes, setTakes] = useState<HeroTake[]>([]);
-    const [visibleCards, setVisibleCards] = useState<number>(0);
-    const [animatingCardIndices, setAnimatingCardIndices] = useState<Set<number>>(new Set());
-    const hasInitialAnimationRun = useRef(false);
+    const [newTakeIds, setNewTakeIds] = useState<Set<string>>(new Set());
     const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
     // Initialize Supabase client
@@ -136,9 +134,25 @@ export function MobileTakeFeed() {
     // Update takes when SWR data changes
     useEffect(() => {
         if (swrTakes) {
+            // Track which takes are actually new (not in previous state)
+            const previousIds = new Set(takes.map(t => t.id));
+            const newIds = new Set<string>();
+
+            swrTakes.forEach(take => {
+                if (!previousIds.has(take.id)) {
+                    newIds.add(take.id);
+                }
+            });
+
+            if (newIds.size > 0) {
+                setNewTakeIds(newIds);
+                // Clear new take IDs after animation completes
+                setTimeout(() => setNewTakeIds(new Set()), 1000);
+            }
+
             setTakes(swrTakes);
         }
-    }, [swrTakes]);
+    }, [swrTakes, takes]); // Added 'takes' to dependency array to ensure previousIds is up-to-date
 
     // Supabase Realtime subscription for instant updates (same as desktop)
     useEffect(() => {
@@ -168,67 +182,6 @@ export function MobileTakeFeed() {
             supabaseRef.current?.removeChannel(channel);
         };
     }, [mutate]);
-
-    // Staggered reveal animation - first 4 cards instant, then 2 with 1.5s delays
-    useEffect(() => {
-        console.debug('[MobileAnimation] Effect triggered:', { takesLength: takes?.length, loading, hasRun: hasInitialAnimationRun.current });
-
-        if (!takes || takes.length === 0 || loading) {
-            console.debug('[MobileAnimation] Skipping - no takes or loading');
-            return;
-        }
-
-        // Animation already ran - just show all cards
-        if (hasInitialAnimationRun.current) {
-            console.debug('[MobileAnimation] Animation already ran, showing all cards');
-            setVisibleCards(takes.length);
-            return;
-        }
-
-        console.debug('[MobileAnimation] Starting first-time animation');
-
-        // First-time animation setup
-        setVisibleCards(0);
-        setAnimatingCardIndices(new Set([4, 5]));
-
-        const timers: NodeJS.Timeout[] = [];
-
-        // After 50ms, show first 4 cards instantly
-        timers.push(setTimeout(() => {
-            console.debug('[MobileAnimation] Showing first 4 cards');
-            setVisibleCards(Math.min(4, takes.length));
-        }, 50));
-
-        // After 1.5s, show card 5 with animation
-        if (takes.length >= 5) {
-            timers.push(setTimeout(() => {
-                console.debug('[MobileAnimation] Showing card 5 with animation');
-                setVisibleCards(5);
-            }, 1550));
-        }
-
-        // After 3s, show card 6 with animation
-        if (takes.length >= 6) {
-            timers.push(setTimeout(() => {
-                console.debug('[MobileAnimation] Showing card 6 with animation');
-                setVisibleCards(6);
-                hasInitialAnimationRun.current = true;
-                setTimeout(() => setAnimatingCardIndices(new Set()), 500);
-            }, 3050));
-        } else {
-            // Mark complete after last card
-            timers.push(setTimeout(() => {
-                console.debug('[MobileAnimation] Animation complete');
-                hasInitialAnimationRun.current = true;
-                setAnimatingCardIndices(new Set());
-            }, takes.length >= 5 ? 2050 : 100));
-        }
-
-        return () => {
-            console.debug('[MobileAnimation] Cleaning up timers');
-            timers.forEach(timer => clearTimeout(timer));
-        };
-    }, [takes, loading]);
 
     if (loading) {
         return (
@@ -271,25 +224,21 @@ export function MobileTakeFeed() {
                 </span>
             </div>
 
-            {/* Horizontal scroll container with staggered animation */}
+            {/* Horizontal scroll container - all cards visible, animate new ones */}
             <div className="flex gap-2 overflow-x-auto pb-1 snap-x snap-mandatory scrollbar-hide">
                 <AnimatePresence mode="popLayout">
-                    {takes.map((take, index) => {
-                        // Only show if visible based on staggered reveal
-                        if (index >= visibleCards) return null;
-
-                        // First 4 cards (0-3): no animation, just appear
-                        // Cards 5-6 (indices 4-5): animated pop-in
-                        const shouldAnimate = animatingCardIndices.has(index);
+                    {takes.map((take) => {
+                        // Animate only if this is a new take from live feed
+                        const isNewTake = newTakeIds.has(take.id);
 
                         return (
                             <motion.div
                                 key={take.id}
                                 className="shrink-0 w-[220px] snap-start"
-                                initial={shouldAnimate ? { opacity: 0, x: -30, scale: 0.94 } : false}
+                                initial={isNewTake ? { opacity: 0, x: -30, scale: 0.94 } : false}
                                 animate={{ opacity: 1, x: 0, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                                transition={shouldAnimate ? {
+                                transition={isNewTake ? {
                                     opacity: { duration: 0.3, ease: [0.25, 0.1, 0.25, 1] },
                                     x: { type: 'spring', stiffness: 400, damping: 28 },
                                     scale: { type: 'spring', stiffness: 450, damping: 25 },
