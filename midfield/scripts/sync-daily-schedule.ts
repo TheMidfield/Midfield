@@ -44,7 +44,20 @@ async function main() {
         await syncClubSchedules(supabase, apiClient);
 
         console.log('--- STEP 3: Sync League Standings ---');
-        await syncLeagueStandings(supabase, apiClient);
+        const season = new Date().getFullYear().toString(); // Define season
+        for (const leagueId of CORE_LEAGUES) {
+            const leagueName = getLeagueName(leagueId);
+            console.log(`   Processing ${leagueName} (${leagueId})...`);
+
+            try {
+                console.log(`      Fetching standings for season ${season}...`);
+                await syncLeagueStandings(supabase, apiClient, leagueId, season); // Changed apiClient from client
+                // Wait 2 seconds between requests to avoid 429s on V1 API
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (error) {
+                console.error(`      ❌ Error syncing ${leagueName}:`, error);
+            }
+        }
 
         console.log('✅ [DAILY SYNC] Completed successfully');
         process.exit(0);
