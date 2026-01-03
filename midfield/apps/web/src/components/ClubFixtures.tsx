@@ -19,11 +19,18 @@ interface ClubFixturesProps {
         won: number;
         drawn: number;
         lost: number;
+        total_teams?: number;
     } | null;
+    league?: {
+        name?: string;
+        slug?: string;
+        badgeUrl?: string;
+        badgeDarkUrl?: string;
+    };
     showFormOnly?: boolean; // For manager pages - only show form/standing info
 }
 
-export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = false }: ClubFixturesProps) {
+export function ClubFixtures({ clubId, fixtures, clubStanding, league, showFormOnly = false }: ClubFixturesProps) {
     const [hoveredOpponent, setHoveredOpponent] = useState<string | null>(null);
 
     if ((!fixtures || fixtures.length === 0) && !clubStanding) {
@@ -37,17 +44,30 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
     // Split into Upcoming vs Results
     const now = new Date();
 
-    // Get all finished matches, sorted by date (most recent first)
+    // Get all finished OR currently active matches, sorted by date (most recent first)
+    // CRITICAL: We include LIVE/HT here so they appear at the top of the "Results" list as "In Progress" games
     const finishedMatches = fixtures
-        .filter(f => new Date(f.date) < now && (f.status === 'FT' || f.status === 'ABD'))
+        .filter(f => {
+            const isStarted = new Date(f.date) < now;
+            const isLive = f.status === 'LIVE' || f.status === 'HT' || f.status === 'INT';
+            const isFinished = f.status === 'FT' || f.status === 'ABD';
+            return isStarted && (isLive || isFinished);
+        })
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    // Get last 3 results (most recent finished matches) - then reverse for chronological display
+    // Get last 3 results (most recent finished/live matches)
+    // This allows Live matches to appear at the very top of the "Results" list
     const results = finishedMatches.slice(0, 3).reverse();
 
     // Get upcoming matches, sorted by date (soonest first)
     const upcoming = fixtures
-        .filter(f => new Date(f.date) >= now)
+        .filter(f => {
+            // Only purely future matches that haven't started (or are NS)
+            // If it's LIVE/HT, it belongs in results.
+            // If it's NS but date < now (stuck NS), we might want to show it here or results?
+            // Le's stick to strict date for upcoming to avoid confusion.
+            return new Date(f.date) >= now;
+        })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         .slice(0, 5);
 
@@ -248,7 +268,7 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
 
                                         const BadgeContent = (
                                             <div
-                                                className="flex flex-col items-center gap-2 cursor-default"
+                                                className="flex flex-col items-center gap-2"
                                                 onMouseEnter={() => setHoveredOpponent(opponentName)}
                                                 onMouseLeave={() => setHoveredOpponent(null)}
                                             >
@@ -398,8 +418,45 @@ export function ClubFixtures({ clubId, fixtures, clubStanding, showFormOnly = fa
                         <div className="flex items-center justify-between">
                             <div>
                                 <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">Current Standing</span>
-                                <span className="text-2xl font-black text-slate-900 dark:text-neutral-100">{clubStanding.position}</span>
-                                <span className="text-sm text-slate-500 dark:text-neutral-400">/{clubStanding.played}</span>
+                                <div className="flex items-end gap-2">
+                                    <div className="leading-none">
+                                        <span className="text-2xl font-black text-slate-900 dark:text-neutral-100">{clubStanding.position}</span>
+                                        <span className="text-sm text-slate-500 dark:text-neutral-400">/{clubStanding.total_teams || clubStanding.played}</span>
+                                    </div>
+                                    {league?.slug && (
+                                        <Link href={`/topic/${league.slug}`} className="block mb-0.5">
+                                            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors h-7">
+                                                <div className="relative w-3.5 h-3.5 shrink-0">
+                                                    {(league.badgeUrl || league.badgeDarkUrl) && (
+                                                        <>
+                                                            {league.badgeUrl && (
+                                                                <NextImage
+                                                                    src={league.badgeUrl}
+                                                                    alt={league.name || ""}
+                                                                    fill
+                                                                    className={`object-contain ${league.badgeDarkUrl ? 'dark:hidden' : ''}`}
+                                                                    unoptimized={true}
+                                                                />
+                                                            )}
+                                                            {(league.badgeDarkUrl || league.badgeUrl) && (
+                                                                <NextImage
+                                                                    src={league.badgeDarkUrl || league.badgeUrl}
+                                                                    alt={league.name || ""}
+                                                                    fill
+                                                                    className={`object-contain hidden ${league.badgeDarkUrl ? 'dark:block' : ''}`}
+                                                                    unoptimized={true}
+                                                                />
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] font-bold text-slate-700 dark:text-neutral-200 whitespace-nowrap">
+                                                    {league.name?.replace(/^(English|Spanish|Italian|German|French)\s/, '') || "League"}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
                             <div className="text-right">
                                 <span className="text-xs text-slate-400 dark:text-neutral-500 block mb-0.5">Points</span>

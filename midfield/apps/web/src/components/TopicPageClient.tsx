@@ -34,6 +34,8 @@ interface TopicPageClientProps {
         favorite_club?: any;
     };
     leagueSlug?: string;
+    leagueBadgeUrl?: string;
+    leagueBadgeDarkUrl?: string; // New Prop
     voteData?: {
         upvoteCount: number;
         downvoteCount: number;
@@ -59,7 +61,7 @@ const getPositionPriority = (pos: string): number => {
     return positionBadgePriority[info.abbr] || 50;
 };
 
-export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug, voteData, highlightPostId }: TopicPageClientProps) {
+export function TopicPageClient({ topic, squad, groupedSquad, playerClub, leagueClubs = [], fixtures = [], standings = [], clubStanding, posts = [], currentUser, leagueSlug, leagueBadgeUrl, leagueBadgeDarkUrl, voteData, highlightPostId }: TopicPageClientProps) {
     const isClub = topic.type === 'club';
     const isPlayer = topic.type === 'player';
     const isLeague = topic.type === 'league';
@@ -585,6 +587,12 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                             clubId={playerClub.id}
                                                             fixtures={fixtures}
                                                             clubStanding={clubStanding}
+                                                            league={{
+                                                                name: playerClub.metadata?.league,
+                                                                slug: leagueSlug,
+                                                                badgeUrl: leagueBadgeUrl,
+                                                                badgeDarkUrl: leagueBadgeDarkUrl
+                                                            }}
                                                             showFormOnly
                                                         />
                                                     )}
@@ -611,6 +619,12 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                                                             clubId={topic.id}
                                                             fixtures={fixtures}
                                                             clubStanding={clubStanding}
+                                                            league={{
+                                                                name: metadata?.league,
+                                                                slug: leagueSlug,
+                                                                badgeUrl: leagueBadgeUrl,
+                                                                badgeDarkUrl: leagueBadgeDarkUrl
+                                                            }}
                                                             showFormOnly
                                                         />
                                                     )}

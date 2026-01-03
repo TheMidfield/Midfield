@@ -106,4 +106,19 @@ export class TheSportsDBClient {
         const data = await this.fetchV2<{ contracts: any[] }>(`/lookup/contract/${playerId}`);
         return data.contracts || [];
     }
+
+    // --- Critical Reliability Methods ---
+
+    // V1 fallback for past league events because V2 /schedule/previous often returns 404/empty
+    // This is the "Safety Net" for the sync engine
+    async getPastLeagueEvents(leagueId: string) {
+        const data = await this.fetchV1<{ events: any[] }>(`eventspastleague.php?id=${leagueId}`);
+        return data.events || [];
+    }
+
+    // Specific lookup for the Vanish Protocol (Single Match Granular Sync)
+    async lookupEvent(eventId: string) {
+        const data = await this.fetchV1<{ events: any[] }>(`lookupevent.php?id=${eventId}`);
+        return data.events?.[0] || null;
+    }
 }

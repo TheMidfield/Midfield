@@ -40,9 +40,19 @@ This engine is lightweight, stateless, and runs on Vercel's Edge/Serverless infr
 **Endpoint**: `GET /api/cron/livescores`
 
 **What it does:**
-1.  **Adaptive Polling**: Checks DB for *any* matches currently marked `LIVE` or scheduled to start within 5 minutes.
-2.  **Surgical Update**: If matches are found, it polls the API specifically for those IDs and updates score/status/minute.
-3.  **Sleep**: If no matches are live, it does nothing (Conserves API limits).
+1.  **Adaptive Polling**: Checks DB for *any* matches currently marked `LIVE`, finished today (`FT`), or scheduled to start within 30 minutes.
+2.  **12-Hour Backward Window**: Polls matches from the last 12 hours to catch late-finishing games (CRITICAL: previously 2.5 hours, causing matches to be stuck as `NS` if the cron missed them).
+3.  **Surgical Update**: If matches are found, it polls the API specifically for those league IDs and updates score/status/minute.
+4.  **Sleep**: If no matches qualify, it does nothing (Conserves API limits).
+
+### C. The Daily Maintenance Cycle (Cleanup)
+**Trigger**: `0 0 * * *` (Daily at Midnight UTC)
+**Endpoint**: `POST /api/cron/purge-notifications`
+**Authentication**: `CRON_SECRET` or `SUPABASE_SERVICE_ROLE_KEY`
+
+**What it does:**
+1.  **Hygiene**: Deletes all notifications older than **30 days** to keep the `notifications` table performant.
+2.  **Privacy**: Ensures ephemeral social interactions don't persist forever.
 
 ---
 
@@ -72,7 +82,10 @@ This engine handles the massive, slow-moving data. It ensures our database is ri
 | **Missing Team in Fixture** | **Stub Law**: Realtime Engine creates a minimal placeholder instantly. Sync validates. |
 | **Missing Team in Standings** | **Fail-Safe**: Standings row is skipped (warns in logs). Requires manual seed if persistent. |
 | **API Down** | Cron fails gracefully. Retries next run. No data corruption. |
-| **Ghost Games** | **Strict Filtering**: We only sync matches involving the **96 Core Clubs** to prevent polluting the DB with amateur cup games. |
+| **Zombie Matches** | **Definition**: Matches marked `LIVE`/`HT` but started > 4 hours ago.<br>**Protocol**: Realtime Engine auto-cures these to `FT` if API confirms completion or if age > 5.5 hours (force cure). |
+| **False Future Lives** | **Definition**: Matches scheduled > 4 hours in FUTURE but marked `LIVE`.<br>**Protocol**: "Bogie Sweep" Logic resets these to `NS` to prevent "Pulsating Green Rows" on entity pages. |
+| **Cross-League Support** | **Stub Law**: If a Core Club plays an "Unknown" opponent (e.g., Club World Cup), a **Stub Topic** is auto-created. Stubs have badges/names but are **not clickable** (is_stub: true). |
+| **Sync Fragility** | **Warning**: The "Club Schedule Sync" is the only lifeline for Cross-League matches. If it crashes (timeout/API error), these matches will vanish from the DB. Monitor `manual-sync-clubs.ts` if missing. |
 
 ---
 
@@ -106,5 +119,5 @@ npx tsx scripts/verify-production-readiness.ts
 *   `CRON_SECRET`: Secures the public HTTP endpoints.
 
 ---
-**Last Updated:** Jan 2, 2026
-**Architecture State:** Stable.
+**Last Updated:** Jan 3, 2026
+**Architecture State:** Hardened (Zombie & Future-Proofed).

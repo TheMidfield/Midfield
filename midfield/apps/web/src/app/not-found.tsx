@@ -13,7 +13,10 @@ export default function NotFound() {
                 404
             </h1>
 
-            <p className="text-lg text-slate-600 dark:text-neutral-400 max-w-md mb-8">
+            <p
+                className="text-lg text-slate-600 dark:text-neutral-400 mb-8"
+                style={{ maxWidth: '28rem', margin: '0 auto' }}
+            >
                 We couldn't find the page you were looking for. It might have been moved, deleted, or never existed.
             </p>
 

@@ -235,19 +235,27 @@ export function MatchCenterWidget({ hideClubNames }: MatchCenterWidgetProps) {
     // Split fixtures safely
     const fixturesArray = fixtures || [];
 
-    // Results: Show finished AND live matches
-    const results = fixturesArray
-        .filter(f => f.status === 'FT' || f.status === 'LIVE' || f.status === 'HT')
-        .sort((a, b) => {
-            const isLiveA = a.status === 'LIVE' || a.status === 'HT';
-            const isLiveB = b.status === 'LIVE' || b.status === 'HT';
+    // Results: Smart selection that prioritizes LIVE and TODAY's matches
+    const now = new Date();
 
-            if (isLiveA && !isLiveB) return -1;
-            if (!isLiveA && isLiveB) return 1;
+    // Separate into categories
+    const liveMatches = fixturesArray
+        .filter(f => f.status === 'LIVE' || f.status === 'HT')
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-        })
-        .slice(0, 6);
+    const finishedMatches = fixturesArray
+        .filter(f => f.status === 'FT');
+
+    const todayFinished = finishedMatches
+        .filter(f => new Date(f.date).toDateString() === now.toDateString())
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    const olderFinished = finishedMatches
+        .filter(f => new Date(f.date).toDateString() !== now.toDateString())
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // Combine: LIVE first, then TODAY, then older matches - slice to 6 total
+    const results = [...liveMatches, ...todayFinished, ...olderFinished].slice(0, 6);
 
 
     // Upcoming: Exclude FT, LIVE, HT

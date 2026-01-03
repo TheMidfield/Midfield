@@ -29,10 +29,15 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
 
     // Map TSDB_ID -> UUID
     const clubMap = new Map<string, string>();
+    const clubMetaMap = new Map<string, any>(); // UUID -> Metadata
+
     if (allClubs) {
         allClubs.forEach((c: any) => {
             const tid = c.metadata?.external?.thesportsdb_id;
-            if (tid) clubMap.set(tid, c.id);
+            if (tid) {
+                clubMap.set(tid, c.id);
+                clubMetaMap.set(c.id, c.metadata);
+            }
         });
     }
 
@@ -75,9 +80,10 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
                 const newIds = await Promise.all(missingIds.map(async (missingId) => {
                     const ev = events.find((e: any) => e.idHomeTeam === missingId || e.idAwayTeam === missingId);
                     const name = ev?.idHomeTeam === missingId ? ev.strHomeTeam : ev.strAwayTeam;
+                    const badge = ev?.idHomeTeam === missingId ? (ev.strHomeTeamBadge || ev.strHomeBadge) : (ev.strAwayTeamBadge || ev.strAwayBadge);
 
                     try {
-                        const newId = await createStub(supabase, missingId, name);
+                        const newId = await createStub(supabase, missingId, name, 'club', badge);
                         if (newId) return { id: missingId, uuid: newId };
                     } catch (err) {
                         console.error(`Failed to create stub for ${name} (${missingId})`, err);
@@ -87,8 +93,82 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
 
                 // Update map
                 newIds.forEach(item => {
-                    if (item) clubMap.set(item.id, item.uuid);
+                    if (item) {
+                        clubMap.set(item.id, item.uuid);
+                        // Add to meta map so we don't try to "heal" it immediately (it's fresh)
+                        clubMetaMap.set(item.uuid, { is_stub: true, badge_url: true }); // optimize
+                    }
                 });
+            }
+
+            // Heal Existing Stubs (Missing Badges)
+            const stubsToUpdate = new Map<string, string>(); // UUID -> BadgeURL
+            const stubsToFetch = new Set<string>(); // UUIDs of stubs with NO badge in event either
+
+            events.forEach((e: any) => {
+                const homeId = clubMap.get(e.idHomeTeam);
+                const awayId = clubMap.get(e.idAwayTeam);
+
+                // Check Home
+                if (homeId) {
+                    const meta = clubMetaMap.get(homeId);
+                    const badge = e.strHomeTeamBadge || e.strHomeBadge;
+                    if (meta?.is_stub && !meta.badge_url) {
+                        if (badge) stubsToUpdate.set(homeId, badge);
+                        else stubsToFetch.add(homeId);
+                    }
+                }
+                // Check Away
+                if (awayId) {
+                    const meta = clubMetaMap.get(awayId);
+                    const badge = e.strAwayTeamBadge || e.strAwayBadge;
+                    if (meta?.is_stub && !meta.badge_url) {
+                        if (badge) stubsToUpdate.set(awayId, badge);
+                        else stubsToFetch.add(awayId);
+                    }
+                }
+            });
+
+            // 1. Direct Updates (Badge found in Event)
+            if (stubsToUpdate.size > 0) {
+                console.log(`Healing ${stubsToUpdate.size} stubs with badges from event data...`);
+                await Promise.all(Array.from(stubsToUpdate.entries()).map(async ([uuid, badgeUrl]) => {
+                    const { error } = await supabase.from('topics').update({
+                        metadata: { ...clubMetaMap.get(uuid), badge_url: badgeUrl }
+                    }).eq('id', uuid);
+                    if (error) console.error(`Failed to heal stub ${uuid}`, error);
+                }));
+            }
+
+            // 2. Active Fetch Updates (Badge NOT in Event, but Stub needs it)
+            // Only process if we haven't just updated it in step 1 (Sets are distinct logic wise, but let's check)
+            // stubsToFetch only added if NO badge in event.
+            if (stubsToFetch.size > 0) {
+                console.log(`Proactively fetching badges for ${stubsToFetch.size} active stubs (API Lookup)...`);
+                for (const uuid of stubsToFetch) {
+                    const meta = clubMetaMap.get(uuid);
+                    const tsdbId = meta?.external?.thesportsdb_id;
+                    if (!tsdbId) continue;
+
+                    try {
+                        // Rate Limit Protection: 1s delay
+                        await new Promise(r => setTimeout(r, 1000));
+
+                        const team = await apiClient.lookupTeam(tsdbId);
+                        const badge = (team as any)?.strTeamBadge || (team as any)?.strBadge;
+
+                        if (badge) {
+                            const { error } = await supabase.from('topics').update({
+                                metadata: { ...meta, badge_url: badge }
+                            }).eq('id', uuid);
+
+                            if (!error) console.log(`   Healed stub ${uuid} via API`);
+                            else console.error(`   Failed to save API badge for ${uuid}`, error);
+                        }
+                    } catch (err) {
+                        console.error(`   API Lookup failed for stub ${uuid}`, err);
+                    }
+                }
             }
 
             // Prepare Payloads
@@ -97,9 +177,24 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
                 const awayId = clubMap.get(e.idAwayTeam);
                 if (!homeId || !awayId) return null;
 
+                const dateStr = e.dateEvent + 'T' + (e.strTime || '00:00:00');
+
+                // Status Normalization & Safety Guard
+                let status = normalizeStatus(e.strStatus);
+                const matchDate = new Date(dateStr);
+                const now = new Date();
+                const hoursSinceStart = (now.getTime() - matchDate.getTime()) / (1000 * 60 * 60);
+
+                // Auto-fix "Stuck" matches: If LIVE/HT but > 4 hours old, force FT
+                if (['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'].includes(status) && hoursSinceStart > 4) {
+                    console.warn(`⚠️ Auto-correcting STUCK match ${e.strHomeTeam} vs ${e.strAwayTeam} (ID: ${e.idEvent}) from ${status} to FT (> ${hoursSinceStart.toFixed(1)}h old)`);
+                    status = 'FT';
+                }
+
                 return {
                     id: parseInt(e.idEvent),
-                    date: e.dateEvent + 'T' + (e.strTime || '00:00:00'),
+
+                    date: dateStr, // Keep original string or normalized? DB expects ISO likely?
                     home_team_id: homeId,
                     away_team_id: awayId,
                     home_team_name: e.strHomeTeam, // Fallback for display
@@ -110,7 +205,7 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
                     venue: e.strVenue,
                     home_score: e.intHomeScore ? parseInt(e.intHomeScore) : null,
                     away_score: e.intAwayScore ? parseInt(e.intAwayScore) : null,
-                    status: normalizeStatus(e.strStatus),
+                    status: status,
                     gameweek: e.intRound ? parseInt(e.intRound) : null
                 };
             }).filter((p: any) => p !== null);
@@ -132,17 +227,43 @@ export async function syncDailySchedules(supabase: SupabaseClient, apiClient: Th
 
 // === REAL-TIME LIVESCORE SYNC (Run every 1 min) ===
 export async function updateLivescores(supabase: SupabaseClient, apiClient: TheSportsDBClient) {
-    // 1. Adaptive Check: Are there any matches currently LIVE or starting/finishing soon?
     const now = new Date();
+    // --- STEP 0: SANITATION "THE GRIM REAPER" ---
+    // Unconditionally force-finish any match that is > 4 hours old but still marked LIVE/HT.
+    // This runs BEFORE any window checks to ensure nothing escapes.
+    const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString();
+    const { data: zombies } = await supabase
+        .from('fixtures')
+        .select('id, status, date, home_team_name, away_team_name')
+        .in('status', ['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'])
+        .lt('date', fourHoursAgo);
 
-    // Window: 2.5 hours ago (match started) to 30 mins from now (match starting)
-    // This captures all potential live games + pre-match buildup
-    const startWindow = new Date(now.getTime() - 150 * 60 * 1000);
-    const endWindow = new Date(now.getTime() + 30 * 60 * 1000);
+    if (zombies && zombies.length > 0) {
+        console.warn(`[Grim Reaper] 💀 Killing ${zombies.length} STUCK matches (>4h old)...`);
+        zombies.forEach(z => console.log(`   ⚰️  Buried: ${z.home_team_name} vs ${z.away_team_name} (${z.status})`));
+
+        await supabase
+            .from('fixtures')
+            .update({ status: 'FT', updated_at: now.toISOString() })
+            .in('id', zombies.map(z => z.id));
+    }
+
+    // Also reset "Future Bogies" (LIVE but > 4h in future)
+    const futureFourHours = new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString();
+    const { data: bogies } = await supabase.from('fixtures').select('id').in('status', ['LIVE', 'HT']).gt('date', futureFourHours);
+    if (bogies && bogies.length > 0) {
+        console.log(`[Grim Reaper] Resetting ${bogies.length} false-future-live matches to NS...`);
+        await supabase.from('fixtures').update({ status: 'NS', updated_at: now.toISOString() }).in('id', bogies.map(b => b.id));
+    }
+
+    // --- STEP 1: ACTIVE POLL ---
+    // Expanded window to 12 hours backward to catch matches that finished earlier today
+    const startWindow = new Date(now.getTime() - 12 * 60 * 60 * 1000); // 12 hours ago
+    const endWindow = new Date(now.getTime() + 30 * 60 * 1000); // 30 mins from now
 
     const { data: activeFixtures } = await supabase
         .from('fixtures')
-        .select('competition_id, status')
+        .select('id, competition_id, status, date')
         .gte('date', startWindow.toISOString())
         .lte('date', endWindow.toISOString())
         .not('status', 'eq', 'FT'); // Only check if not already finished
@@ -153,39 +274,215 @@ export async function updateLivescores(supabase: SupabaseClient, apiClient: TheS
         return;
     }
 
-    const activeLeagues = new Set(activeFixtures.map(f => f.competition_id));
-    console.log(`Polling livescores for leagues: ${Array.from(activeLeagues).join(', ')}`);
 
-    for (const leagueId of activeLeagues) {
+    // 2. SAFETY NET: Check for "Stuck" matches (NS/LIVE but in the past) or "Future-False-Lives"
+    // MOVED TO STEP 0 (Grim Reaper) - Removed from here
+
+
+    // C. Traditional Stuck Logic (for deep repair sync)
+    // Started > 2 hours ago logic for re-checking API
+    const { data: stuckFixtures } = await supabase
+        .from('fixtures')
+        .select('id, competition_id, status')
+        .lt('date', new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString()) // Started > 2 hours ago
+        .neq('status', 'FT')
+        .neq('status', 'ABD')
+        .neq('status', 'PST');
+
+    // Combine active leagues and track expected fixture IDs per league for Vanish Protocol
+    const activeLeagues = new Set<string>();
+    const expectedFixturesByLeague = new Map<string, Set<number>>(); // UUID -> Set<FixtureID>
+
+    const registerExpected = (f: any) => {
+        activeLeagues.add(f.competition_id);
+        if (!expectedFixturesByLeague.has(f.competition_id)) {
+            expectedFixturesByLeague.set(f.competition_id, new Set());
+        }
+        expectedFixturesByLeague.get(f.competition_id)?.add(f.id);
+    };
+
+    if (activeFixtures) activeFixtures.forEach(registerExpected);
+
+    // For stuck matches, we ALSO mark them for Deep Repair
+    const stuckLeagues = new Set<string>();
+    if (stuckFixtures) {
+        stuckFixtures.forEach(f => {
+            registerExpected(f);
+            stuckLeagues.add(f.competition_id);
+        });
+    }
+
+    if (activeLeagues.size === 0) {
+        console.log('No active or stuck fixtures. Skipping.');
+        return;
+    }
+
+    // CRITICAL FIX: Resolve UUIDs -> TSDB_IDs
+    // The API requires the numeric TSDB ID (e.g. 4332), not our UUID
+    const { data: leagueTopics } = await supabase
+        .from('topics')
+        .select('id, metadata')
+        .in('id', Array.from(activeLeagues));
+
+    const leagueIdMap = new Map<string, string>(); // UUID -> TSDB_ID
+    if (leagueTopics) {
+        leagueTopics.forEach((t: any) => {
+            const externalId = t.metadata?.external?.thesportsdb_id;
+            if (externalId) {
+                leagueIdMap.set(t.id, externalId);
+            }
+        });
+    }
+
+    console.log(`Polling livescores for leagues (UUID -> TSDB):`);
+    leagueIdMap.forEach((tsdb, uuid) => console.log(`${uuid} -> ${tsdb}`));
+
+    // Iterate through UUIDs but use TSDB IDs for API
+    for (const uuid of activeLeagues) {
+        const tsdbId = leagueIdMap.get(uuid);
+        if (!tsdbId) {
+            console.warn(`Could not resolve TSDB ID for league UUID ${uuid}. Skipping.`);
+            continue;
+        }
+
         try {
-            const livescores = await apiClient.getLivescores(leagueId);
+            // A. Standard Livescore Poll
+            const livescores = await apiClient.getLivescores(tsdbId);
+            let eventsToUpdate = livescores.events || [];
 
-            if (livescores.events && livescores.events.length > 0) {
+            // C. VANISH PROTOCOL: Check for active matches that vanished from Live Feed
+            const foundEventIds = new Set(eventsToUpdate.map((e: any) => parseInt(e.idEvent)));
+            const expectedIds = expectedFixturesByLeague.get(uuid) || new Set();
+
+            const missingIds = Array.from(expectedIds).filter(id => !foundEventIds.has(id));
+
+            if (missingIds.length > 0) {
+                console.log(`Vanish Protocol: ${missingIds.length} matches missing from live feed for league ${tsdbId}. Hunting them down...`);
+
+                // Granular Sync for Missing Matches
+                const recoveredEvents = await Promise.all(
+                    missingIds.map(async (id) => {
+                        try {
+                            return await apiClient.lookupEvent(id.toString());
+                        } catch (e) {
+                            console.error(`Failed to lookup event ${id}:`, e);
+                            return null;
+                        }
+                    })
+                );
+
+                const validRecovered = recoveredEvents.filter(e => e !== null);
+                if (validRecovered.length > 0) {
+                    console.log(`Recovered ${validRecovered.length} vanished matches.`);
+                    eventsToUpdate = [...eventsToUpdate, ...validRecovered];
+                }
+            }
+
+            // B. Deep Repair Poll (for stuck leagues)
+            // Still useful as a fallback if individual lookup fails or for bulk catch-up
+            if (stuckLeagues.has(uuid)) {
+                // ... (Deep Repair Logic handled by Vanish Protocol effectively now, but harmless to verify)
+                // We can skip heavy deep sync if Vanish Protocol covered everything, but let's keep it for safety for now
+                // Actually, let's optimize: Only run deep sync if Vanish Protocol didn't find everything or if specifically requested.
+                // Given Vanish Protocol is granular, it's better. We'll leave Deep Sync logic as robust backup for now.
+
+                // Reuse existing Deep Sync logic for robustness
+                console.log(`Performing deep repair sync for league ${tsdbId} (UUID: ${uuid})...`);
+                const [pastEvents, nextEvents] = await Promise.all([
+                    apiClient.getPastLeagueEvents(tsdbId),
+                    apiClient.getUpcomingFixtures(tsdbId)
+                ]);
+
+                const relevantEvents = [
+                    ...(Array.isArray(pastEvents) ? pastEvents : []),
+                    ...(nextEvents?.events || [])
+                ];
+
+                if (relevantEvents.length > 0) {
+                    const existingIds = new Set(eventsToUpdate.map((e: any) => e.idEvent));
+                    const newEvents = relevantEvents.filter((e: any) => !existingIds.has(e.idEvent));
+                    eventsToUpdate = [...eventsToUpdate, ...newEvents];
+                }
+            }
+
+            if (eventsToUpdate.length > 0) {
+                // Deduplicate eventsToUpdate based on idEvent
+                const uniqueEvents = new Map();
+                eventsToUpdate.forEach((e: any) => {
+                    if (e.idEvent) uniqueEvents.set(e.idEvent, e);
+                });
+
+                const finalEvents = Array.from(uniqueEvents.values());
+
                 // Batch updates into a single Upsert payload
-                const updates = livescores.events
+                const potentialUpdates = finalEvents
                     .filter((event: any) => event.idEvent)
-                    .map((event: any) => ({
-                        id: parseInt(event.idEvent),
-                        status: normalizeStatus(event.strStatus),
-                        home_score: event.intHomeScore ? parseInt(event.intHomeScore) : null,
-                        away_score: event.intAwayScore ? parseInt(event.intAwayScore) : null,
-                        updated_at: new Date().toISOString() // Track when we last saw it alive
-                    }));
+                    .map((event: any) => {
+                        let status = normalizeStatus(event.strStatus);
 
-                if (updates.length > 0) {
-                    const { error } = await supabase
+                        // GRIM REAPER GUARD: Ensure we don't resurrect zombies if API still reports LIVE for old matches
+                        if (event.dateEvent) {
+                            const dateStr = event.dateEvent + 'T' + (event.strTime || '00:00:00');
+                            const matchDate = new Date(dateStr);
+                            const ageHours = (new Date().getTime() - matchDate.getTime()) / (1000 * 60 * 60);
+
+                            // Expanded status check for all "active" states
+                            if (['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'].includes(status) && ageHours > 4) {
+                                console.warn(`[Grim Reaper] 🛡️ Blocked resurrection of zombie match ${event.strEvent || event.idEvent} (${ageHours.toFixed(1)}h old). Forcing FT.`);
+                                status = 'FT';
+                            }
+                        }
+
+                        return {
+                            id: parseInt(event.idEvent),
+                            status: status,
+                            home_score: event.intHomeScore ? parseInt(event.intHomeScore) : null,
+                            away_score: event.intAwayScore ? parseInt(event.intAwayScore) : null,
+                            updated_at: new Date().toISOString() // Track when we last saw it alive
+                        };
+                    });
+
+                if (potentialUpdates.length > 0) {
+                    // CRITICAL: We must only update fixtures that EXIST.
+                    // The API might return past events that we never synced (or deleted).
+                    // Trying to upsert them without home_team_id/etc will violate constraints.
+
+                    const idsToCheck = potentialUpdates.map((u: any) => u.id);
+                    const { data: existingFixtures } = await supabase
                         .from('fixtures')
-                        .upsert(updates, { onConflict: 'id', ignoreDuplicates: false });
+                        .select('id')
+                        .in('id', idsToCheck);
 
-                    if (error) {
-                        console.error(`Error batch updating fixtures for league ${leagueId}:`, error);
+                    const existingIds = new Set(existingFixtures?.map(f => f.id));
+                    const validUpdates = potentialUpdates.filter((u: any) => existingIds.has(u.id));
+
+                    if (validUpdates.length > 0) {
+                        console.log(`Updating ${validUpdates.length} fixtures for league ${tsdbId}...`);
+
+                        // Switch to Iterative Update to avoid Upsert constraint issues
+                        for (const update of validUpdates) {
+                            const { error } = await supabase
+                                .from('fixtures')
+                                .update({
+                                    status: update.status,
+                                    home_score: update.home_score,
+                                    away_score: update.away_score,
+                                    updated_at: update.updated_at
+                                })
+                                .eq('id', update.id);
+
+                            if (error) {
+                                console.error(`Failed to update fixture ${update.id}:`, error);
+                            }
+                        }
+                        console.log(`Iteration complete for league ${tsdbId}`);
                     } else {
-                        console.log(`Updated ${updates.length} livescores for league ${leagueId}`);
+                        console.log(`No matching existing fixtures to update for league ${tsdbId}`);
                     }
                 }
             }
         } catch (err) {
-            console.error(`Failed to poll livescores for league ${leagueId}:`, err);
+            console.error(`Failed to sync league ${tsdbId}:`, err);
         }
     }
 }
@@ -310,13 +607,25 @@ export async function syncClubSchedules(
                 const fixturesToUpsert = [];
 
                 for (const event of allEvents) {
-                    const homeId = await resolveTeamId(supabase, event.idHomeTeam, event.strHomeTeam);
-                    const awayId = await resolveTeamId(supabase, event.idAwayTeam, event.strAwayTeam);
-                    const competitionId = await resolveLeagueId(supabase, event.idLeague, event.strLeague);
+                    const homeId = await resolveTeamId(supabase, event.idHomeTeam, event.strHomeTeam, event.strHomeTeamBadge);
+                    const awayId = await resolveTeamId(supabase, event.idAwayTeam, event.strAwayTeam, event.strAwayTeamBadge);
+                    const competitionId = await resolveLeagueId(supabase, event.idLeague, event.strLeague, event.strLeagueBadge);
 
                     if (!homeId || !awayId || !competitionId) continue;
 
-                    const status = normalizeStatus(event.strStatus);
+                    let status = normalizeStatus(event.strStatus);
+
+                    // GRIM REAPER GUARD: Prevent resurrecting zombie matches in club-centric sync
+                    if (event.dateEvent) {
+                        const dateStr = event.dateEvent + 'T' + (event.strTime || '00:00:00');
+                        const matchDate = new Date(dateStr);
+                        const ageHours = (new Date().getTime() - matchDate.getTime()) / (1000 * 60 * 60);
+
+                        if (['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'].includes(status) && ageHours > 4) {
+                            console.warn(`[Grim Reaper] 🛡️ Blocked zombie in club-sync: ${event.strEvent || event.idEvent}`);
+                            status = 'FT';
+                        }
+                    }
 
                     fixturesToUpsert.push({
                         id: parseInt(event.idEvent),
@@ -347,23 +656,36 @@ export async function syncClubSchedules(
 }
 
 // Reuse or duplicate helper to resolve/stub
-async function resolveTeamId(supabase: SupabaseClient, tsdbId: string, name: string): Promise<string | null> {
+async function resolveTeamId(supabase: SupabaseClient, tsdbId: string, name: string, badgeUrl?: string): Promise<string | null> {
     if (!tsdbId) return null;
 
     // 1. Try to find by metadata->external->thesportsdb_id
     const { data } = await supabase
         .from('topics')
-        .select('id')
+        .select('id, metadata')
         .eq('metadata->external->>thesportsdb_id', tsdbId)
         .single();
 
-    if (data) return data.id;
+    if (data) {
+        // Opportunistic Heal: If it's a stub and missing badge, and we have one now
+        const meta = data.metadata as any;
+        if (meta?.is_stub && !meta.badge_url && badgeUrl) {
+            // Non-blocking update
+            supabase.from('topics').update({
+                metadata: { ...meta, badge_url: badgeUrl }
+            }).eq('id', data.id).then(({ error }) => {
+                if (error) console.error(`Failed to heal stub ${name} in resolveTeamId`, error);
+                else console.log(`Healed stub ${name} in resolveTeamId`);
+            });
+        }
+        return data.id;
+    }
 
     // 2. Create Stub
-    return await createStub(supabase, tsdbId, name, 'club');
+    return await createStub(supabase, tsdbId, name, 'club', badgeUrl);
 }
 
-async function resolveLeagueId(supabase: SupabaseClient, tsdbId: string, name: string): Promise<string | null> {
+async function resolveLeagueId(supabase: SupabaseClient, tsdbId: string, name: string, badgeUrl?: string): Promise<string | null> {
     if (!tsdbId) return null;
 
     const { data } = await supabase
@@ -376,11 +698,11 @@ async function resolveLeagueId(supabase: SupabaseClient, tsdbId: string, name: s
     if (data) return data.id;
 
     // Create Stub League
-    return await createStub(supabase, tsdbId, name, 'league');
+    return await createStub(supabase, tsdbId, name, 'league', badgeUrl);
 }
 
 // Modified Stub creator to handle types
-async function createStub(supabase: SupabaseClient, tsdbId: string, name: string, type: 'club' | 'league' = 'club'): Promise<string | null> {
+async function createStub(supabase: SupabaseClient, tsdbId: string, name: string, type: 'club' | 'league' = 'club', badgeUrl?: string): Promise<string | null> {
     console.log(`Creating Stub ${type}: ${name} (${tsdbId})`);
 
     // Generate slug
@@ -398,7 +720,8 @@ async function createStub(supabase: SupabaseClient, tsdbId: string, name: string
             type: type,
             metadata: {
                 external: { thesportsdb_id: tsdbId },
-                is_stub: true
+                is_stub: true,
+                badge_url: badgeUrl
             }
         })
         .select('id')
@@ -411,7 +734,11 @@ async function createStub(supabase: SupabaseClient, tsdbId: string, name: string
                 title: name,
                 slug: `${slug}-${tsdbId}`,
                 type: type,
-                metadata: { external: { thesportsdb_id: tsdbId }, is_stub: true }
+                metadata: {
+                    external: { thesportsdb_id: tsdbId },
+                    is_stub: true,
+                    badge_url: badgeUrl
+                }
             }).select('id').single();
             return retry?.id || null;
         }
@@ -481,7 +808,14 @@ export async function syncLeagueStandings(
             console.log(`\n   Processing ${league.name} (${league.id})...`);
 
             // 1. Fetch Table
-            const season = '2024-2025';
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // 0-indexed
+            const season = month >= 6 // July (6) onwards is usually new season for simple logic, but consistency with other calc (Aug/7) is fine. Let's use the same logic as syncDailySchedules.
+                ? `${year}-${year + 1}`
+                : `${year - 1}-${year}`;
+
+            console.log(`      Fetching standings for season ${season}...`);
             const table = await apiClient.getLeagueTable(league.id, season);
 
             if (!table || table.length === 0) {

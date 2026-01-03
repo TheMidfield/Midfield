@@ -12,6 +12,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { getHeroEntities } from "@/app/actions/hero-data";
 import { TopicCard } from "@/components/TopicCard";
+import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
 // =============================================================================
 // HOMEPAGE - Using deep clones to avoid RSC serialization issues
@@ -108,12 +109,14 @@ export default async function Home() {
         .eq('is_active', true)
         .in('slug', FEATURED_PLAYER_SLUGS);
 
-    // Fetch leagues  
+    // Fetch leagues
+    const HOMEPAGE_LEAGUES = [...ALLOWED_LEAGUES, "UEFA Champions League", "UEFA Europa League"];
     const { data: leaguesRaw } = await supabase
         .from('topics')
         .select('id, title, slug, metadata, post_count')
         .eq('type', 'league')
         .eq('is_active', true)
+        .in('title', HOMEPAGE_LEAGUES)
         .order('title', { ascending: true });
 
     // CRITICAL: Deep clone to break Supabase references, then extract primitives

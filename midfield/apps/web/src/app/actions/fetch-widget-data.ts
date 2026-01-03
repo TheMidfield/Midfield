@@ -743,7 +743,7 @@ const getCachedMatchCenterData = unstable_cache(
         );
 
         const now = Date.now();
-        const threeDaysAgo = new Date(now - 3 * 24 * 60 * 60 * 1000); // 3 days back for results
+        const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000); // 7 days back for results
         const weekAhead = new Date(now + 7 * 24 * 60 * 60 * 1000);
 
         // Fetch fixtures (OPTIMIZED: 30 instead of 150) with team and competition data
@@ -763,7 +763,7 @@ const getCachedMatchCenterData = unstable_cache(
             awayTeam:topics!fixtures_away_team_id_fkey(id, title, slug, metadata),
             competition:topics!fixtures_competition_id_fkey(id, title, slug, metadata)
         `)
-            .gte('date', threeDaysAgo.toISOString()) // Include last 3 days
+            .gte('date', sevenDaysAgo.toISOString()) // Include last 7 days
             .lte('date', weekAhead.toISOString())
             .order('date', { ascending: true })
             .limit(150); // Increased to ensure quality matches aren't cut off by chrono sort
@@ -853,19 +853,39 @@ const getCachedMatchCenterData = unstable_cache(
             // If two Top 15 teams play, ensure it's high
             if (homeUefa <= 15 && awayUefa <= 15) importance += 10;
 
-            // 6. Time Factor (Recency Bias) - EXTREME UPDATE (v8)
-            // Goal: "Match Center" must be TODAY/TOMORROW.
-            // Arsenal vs Liverpool (next week) should NOT beat Como vs Udinese (Today).
-            const hoursUntil = (new Date(f.date).getTime() - now) / (1000 * 60 * 60);
+            // 6. Recency Factor - SMOOTH GRADIENT FOR BOTH PAST AND FUTURE
+            const hoursFromNow = (new Date(f.date).getTime() - now) / (1000 * 60 * 60);
 
-            if (hoursUntil <= 24) {
-                importance += 40; // EXTREME boost for Today.
-            } else if (hoursUntil <= 48) {
-                importance += 20; // Big boost for Tomorrow.
-            } else if (hoursUntil > 96) {
-                importance -= 50; // Next week? You better be El Clasico or you're invisible.
+            if (hoursFromNow >= 0) {
+                // UPCOMING MATCHES
+                if (hoursFromNow <= 24) {
+                    importance += 40; // Today/Tonight
+                } else if (hoursFromNow <= 48) {
+                    importance += 20; // Tomorrow
+                } else if (hoursFromNow > 96) {
+                    importance -= 50; // Next week - must be huge match
+                } else {
+                    importance -= 30; // 3-4 days away
+                }
             } else {
-                importance -= 30; // 3-4 days away? Big penalty.
+                // PAST MATCHES (RESULTS) - Smooth recency gradient
+                const hoursAgo = Math.abs(hoursFromNow);
+
+                if (hoursAgo <= 24) {
+                    importance += 30; // Today's results (same day)
+                } else if (hoursAgo <= 48) {
+                    importance += 20; // Yesterday
+                } else if (hoursAgo <= 72) {
+                    importance += 12; // 2 days ago
+                } else if (hoursAgo <= 96) {
+                    importance += 6; // 3 days ago
+                } else if (hoursAgo <= 120) {
+                    importance += 2; // 4 days ago
+                } else if (hoursAgo <= 168) {
+                    importance += 0; // 5-7 days ago - no bonus or penalty
+                } else {
+                    importance -= 10; // Older than a week - penalize
+                }
             }
 
             return {

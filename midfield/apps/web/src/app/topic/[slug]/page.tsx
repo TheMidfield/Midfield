@@ -125,6 +125,8 @@ export default async function TopicPage({
     let standings: any[] = [];
     let clubStanding: any = null;
     let leagueSlug: string | undefined;
+    let leagueBadgeUrl: string | undefined;
+    let leagueBadgeDarkUrl: string | undefined;
 
     // Parallel Fetching Promises
     const parallelFetches: Promise<void>[] = [];
@@ -136,7 +138,11 @@ export default async function TopicPage({
         if (leagueName) {
             parallelFetches.push((async () => {
                 const leagueTopic = await cachedGetLeagueByTitle(leagueName);
-                if (leagueTopic) leagueSlug = leagueTopic.slug;
+                if (leagueTopic) {
+                    leagueSlug = leagueTopic.slug;
+                    leagueBadgeUrl = (leagueTopic.metadata as any)?.logo_url;
+                    leagueBadgeDarkUrl = (leagueTopic.metadata as any)?.logo_url_dark;
+                }
             })());
         }
 
@@ -187,7 +193,11 @@ export default async function TopicPage({
             if (ALLOWED_LEAGUES.includes(leagueName)) {
                 // League Slug
                 const leagueTopic = await cachedGetLeagueByTitle(leagueName);
-                if (leagueTopic) leagueSlug = leagueTopic.slug;
+                if (leagueTopic) {
+                    leagueSlug = leagueTopic.slug;
+                    leagueBadgeUrl = (leagueTopic.metadata as any)?.logo_url;
+                    leagueBadgeDarkUrl = (leagueTopic.metadata as any)?.logo_url_dark;
+                }
 
                 // Manager special case
                 const position = metadata?.position?.toLowerCase() || '';
@@ -273,6 +283,8 @@ export default async function TopicPage({
                 favorite_club: userData?.profile?.favorite_club || null,
             }}
             leagueSlug={leagueSlug}
+            leagueBadgeUrl={leagueBadgeUrl}
+            leagueBadgeDarkUrl={leagueBadgeDarkUrl}
             voteData={voteData}
             highlightPostId={postId}
         />

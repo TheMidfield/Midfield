@@ -247,6 +247,14 @@ export const getClubStanding = async (clubId: string): Promise<any | null> => {
         return null;
     }
 
+    if (data) {
+        const { count } = await supabase
+            .from('league_standings')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', data.league_id);
+        (data as any).total_teams = count || 0;
+    }
+
     return data || null;
 };
 
