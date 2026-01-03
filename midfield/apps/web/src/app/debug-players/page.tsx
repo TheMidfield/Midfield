@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
+// Test comment to verify git is working properly
 export default async function PlayerDebugPage() {
     const supabase = await createClient();
 
