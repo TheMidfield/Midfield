@@ -12,6 +12,7 @@ import {
     syncClubSchedules,
     syncLeagueStandings
 } from '@midfield/logic/src/sync/simple-fixture-sync';
+import { CORE_LEAGUES, getLeagueName } from '@midfield/logic/src/config/leagues';
 import { config } from 'dotenv';
 
 config();

@@ -8,13 +8,13 @@ const LEAGUES = ['4328', '4335', '4332', '4331', '4334', '4480', '4481'];
 export async function updateLivescores(supabase: SupabaseClient, apiClient: TheSportsDBClient) {
     const now = new Date();
 
-    // Grim Reaper: Force-finish zombie matches (>4h old but still LIVE)
-    const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString();
+    // Grim Reaper: Force-finish zombie matches (>2.5h old but still LIVE)
+    const twoPointFiveHoursAgo = new Date(now.getTime() - 2.5 * 60 * 60 * 1000).toISOString();
     const { data: zombies } = await supabase
         .from('fixtures')
         .select('id, home_team_name, away_team_name')
         .in('status', ['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'])
-        .lt('date', fourHoursAgo);
+        .lt('date', twoPointFiveHoursAgo);
 
     if (zombies && zombies.length > 0) {
         console.log(`[Grim Reaper] Killing ${zombies.length} zombie matches`);
@@ -24,13 +24,13 @@ export async function updateLivescores(supabase: SupabaseClient, apiClient: TheS
             .in('id', zombies.map((z: any) => z.id));
     }
 
-    // Reset future bogies (LIVE but >4h in future)
-    const futureFourHours = new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString();
+    // Reset future bogies (LIVE but >2.5h in future)
+    const futureTwoPointFiveHours = new Date(now.getTime() + 2.5 * 60 * 60 * 1000).toISOString();
     const { data: bogies } = await supabase
         .from('fixtures')
         .select('id')
         .in('status', ['LIVE', 'HT'])
-        .gt('date', futureFourHours);
+        .gt('date', futureTwoPointFiveHours);
 
     if (bogies && bogies.length > 0) {
         console.log(`[Grim Reaper] Resetting ${bogies.length} false-future-live matches`);
