@@ -8,9 +8,17 @@ export class TheSportsDBClient {
         this.apiKey = apiKey;
     }
 
-    private async fetchV1<T>(endpoint: string): Promise<T> {
+    private async fetchV1<T>(endpoint: string, retries = 3): Promise<T> {
         const response = await fetch(`${this.baseUrlV1}/${this.apiKey}/${endpoint}`);
+
         if (!response.ok) {
+            // 429 Rate Limit Handling with Exponential Backoff
+            if (response.status === 429 && retries > 0) {
+                const delay = 2000 * Math.pow(2, 3 - retries); // 2s, 4s, 8s
+                console.warn(`⚠️ Rate limit hit on ${endpoint}. Retrying in ${delay}ms... (Attempts left: ${retries})`);
+                await new Promise(r => setTimeout(r, delay));
+                return this.fetchV1(endpoint, retries - 1);
+            }
             throw new Error(`TheSportsDB V1 API Error: ${response.status} ${response.statusText}`);
         }
         return response.json();
