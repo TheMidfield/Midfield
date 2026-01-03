@@ -6,13 +6,12 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { TheSportsDBClient } from '@midfield/logic/src/sync/client';
-import {
-    syncDailySchedules,
+syncDailySchedules,
     syncClubSchedules,
     syncLeagueStandings
-} from '@midfield/logic/src/sync/simple-fixture-sync';
-import { CORE_LEAGUES, getLeagueName } from '@midfield/logic/src/config/leagues';
+} from '../packages/logic/src/sync/simple-fixture-sync';
+import { CORE_LEAGUES, getLeagueName } from '../packages/logic/src/config/leagues';
+import { TheSportsDBClient } from '../packages/logic/src/sync/client';
 import { config } from 'dotenv';
 
 config();
