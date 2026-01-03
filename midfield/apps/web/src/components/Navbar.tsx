@@ -292,7 +292,10 @@ export function Navbar() {
                             <span className="text-[15px] font-semibold text-slate-700 dark:text-neutral-300">Theme</span>
                             <ThemeToggle />
                         </div>
-                        <MobileNavLink href="/design-system" icon={Terminal} active={isActive("/design-system")} onClick={() => setIsMobileMenuOpen(false)}>Showcase</MobileNavLink>
+                        {/* Mobile Dev Showcase (DEV ONLY) */}
+                        {isDev && (
+                            <MobileNavLink href="/design-system" icon={Terminal} active={isActive("/design-system")} onClick={() => setIsMobileMenuOpen(false)}>Showcase</MobileNavLink>
+                        )}
 
                         {/* Mobile Dev Tools (DEV ONLY) */}
                         {isDev && (

@@ -11,7 +11,11 @@ export class TheSportsDBClient {
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
             headers: { 'X-API-KEY': this.apiKey }
         });
-        if (!response.ok) throw new Error(`API V2 Error: ${response.status}`);
+        if (!response.ok) {
+            // V2 might return 404 for empty data, handle gracefully
+            if (response.status === 404) return {} as T;
+            throw new Error(`API V2 Error: ${response.status}`);
+        }
         return response.json();
     }
 
@@ -24,34 +28,78 @@ export class TheSportsDBClient {
         return response.json();
     }
 
-    // List all players for a team (Unlimited)
-    async listTeamPlayers(teamId: string) {
-        const data = await this.fetchV2<{ list: any[] }>(`/list/players/${teamId}`);
-        return data.list || [];
+    // === SYNC-CRITICAL METHODS ===
+
+    // League schedule (V2) - for daily sync
+    async getLeagueSchedule(leagueId: string, season: string) {
+        return this.fetchV2<{ events: any[] }>(`/schedule/league/${leagueId}/${season}`);
     }
 
-    // List all teams in a league
+    // Livescores (V2) - for realtime updates
+    async getLivescores(leagueId?: string) {
+        const endpoint = leagueId ? `/livescore/${leagueId}` : '/livescore/soccer';
+        return this.fetchV2<{ events: any[] }>(endpoint);
+    }
+
+    // Upcoming fixtures (V2)
+    async getUpcomingFixtures(leagueId: string) {
+        return this.fetchV2<{ events: any[] }>(`/schedule/next/league/${leagueId}`);
+    }
+
+    // Previous results (V2)
+    async getPreviousResults(leagueId: string) {
+        return this.fetchV2<{ events: any[] }>(`/schedule/previous/league/${leagueId}`);
+    }
+
+    // Individual event lookup (V1) - for Vanish Protocol
+    async lookupEvent(eventId: string) {
+        const data = await this.fetchV1<{ events: any[] }>(`lookupevent.php?id=${eventId}`);
+        return data.events?.[0] || null;
+    }
+
+    // Past events fallback (V1) - Safety net
+    async getPastLeagueEvents(leagueId: string) {
+        const data = await this.fetchV1<{ events: any[] }>(`eventspastleague.php?id=${leagueId}`);
+        return data.events || [];
+    }
+
+    // League table/standings (V1)
+    async getLeagueTable(leagueId: string, season: string) {
+        const data = await this.fetchV1<{ table: any[] }>(`lookuptable.php?l=${leagueId}&s=${season}`);
+        return data.table || [];
+    }
+
+    // === METADATA METHODS ===
+
+    // List all players for a team (V1 for FULL details)
+    async listTeamPlayers(teamId: string) {
+        const data = await this.fetchV1<{ player: any[] }>(`lookup_all_players.php?id=${teamId}`);
+        return data.player || [];
+    }
+
+    // List all teams in a league (V2)
     async listLeagueTeams(leagueId: string) {
         const data = await this.fetchV2<{ list: any[] }>(`/list/teams/${leagueId}`);
         return data.list || [];
     }
 
-
-    // Individual Player Lookup (V1 - Full Details)
+    // Individual lookups
     async lookupPlayer(playerId: string) {
         const data = await this.fetchV1<{ players: any[] }>(`lookupplayer.php?id=${playerId}`);
         return data.players?.[0] || null;
     }
 
-    // Detailed League Lookup (V1)
+    async lookupTeam(teamId: string) {
+        const data = await this.fetchV1<{ teams: any[] }>(`lookupteam.php?id=${teamId}`);
+        return data.teams?.[0] || null;
+    }
+
     async getLeagueDetails(leagueId: string) {
         const data = await this.fetchV1<{ leagues: any[] }>(`lookupleague.php?id=${leagueId}`);
         return data.leagues?.[0] || null;
     }
 
-    // --- PHASE 2: AUXILIARY DATA ---
-
-
+    // Team fixtures
     async getTeamNextFixtures(teamId: string) {
         const data = await this.fetchV2<{ schedule: any[] }>(`/schedule/next/team/${teamId}`);
         return data.schedule || [];
@@ -60,29 +108,5 @@ export class TheSportsDBClient {
     async getTeamLastFixtures(teamId: string) {
         const data = await this.fetchV2<{ schedule: any[] }>(`/schedule/previous/team/${teamId}`);
         return data.schedule || [];
-    }
-
-    async getLeagueNextFixtures(leagueId: string) {
-        // V2: /schedule/next/league/{id}
-        const data = await this.fetchV2<{ schedule: any[] }>(`/schedule/next/league/${leagueId}`);
-        return data.schedule || [];
-    }
-
-    async getLeagueLastFixtures(leagueId: string) {
-        // V2: /schedule/previous/league/{id}
-        const data = await this.fetchV2<{ schedule: any[] }>(`/schedule/previous/league/${leagueId}`);
-        return data.schedule || [];
-    }
-
-    async getLeagueTable(leagueId: string, season: string) {
-        // V1 endpoint: lookuptable.php?l={id}&s={season}
-        const data = await this.fetchV1<{ table: any[] }>(`lookuptable.php?l=${leagueId}&s=${season}`);
-        return data.table || [];
-    }
-
-    async getPlayerContracts(playerId: string) {
-        // V2 endpoint: returns 'contracts' or 'lookup' depending on mood
-        const data = await this.fetchV2<{ contracts?: any[], lookup?: any[] }>(`/lookup/player_contracts/${playerId}`);
-        return data.contracts || data.lookup || [];
     }
 }
