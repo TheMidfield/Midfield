@@ -16,55 +16,53 @@ export function BadgeModal({ badgeId, onClose, isUnlocked = true }: BadgeModalPr
 
     return (
         <Dialog open={!!badgeId} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent>
+            <DialogContent className="max-w-[340px] sm:max-w-[360px]">
                 {badge && (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', width: '100%', maxWidth: '100%' }}>
+                    <div className="flex flex-col items-center text-center">
+                        {/* Badge Icon - Smaller */}
                         <div
-                            className={`${badge.bg} border ${badge.border} ${!isUnlocked ? 'opacity-50' : ''}`}
-                            style={{
-                                width: '80px',
-                                height: '80px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                marginBottom: '24px',
-                                borderRadius: '24px', // Softer radius for larger size
-                                position: 'relative'
-                            }}
+                            className={`${badge.bg} border ${badge.border} ${!isUnlocked ? 'opacity-50' : ''} w-16 h-16 flex items-center justify-center rounded-2xl mb-4 relative`}
                         >
                             {(() => {
                                 const Icon = badge.icon;
-                                return <Icon className={`w-10 h-10 ${badge.text}`} strokeWidth={1.5} />;
+                                return <Icon className={`w-8 h-8 ${badge.text}`} strokeWidth={1.5} />;
                             })()}
                             {!isUnlocked && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 rounded-3xl">
-                                    <Lock className="w-6 h-6 text-slate-900 dark:text-white" />
+                                <div className="absolute inset-0 flex items-center justify-center bg-slate-900/20 rounded-2xl">
+                                    <Lock className="w-5 h-5 text-slate-900 dark:text-white" />
                                 </div>
                             )}
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', marginBottom: '24px', width: '100%' }}>
-                            <h2 className="text-2xl font-bold text-slate-900 dark:text-neutral-100">{badge.title}</h2>
-                            <p className="text-base text-slate-500 dark:text-neutral-400" style={{ maxWidth: '280px', lineHeight: '1.5' }}>
-                                {badge.description}
-                            </p>
+
+                        {/* Title and Description - Smaller */}
+                        <div className="flex flex-col items-center gap-2 mb-5">
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-neutral-100">{badge.title}</h2>
 
                             {/* Show unlock requirement if locked */}
                             {!isUnlocked && (
-                                <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg w-full max-w-[280px]">
-                                    <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-2">How to Unlock</p>
+                                <div className="mt-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg w-full">
+                                    <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1.5">How to Unlock</p>
                                     <p className="text-sm text-amber-900 dark:text-amber-200">
                                         {badge.unlockRequirement}
                                     </p>
                                 </div>
                             )}
+
+                            {/* Show only unlock requirement if unlocked */}
+                            {isUnlocked && (
+                                <p className="text-sm text-slate-500 dark:text-neutral-400 max-w-[280px]">
+                                    {badge.unlockRequirement}
+                                </p>
+                            )}
                         </div>
-                        <Button
+
+                        {/* Button - Badge color matched, less enthusiastic */}
+                        <button
                             onClick={onClose}
-                            size="lg"
-                            style={{ width: '100%', maxWidth: '200px' }}
+                            className={`w-full max-w-[160px] px-4 py-2 rounded-lg text-sm font-semibold transition-all ${badge.bg} ${badge.border} ${badge.text} border hover:opacity-80`}
                         >
-                            {isUnlocked ? 'Nice!' : 'Got it!'}
-                        </Button>
+                            Close
+                        </button>
                     </div>
                 )}
             </DialogContent>

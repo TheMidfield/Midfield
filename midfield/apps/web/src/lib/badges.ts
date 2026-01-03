@@ -68,9 +68,9 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         unlockRequirement: 'Be the first to post a take on any topic page',
         icon: IconShoe,
         color: 'emerald',
-        bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-        border: 'border-emerald-200 dark:border-emerald-800',
-        text: 'text-emerald-600 dark:text-emerald-400',
+        bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+        border: 'border-emerald-200 dark:border-emerald-700',
+        text: 'text-emerald-700 dark:text-emerald-400',
         category: 'engagement',
         rank: 1
     },
@@ -81,10 +81,10 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         description: 'Got the crowd going. You received your first reaction from another user.',
         unlockRequirement: 'Receive your first reaction on any of your takes',
         icon: IconBuildingStadium,
-        color: 'rose',
-        bg: 'bg-rose-100 dark:bg-rose-900/30',
-        border: 'border-rose-200 dark:border-rose-800',
-        text: 'text-rose-600 dark:text-rose-400',
+        color: 'sky',
+        bg: 'bg-sky-50 dark:bg-sky-900/20',
+        border: 'border-sky-200 dark:border-sky-700',
+        text: 'text-sky-700 dark:text-sky-400',
         category: 'social',
         rank: 1
     },
@@ -102,15 +102,25 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     },
     'influencer': {
         title: 'Regista',
-        description: 'Deep playmaker. You received your first reply from another user.',
+        description: 'Deep lying playmaker. You received your first reply from another user.',
         unlockRequirement: 'Receive your first reply on any of your takes',
         icon: IconGitBranchDeleted,
-        color: 'indigo',
-        bg: 'bg-indigo-100 dark:bg-indigo-900/30',
-        border: 'border-indigo-200 dark:border-indigo-800',
-        text: 'text-indigo-600 dark:text-indigo-400',
+        color: 'violet',
+        bg: 'bg-violet-50 dark:bg-violet-900/20',
+        border: 'border-violet-200 dark:border-violet-700',
+        text: 'text-violet-700 dark:text-violet-400',
         category: 'social',
         rank: 3
     }
 };
 
+// Order for displaying badges on profile
+export const BADGE_DISPLAY_ORDER = [
+    'original-10',    // Starting XI
+    'club-100',       // Club 100
+    'club-1000',      // Club 1k
+    'trendsetter',    // Playmaker
+    'playmaker',      // Crowd Provoker
+    'influencer',     // Regista
+    'hat-trick'       // Hat-Trick
+];

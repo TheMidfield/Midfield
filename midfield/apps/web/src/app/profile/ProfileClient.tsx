@@ -9,7 +9,7 @@ import { uploadAvatar, updateProfile } from "./actions";
 import { FavoriteClubSelector, type Club } from "@/components/onboarding/FavoriteClubSelector";
 import { signOut } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/client";
-import { BADGE_INFO } from "@/lib/badges";
+import { BADGE_INFO, BADGE_DISPLAY_ORDER } from "@/lib/badges";
 import { BadgeModal } from "@/components/profile/BadgeModal";
 import {
     Dialog,
@@ -586,7 +586,7 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                 }
                             });
 
-                            return Object.keys(BADGE_INFO).map((badgeKey) => {
+                            return BADGE_DISPLAY_ORDER.map((badgeKey) => {
                                 const info = BADGE_INFO[badgeKey];
                                 const isEarned = earnedBadgeKeys.includes(badgeKey);
                                 const Icon = info.icon;
