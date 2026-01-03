@@ -4,6 +4,10 @@ import { Users } from "lucide-react";
 
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
+// Force dynamic rendering and disable caching
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function PlayersPage() {
     const supabase = await createClient();
 
