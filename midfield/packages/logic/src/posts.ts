@@ -240,3 +240,132 @@ export async function deletePostLogic(supabase: any, postId: string, userId: str
 
     return { success: true };
 }
+
+export async function getUserPostsPaginatedLogic(
+    supabase: any,
+    userId: string,
+    options?: { cursor?: string; limit?: number }
+) {
+    const limit = options?.limit || 10;
+
+    let query = supabase
+        .from('posts')
+        .select(`
+            id,
+            content,
+            created_at,
+            author_id,
+            topic_id,
+            reply_count,
+            reaction_count,
+            author:author_id (
+                username,
+                avatar_url,
+                favorite_club:favorite_club_id (
+                    title,
+                    metadata
+                )
+            ),
+            topic:topic_id (
+                id,
+                title,
+                slug,
+                type,
+                metadata
+            )
+        `)
+        .eq('author_id', userId)
+        .is('parent_post_id', null)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false })
+        .limit(limit + 1);
+
+    if (options?.cursor) {
+        query = query.lt('created_at', options.cursor);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching user posts:', error);
+        return { posts: [], hasMore: false, nextCursor: null };
+    }
+
+    const posts = data || [];
+    const hasMore = posts.length > limit;
+
+    if (hasMore) {
+        posts.pop();
+    }
+
+    const nextCursor = posts.length > 0 ? posts[posts.length - 1].created_at : null;
+
+    return { posts, hasMore, nextCursor };
+}
+
+export async function getBookmarkedPostsPaginatedLogic(
+    supabase: any,
+    userId: string,
+    options?: { cursor?: string; limit?: number }
+) {
+    const limit = options?.limit || 10;
+
+    let query = supabase
+        .from('bookmarks')
+        .select(`
+            post_id,
+            created_at,
+            posts:post_id (
+                id,
+                content,
+                created_at,
+                author_id,
+                topic_id,
+                reply_count,
+                reaction_count,
+                author:author_id (
+                    username,
+                    avatar_url,
+                    favorite_club:favorite_club_id (
+                        title,
+                        metadata
+                    )
+                ),
+                topic:topic_id (
+                    id,
+                    title,
+                    slug,
+                    type,
+                    metadata
+                )
+            )
+        `)
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(limit + 1);
+
+    if (options?.cursor) {
+        query = query.lt('created_at', options.cursor);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error('Error fetching bookmarked posts:', error);
+        return { posts: [], hasMore: false, nextCursor: null };
+    }
+
+    const rawPosts = data || [];
+    const hasMore = rawPosts.length > limit;
+
+    if (hasMore) {
+        rawPosts.pop();
+    }
+
+    // Flatten data: current query returns { post_id, created_at, posts: { ... } }
+    // We want the posts objects
+    const posts = rawPosts.map((b: any) => b.posts).filter(Boolean);
+    const nextCursor = rawPosts.length > 0 ? rawPosts[rawPosts.length - 1].created_at : null;
+
+    return { posts, hasMore, nextCursor };
+}

@@ -1,6 +1,6 @@
 "use client";
-
 import React, { useState, useTransition, useRef, useEffect, useCallback, memo } from "react";
+import Link from "next/link";
 import { MoreHorizontal, ChevronDown, ChevronUp, User, Bookmark, Share, MessageCircle, Send, Pencil, Trash2, ChevronRight, ChevronLeft, CornerDownLeft, ArrowRight } from "lucide-react";
 import { formatDate } from "@midfield/utils";
 import { ReactionBar } from "./ReactionBar";
@@ -60,6 +60,13 @@ interface TakeCardProps {
             };
         };
         updated_at?: string;
+        topic?: {
+            id: string;
+            title: string;
+            slug: string;
+            type: string;
+            metadata?: any;
+        };
     };
     reactionCounts?: Record<ReactionType, number>;
     userReaction?: ReactionType | null;
@@ -362,6 +369,19 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                                 <span className="font-semibold text-slate-900 dark:text-neutral-100 text-xs xs:text-sm sm:text-sm hover:text-emerald-600 dark:hover:text-emerald-400 transition-all active:scale-95 lg:active:scale-100 cursor-pointer mr-0.5 truncate">{authorHandle}</span>
                                 <span className={cn("text-slate-300 dark:text-neutral-600 text-[11px] xs:text-xs mx-1 xs:mx-1.5 sm:mx-2", showMenu ? "hidden sm:inline" : "inline")}>•</span>
                                 <span className={cn("text-[11px] xs:text-xs", showMenu ? "hidden sm:inline" : "inline")}>{formatDate(new Date(post.created_at))}</span>
+                                {post.topic && (
+                                    <>
+                                        <span className="text-slate-300 dark:text-neutral-600 text-xs mx-1.5 sm:mx-2">•</span>
+                                        <Link
+                                            href={`/topic/${post.topic.slug}`}
+                                            className="inline-flex items-center gap-1 group/topic"
+                                        >
+                                            <span className="text-[10px] xs:text-[11px] font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-400/80 group-hover/topic:text-emerald-600 dark:group-hover/topic:text-emerald-400 transition-colors">
+                                                {post.topic.title}
+                                            </span>
+                                        </Link>
+                                    </>
+                                )}
                                 {wasEdited && <span className="hidden md:inline"><span className="text-slate-300 dark:text-neutral-600 text-xs mx-2">•</span><span className="text-[11px] italic">edited</span></span>}
                             </div>
                             {isOwner && !isEditing && (
@@ -735,11 +755,11 @@ export const TakeCard = memo(function TakeCard({ post, reactionCounts, userReact
                     authorUsername={authorHandle}
                     authorAvatar={post.author?.avatar_url}
                     createdAt={post.created_at}
-                    topicTitle={topicTitle}
-                    topicImageUrl={topicImageUrl}
-                    topicType={topicType}
-                    clubName={clubName}
-                    clubBadgeUrl={clubBadgeUrl}
+                    topicTitle={topicTitle || post.topic?.title}
+                    topicImageUrl={topicImageUrl || post.topic?.metadata?.logo_url || post.topic?.metadata?.badge_url || post.topic?.metadata?.image_url}
+                    topicType={topicType || post.topic?.type}
+                    clubName={clubName || (post.topic?.type === 'club' ? post.topic.title : undefined)}
+                    clubBadgeUrl={clubBadgeUrl || (post.topic?.type === 'club' ? post.topic.metadata?.badge_url || post.topic.metadata?.logo_url : undefined)}
                     topicPosition={topicPosition}
                 />
             </article>

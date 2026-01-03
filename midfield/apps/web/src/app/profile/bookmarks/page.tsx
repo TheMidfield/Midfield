@@ -1,9 +1,9 @@
+
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getBookmarkedPosts } from "@/app/actions";
-import { TakeCard } from "@/components/TakeCard";
-import { Card } from "@/components/ui/Card";
-import { Bookmark, ArrowLeft } from "lucide-react";
+import { getBookmarkedPostsPaginated } from "@/app/actions";
+import { ProfileTakesList } from "@/components/profile/ProfileTakesList";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default async function BookmarksPage() {
@@ -21,7 +21,8 @@ export default async function BookmarksPage() {
         .eq("id", user.id)
         .single();
 
-    const bookmarkedPosts = await getBookmarkedPosts();
+    // Initial fetch using paginated action
+    const { posts, hasMore, nextCursor } = await getBookmarkedPostsPaginated({ limit: 10 });
 
     return (
         <div className="min-h-screen">
@@ -40,33 +41,17 @@ export default async function BookmarksPage() {
                     </div>
                 </div>
 
-                {/* Bookmarked Posts */}
-                {bookmarkedPosts.length === 0 ? (
-                    <Card className="p-12 text-center">
-                        <div className="w-12 h-12 mx-auto mb-4 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
-                            <Bookmark className="w-6 h-6 text-slate-400 dark:text-neutral-500 shrink-0" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-2">No bookmarks yet</h3>
-                        <p className="text-sm text-slate-500 dark:text-neutral-400">
-                            Click the bookmark icon on any post to save it here.
-                        </p>
-                    </Card>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {bookmarkedPosts.map((post: any) => (
-                            <TakeCard
-                                key={post.id}
-                                post={post}
-                                currentUser={{
-                                    id: user.id,
-                                    avatar_url: profile?.avatar_url,
-                                    username: profile?.username
-                                }}
-                                isBookmarked={true}
-                            />
-                        ))}
-                    </div>
-                )}
+                <ProfileTakesList
+                    mode="bookmarks"
+                    initialPosts={posts}
+                    initialHasMore={hasMore}
+                    initialCursor={nextCursor}
+                    currentUser={{
+                        id: user.id,
+                        avatar_url: profile?.avatar_url,
+                        username: profile?.username
+                    }}
+                />
             </div>
         </div>
     );

@@ -46,7 +46,9 @@ import {
     getTakesPaginatedLogic,
     getRepliesLogic,
     updatePostLogic,
-    deletePostLogic
+    deletePostLogic,
+    getUserPostsPaginatedLogic,
+    getBookmarkedPostsPaginatedLogic
 } from "@midfield/logic/src/posts";
 
 /**
@@ -286,95 +288,72 @@ export async function isPostBookmarked(postId: string) {
     return !!data;
 }
 
+
+
 /**
- * Get all bookmarked posts for current user
+ * Get user posts (takes) paginated
  */
-export async function getBookmarkedPosts() {
+export async function getUserPostsPaginated(options?: { cursor?: string; limit?: number }) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return [];
+    if (!user) return { posts: [], hasMore: false, nextCursor: null };
 
-    const { data, error } = await supabase
-        .from('bookmarks' as any)
-        .select(`
-            post_id,
-            created_at,
-            posts:post_id (
-                id,
-                content,
-                created_at,
-                author_id,
-                topic_id,
-                reply_count,
-                author:author_id (
-                    username,
-                    avatar_url
-                )
-            )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+    const result = await getUserPostsPaginatedLogic(supabase, user.id, options);
 
-    if (error || !data) return [];
+    // Enrich with user reaction and bookmark status
+    if (result.posts.length > 0) {
+        const [reactionsRes, bookmarksRes] = await Promise.all([
+            supabase
+                .from('reactions')
+                .select('post_id, reaction_type')
+                .eq('user_id', user.id)
+                .in('post_id', result.posts.map((p: any) => p.id)),
+            supabase
+                .from('bookmarks')
+                .select('post_id')
+                .eq('user_id', user.id)
+                .in('post_id', result.posts.map((p: any) => p.id))
+        ]);
 
-    // Extract post data
-    return data.map((b: any) => b.posts).filter(Boolean);
+        const reactionMap = new Map(reactionsRes.data?.map((r: any) => [r.post_id, r.reaction_type]) || []);
+        const bookmarkSet = new Set(bookmarksRes.data?.map((b: any) => b.post_id) || []);
+
+        result.posts.forEach((p: any) => {
+            (p as any).userReaction = reactionMap.get(p.id) || null;
+            (p as any).isBookmarked = bookmarkSet.has(p.id);
+        });
+    }
+
+    return result;
 }
 
 /**
- * Get all takes (root posts) created by current user
+ * Get user bookmarks paginated
  */
-export async function getUserPosts() {
+export async function getBookmarkedPostsPaginated(options?: { cursor?: string; limit?: number }) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return [];
+    if (!user) return { posts: [], hasMore: false, nextCursor: null };
 
-    const { data, error } = await supabase
-        .from('posts')
-        .select(`
-            id,
-            content,
-            created_at,
-            author_id,
-            topic_id,
-            reply_count,
-            reaction_count,
-            author:author_id (
-                username,
-                avatar_url,
-                favorite_club:favorite_club_id (
-                    title,
-                    metadata
-                )
-            )
-        `)
-        .eq('author_id', user.id)
-        .is('reply_to_post_id', null) // Only root takes, not replies
-        .order('created_at', { ascending: false });
+    const result = await getBookmarkedPostsPaginatedLogic(supabase, user.id, options);
 
-    if (error) {
-        console.error("Error fetching user posts:", error);
-        return [];
-    }
-
-    // Enrich with user reaction (though it's their own post, they might have reacted?)
-    // Actually standard getTakes logic usually enriches. Let's do it for consistency.
-    if (data && data.length > 0) {
+    // Enrich with user reaction and bookmark status
+    if (result.posts.length > 0) {
         const { data: reactions } = await supabase
             .from('reactions')
             .select('post_id, reaction_type')
             .eq('user_id', user.id)
-            .in('post_id', data.map((p: any) => p.id));
+            .in('post_id', result.posts.map((p: any) => p.id));
 
-        if (reactions) {
-            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
-            data.forEach((p: any) => {
-                (p as any).userReaction = reactionMap.get(p.id) || null;
-            });
-        }
+        const reactionMap = new Map(reactions?.map((r: any) => [r.post_id, r.reaction_type]) || []);
+
+        result.posts.forEach((p: any) => {
+            (p as any).userReaction = reactionMap.get(p.id) || null;
+            (p as any).isBookmarked = true;
+        });
     }
 
-    return data;
+    return result;
 }

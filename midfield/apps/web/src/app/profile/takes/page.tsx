@@ -1,12 +1,10 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getUserPosts } from "@/app/actions";
-import { TakeCard } from "@/components/TakeCard";
-import { Card } from "@/components/ui/Card";
-import { MessageCircle, ArrowLeft } from "lucide-react";
+import { getUserPostsPaginated } from "@/app/actions";
+import { ProfileTakesList } from "@/components/profile/ProfileTakesList";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { isPostBookmarked } from "@/app/actions";
 
 export default async function MyTakesPage() {
     const supabase = await createClient();
@@ -23,13 +21,8 @@ export default async function MyTakesPage() {
         .eq("id", user.id)
         .single();
 
-    const userPosts = await getUserPosts();
-
-    // Enhancing posts with bookmark status
-    const postsWithBookmarks = await Promise.all(userPosts.map(async (post: any) => {
-        const isBookmarked = await isPostBookmarked(post.id);
-        return { ...post, isBookmarked };
-    }));
+    // Initial fetch using paginated action
+    const { posts, hasMore, nextCursor } = await getUserPostsPaginated({ limit: 10 });
 
     return (
         <div className="min-h-screen">
@@ -48,33 +41,17 @@ export default async function MyTakesPage() {
                     </div>
                 </div>
 
-                {/* User Posts */}
-                {postsWithBookmarks.length === 0 ? (
-                    <Card className="p-12 text-center">
-                        <div className="w-12 h-12 mx-auto mb-4 rounded-md bg-slate-100 dark:bg-neutral-800 flex items-center justify-center">
-                            <MessageCircle className="w-6 h-6 text-slate-400 dark:text-neutral-500 shrink-0" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-2">No takes yet</h3>
-                        <p className="text-sm text-slate-500 dark:text-neutral-400">
-                            Join the conversation by posting your first take!
-                        </p>
-                    </Card>
-                ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {postsWithBookmarks.map((post: any) => (
-                            <TakeCard
-                                key={post.id}
-                                post={post}
-                                currentUser={{
-                                    id: user.id,
-                                    avatar_url: profile?.avatar_url,
-                                    username: profile?.username
-                                }}
-                                isBookmarked={post.isBookmarked}
-                            />
-                        ))}
-                    </div>
-                )}
+                <ProfileTakesList
+                    mode="my-takes"
+                    initialPosts={posts}
+                    initialHasMore={hasMore}
+                    initialCursor={nextCursor}
+                    currentUser={{
+                        id: user.id,
+                        avatar_url: profile?.avatar_url,
+                        username: profile?.username
+                    }}
+                />
             </div>
         </div>
     );
