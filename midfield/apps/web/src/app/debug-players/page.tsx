@@ -1,10 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
-// Force dynamic rendering
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 // Test comment to verify git is working properly
 export default async function PlayerDebugPage() {
     const supabase = await createClient();

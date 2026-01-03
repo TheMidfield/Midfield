@@ -4,10 +4,6 @@ import { Users } from "lucide-react";
 
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
-// Force dynamic rendering and disable caching
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 export default async function PlayersPage() {
     const supabase = await createClient();
 
@@ -28,23 +24,20 @@ export default async function PlayersPage() {
         .eq('is_active', true);
 
     // Process players with club data AND filter by allowed leagues
-    // CRITICAL: Check ALL relationships using .some(), not just first one
     const filteredPlayers = (playerRelationships || [])
         .filter((player: any) => {
-            // Check if ANY of the player's clubs is in an allowed league
-            return player.club_relationship?.some((rel: any) => {
-                const league = rel.parent_topic?.metadata?.league;
-                return league && typeof league === 'string' && ALLOWED_LEAGUES.includes(league.trim());
-            }) || false;
+            const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
+            const league = clubData?.metadata?.league;
+
+            // Strict type checking and trimming for league matching
+            if (!league || typeof league !== 'string') return false;
+
+            // Check if the league is in ALLOWED_LEAGUES (exact match, case-sensitive)
+            return ALLOWED_LEAGUES.includes(league.trim());
         });
 
     const playersWithClubs = filteredPlayers.map((player: any) => {
-        // Prioritize club in allowed league
-        const allowedClubRel = player.club_relationship?.find((rel: any) => {
-            const league = rel.parent_topic?.metadata?.league;
-            return league && ALLOWED_LEAGUES.includes(league);
-        });
-        const clubData = allowedClubRel?.parent_topic;
+        const clubData = player.club_relationship?.find((rel: any) => rel.parent_topic)?.parent_topic;
         return {
             ...player,
             clubInfo: clubData ? {
