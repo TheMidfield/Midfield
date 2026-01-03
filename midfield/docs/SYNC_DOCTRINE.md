@@ -13,9 +13,9 @@ To balance the need for specific, sub-minute live scores with deep, heavy histor
 | :--- | :--- | :--- |
 | **Focus** | Time (When? What score? Who won?) | Structure (Who are they? History? Kits?) |
 | **Frequency** | **Every Minute** (Live) <br> **Every 6 Hours** (Schedule) | **Weekly** (Sundays) |
-| **Technology** | `Next.js API Routes` + `pg_cron` | `GitHub Actions` / `Workers` |
+| **Technology** | `Next.js API Routes` (Runs on Vercel) | `GitHub Actions` / `Workers` |
 | **Data Types** | • Fixtures (Schedule/Results)<br>• Live Scores (Goals/Events)<br>• **League Standings** | • Club Metadata (Stadium, Socials)<br>• Player Profiles (Height, Age)<br>• Transfers / Rosters |
-| **Key File** | `packages/logic/src/sync/simple-fixture-sync.ts` | `scripts/sync-static-metadata.ts` |
+| **Key File** | `apps/web/src/app/api/cron/...`<br>*(Note: `supabase/functions` is deprecated/archived)* | `scripts/sync-static-metadata.ts` |
 
 ---
 

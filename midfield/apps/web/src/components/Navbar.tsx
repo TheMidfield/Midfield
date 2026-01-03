@@ -27,6 +27,9 @@ export function Navbar() {
     const [isNavigating, setIsNavigating] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
+    // Environment flag for Dev Tools
+    const isDev = process.env.NODE_ENV === 'development';
+
     useEffect(() => {
         // Fetch user profile for avatar
         async function loadUserProfile() {
@@ -148,37 +151,40 @@ export function Navbar() {
                             <NavbarSearch />
                         </div>
 
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="hidden xl:flex gap-2">
-                                    <Terminal className="w-4 h-4" />
-                                    <span>Dev</span>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" sideOffset={8} className="w-56">
-                                <DropdownMenuItem asChild>
-                                    <Link href="/design-system" className="cursor-pointer">Design System</Link>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuLabel>Simulate Notification</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleDevAction('system_welcome')}>
-                                    Welcome / Signup
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDevAction('reply')}>
-                                    New Reply
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDevAction('upvote')}>
-                                    New Upvote
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDevAction('badge_received')}>
-                                    Badge Award
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => window.dispatchEvent(new Event('dev:open-welcome-modal'))}>
-                                    Open Welcome Modal
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {/* DESKTOP DEV TOOLS (DEV ONLY) */}
+                        {isDev && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="hidden xl:flex gap-2">
+                                        <Terminal className="w-4 h-4" />
+                                        <span>Dev</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" sideOffset={8} className="w-56">
+                                    <DropdownMenuItem asChild>
+                                        <Link href="/design-system" className="cursor-pointer">Design System</Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuLabel>Simulate Notification</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => handleDevAction('system_welcome')}>
+                                        Welcome / Signup
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDevAction('reply')}>
+                                        New Reply
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDevAction('upvote')}>
+                                        New Upvote
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDevAction('badge_received')}>
+                                        Badge Award
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => window.dispatchEvent(new Event('dev:open-welcome-modal'))}>
+                                        Open Welcome Modal
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
 
                         <div className="flex items-center gap-1">
                             {/* Search icon - mobile only */}
@@ -288,24 +294,26 @@ export function Navbar() {
                         </div>
                         <MobileNavLink href="/design-system" icon={Terminal} active={isActive("/design-system")} onClick={() => setIsMobileMenuOpen(false)}>Showcase</MobileNavLink>
 
-                        {/* Mobile Dev Tools */}
-                        <div className="px-4 py-2">
-                            <p className="text-xs font-semibold text-slate-500 dark:text-neutral-500 uppercase tracking-wider mb-2">Dev Tools</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Button variant="outline" size="sm" onClick={() => handleDevAction('system_welcome')} className="text-xs h-8 justify-start">
-                                    Simulate Welcome
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDevAction('reply')} className="text-xs h-8 justify-start">
-                                    Simulate Reply
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDevAction('upvote')} className="text-xs h-8 justify-start">
-                                    Simulate Upvote
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => handleDevAction('badge_received')} className="text-xs h-8 justify-start">
-                                    Simulate Badge
-                                </Button>
+                        {/* Mobile Dev Tools (DEV ONLY) */}
+                        {isDev && (
+                            <div className="px-4 py-2">
+                                <p className="text-xs font-semibold text-slate-500 dark:text-neutral-500 uppercase tracking-wider mb-2">Dev Tools</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => handleDevAction('system_welcome')} className="text-xs h-8 justify-start">
+                                        Simulate Welcome
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleDevAction('reply')} className="text-xs h-8 justify-start">
+                                        Simulate Reply
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleDevAction('upvote')} className="text-xs h-8 justify-start">
+                                        Simulate Upvote
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleDevAction('badge_received')} className="text-xs h-8 justify-start">
+                                        Simulate Badge
+                                    </Button>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </div>
