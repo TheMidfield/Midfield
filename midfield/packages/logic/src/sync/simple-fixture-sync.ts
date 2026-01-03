@@ -1,6 +1,6 @@
-
 import { SupabaseClient } from "@supabase/supabase-js";
 import { TheSportsDBClient } from "./client";
+import pLimit from "p-limit";
 
 // Core leagues to track (national + continental)
 const LEAGUES = [
@@ -590,81 +590,76 @@ export async function syncClubSchedules(
     // Batch Size: 4 clubs (8 requests).
     // Delay: 5 seconds.
     // 8 reqs / 5s = 1.6 req/s.
-    const CHUNK_SIZE = 4;
-    for (let i = 0; i < coreClubs.length; i += CHUNK_SIZE) {
-        const chunk = coreClubs.slice(i, i + CHUNK_SIZE);
-        console.log(`Processing Batch ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(coreClubs.length / CHUNK_SIZE)}...`);
+    // 2. Iterate and sync using p-limit for steady throughput
+    // API Limit: 100 req/min. Target ~1.6 req/sec.
+    // Concurrency 2: Assuming 1s latency -> ~2 req/s. 
+    // This slightly oversaturates but Retries will handle the overflow efficiently.
+    const limit = pLimit(2);
 
-        // Rate Limit Throttle (Pre-batch delay, skip first one)
-        if (i > 0) {
-            await new Promise(r => setTimeout(r, 5000));
-        }
+    await Promise.all(coreClubs.map(club => limit(async () => {
+        const tsdbId = club.metadata?.external?.thesportsdb_id;
+        if (!tsdbId) return;
 
-        await Promise.all(chunk.map(async (club) => {
-            const tsdbId = club.metadata?.external?.thesportsdb_id;
-            if (!tsdbId) return;
+        try {
+            // Fetch in Parallel (Last + Next)
+            const [lastRes, nextRes] = await Promise.all([
+                fetch(`https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY}/eventslast.php?id=${tsdbId}`).then(r => r.json()),
+                fetch(`https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY}/eventsnext.php?id=${tsdbId}`).then(r => r.json())
+            ]);
 
-            try {
-                // Fetch in Parallel (Last + Next)
-                const [lastRes, nextRes] = await Promise.all([
-                    fetch(`https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY}/eventslast.php?id=${tsdbId}`).then(r => r.json()),
-                    fetch(`https://www.thesportsdb.com/api/v1/json/${process.env.THESPORTSDB_API_KEY}/eventsnext.php?id=${tsdbId}`).then(r => r.json())
-                ]);
+            const allEvents = [...(lastRes.results || []), ...(nextRes.events || [])];
 
-                const allEvents = [...(lastRes.results || []), ...(nextRes.events || [])];
+            if (allEvents.length === 0) return;
 
-                if (allEvents.length === 0) return;
+            // Transform and Save
+            const fixturesToUpsert = [];
 
-                // Transform and Save
-                const fixturesToUpsert = [];
+            for (const event of allEvents) {
+                const homeId = await resolveTeamId(supabase, event.idHomeTeam, event.strHomeTeam, event.strHomeTeamBadge);
+                const awayId = await resolveTeamId(supabase, event.idAwayTeam, event.strAwayTeam, event.strAwayTeamBadge);
+                const competitionId = await resolveLeagueId(supabase, event.idLeague, event.strLeague, event.strLeagueBadge);
 
-                for (const event of allEvents) {
-                    const homeId = await resolveTeamId(supabase, event.idHomeTeam, event.strHomeTeam, event.strHomeTeamBadge);
-                    const awayId = await resolveTeamId(supabase, event.idAwayTeam, event.strAwayTeam, event.strAwayTeamBadge);
-                    const competitionId = await resolveLeagueId(supabase, event.idLeague, event.strLeague, event.strLeagueBadge);
+                if (!homeId || !awayId || !competitionId) continue;
 
-                    if (!homeId || !awayId || !competitionId) continue;
+                let status = normalizeStatus(event.strStatus);
 
-                    let status = normalizeStatus(event.strStatus);
+                // GRIM REAPER GUARD: Prevent resurrecting zombie matches in club-centric sync
+                if (event.dateEvent) {
+                    const dateStr = event.dateEvent + 'T' + (event.strTime || '00:00:00');
+                    const matchDate = new Date(dateStr);
+                    const ageHours = (new Date().getTime() - matchDate.getTime()) / (1000 * 60 * 60);
 
-                    // GRIM REAPER GUARD: Prevent resurrecting zombie matches in club-centric sync
-                    if (event.dateEvent) {
-                        const dateStr = event.dateEvent + 'T' + (event.strTime || '00:00:00');
-                        const matchDate = new Date(dateStr);
-                        const ageHours = (new Date().getTime() - matchDate.getTime()) / (1000 * 60 * 60);
-
-                        if (['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'].includes(status) && ageHours > 4) {
-                            console.warn(`[Grim Reaper] 🛡️ Blocked zombie in club-sync: ${event.strEvent || event.idEvent}`);
-                            status = 'FT';
-                        }
+                    if (['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'].includes(status) && ageHours > 4) {
+                        console.warn(`[Grim Reaper] 🛡️ Blocked zombie in club-sync: ${event.strEvent || event.idEvent}`);
+                        status = 'FT';
                     }
-
-                    fixturesToUpsert.push({
-                        id: parseInt(event.idEvent),
-                        competition_id: competitionId,
-                        date: event.dateEvent + 'T' + (event.strTime || '00:00:00'),
-                        home_team_id: homeId,
-                        away_team_id: awayId,
-                        home_team_name: event.strHomeTeam,
-                        away_team_name: event.strAwayTeam,
-                        home_score: event.intHomeScore ? parseInt(event.intHomeScore) : null,
-                        away_score: event.intAwayScore ? parseInt(event.intAwayScore) : null,
-                        status: status,
-                        venue: event.strVenue,
-                        gameweek: event.intRound ? parseInt(event.intRound) : null
-                    });
                 }
 
-                if (fixturesToUpsert.length > 0) {
-                    const { error } = await supabase.from('fixtures').upsert(fixturesToUpsert, { onConflict: 'id' });
-                    if (error) console.error(`Error saving club fixtures for ${club.title}:`, error);
-                }
-
-            } catch (e) {
-                console.error(`Error syncing club ${club.title}:`, e);
+                fixturesToUpsert.push({
+                    id: parseInt(event.idEvent),
+                    competition_id: competitionId,
+                    date: event.dateEvent + 'T' + (event.strTime || '00:00:00'),
+                    home_team_id: homeId,
+                    away_team_id: awayId,
+                    home_team_name: event.strHomeTeam,
+                    away_team_name: event.strAwayTeam,
+                    home_score: event.intHomeScore ? parseInt(event.intHomeScore) : null,
+                    away_score: event.intAwayScore ? parseInt(event.intAwayScore) : null,
+                    status: status,
+                    venue: event.strVenue,
+                    gameweek: event.intRound ? parseInt(event.intRound) : null
+                });
             }
-        }));
-    }
+
+            if (fixturesToUpsert.length > 0) {
+                const { error } = await supabase.from('fixtures').upsert(fixturesToUpsert, { onConflict: 'id' });
+                if (error) console.error(`Error saving club fixtures for ${club.title}:`, error);
+            }
+
+        } catch (e) {
+            console.error(`Error syncing club ${club.title}:`, e);
+        }
+    })));
 }
 
 // Reuse or duplicate helper to resolve/stub
