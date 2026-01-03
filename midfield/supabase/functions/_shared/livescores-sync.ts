@@ -13,7 +13,7 @@ export async function updateLivescores(supabase: SupabaseClient, apiClient: TheS
     const { data: zombies } = await supabase
         .from('fixtures')
         .select('id, home_team_name, away_team_name')
-        .in('status', ['LIVE', 'HT', 'INT', 'BREAK', 'PEN', 'ET', '1H', '2H'])
+        .in('status', ['LIVE', 'HT'])
         .lt('date', twoPointFiveHoursAgo);
 
     if (zombies && zombies.length > 0) {
@@ -46,7 +46,7 @@ export async function updateLivescores(supabase: SupabaseClient, apiClient: TheS
         .from('fixtures')
         .select('id, competition_id, status')
         .gte('date', twelveHoursAgo)
-        .or('status.in.(LIVE,HT,INT,BREAK,PEN,ET,1H,2H),status.eq.FT)');
+        .or('status.in.(LIVE,HT),status.eq.FT)');
 
     if (!activeFixtures || activeFixtures.length === 0) {
         console.log('No active fixtures. Skipping.');

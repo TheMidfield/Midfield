@@ -24,10 +24,9 @@ async function debugFixture() {
     const { data: fixtures, error } = await supabase
         .from('fixtures')
         .select('*')
-        .or('home_team_name.ilike.%Barcelona%,away_team_name.ilike.%Barcelona%')
-        .gte('date', '2026-01-01T00:00:00')
-        .lte('date', '2026-02-01T00:00:00')
-        .order('date', { ascending: true });
+        .or('home_team_name.ilike.%Espanyol%,away_team_name.ilike.%Espanyol%')
+        .order('date', { ascending: false })
+        .limit(10);
 
     if (error) {
         console.error('Error:', error);
