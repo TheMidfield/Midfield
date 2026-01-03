@@ -1,10 +1,12 @@
 import { FeaturedPlayersInfinite } from "@/components/FeaturedPlayersInfinite";
-import { supabase } from "@midfield/logic/src/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { Users } from "lucide-react";
 
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
 export default async function PlayersPage() {
+    const supabase = await createClient();
+
     // Fetch ALL players (we'll handle pagination on client)
     const { data: playerRelationships } = await supabase
         .from('topics')

@@ -1,4 +1,3 @@
-import { supabase } from "@midfield/logic/src/supabase";
 import { getClubsByLeague } from "@midfield/logic/src/topics";
 import Link from "next/link";
 import { Trophy, Shield, Globe2, Sparkles, Star, ThumbsUp, ThumbsDown } from "lucide-react";
@@ -17,7 +16,7 @@ const COUNTRY_FLAG_IMAGES: Record<string, string> = {
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
 
 export default async function LeaguesPage() {
-  const serverSupabase = await createClient();
+  const supabase = await createClient();
 
   const CONTINENTAL_LEAGUES = ["UEFA Champions League", "UEFA Europa League"];
   const TARGET_LEAGUES = [...ALLOWED_LEAGUES, ...CONTINENTAL_LEAGUES];
