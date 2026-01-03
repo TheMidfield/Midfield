@@ -287,7 +287,7 @@ export function LiveFeed() {
                 <div
                     className="flex-1 flex flex-col"
                     style={{
-                        transform: `translateY(${scrollY * 0.04}px)`,
+                        transform: `translateY(${scrollY * 0.06}px)`,
                         transition: 'transform 0.1s ease-out'
                     }}
                 >

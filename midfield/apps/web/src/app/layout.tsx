@@ -6,6 +6,7 @@ import { SearchProvider } from "@/context/SearchContext";
 import { NotificationProvider } from "@/context/NotificationContext";
 import { GlobalSearchLayout } from "@/components/GlobalSearchLayout";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
+import { GlobalWelcomeModal } from "@/components/GlobalWelcomeModal";
 import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Onest } from "next/font/google";
@@ -91,6 +92,7 @@ export default function RootLayout({
                                 </div>
 
                                 <Footer />
+                                <GlobalWelcomeModal />
                             </OnboardingProvider>
                         </NotificationProvider>
                     </SearchProvider>

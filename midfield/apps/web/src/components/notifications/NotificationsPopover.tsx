@@ -53,6 +53,12 @@ export function NotificationsSidebar({ onOpenChange }: NotificationsSidebarProps
     const closeSidebar = () => handleOpenChange(false);
 
     useEffect(() => {
+        const handleOpenWelcome = () => setIsWelcomeOpen(true);
+        window.addEventListener('dev:open-welcome-modal', handleOpenWelcome);
+        return () => window.removeEventListener('dev:open-welcome-modal', handleOpenWelcome);
+    }, []);
+
+    useEffect(() => {
         if (open) {
             const isMobile = window.matchMedia('(max-width: 639px)').matches;
             if (isMobile) {

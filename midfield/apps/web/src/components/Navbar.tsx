@@ -170,6 +170,10 @@ export function Navbar() {
                                 <DropdownMenuItem onClick={() => handleDevAction('badge_received')}>
                                     Badge Award
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => window.dispatchEvent(new Event('dev:open-welcome-modal'))}>
+                                    Open Welcome Modal
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 

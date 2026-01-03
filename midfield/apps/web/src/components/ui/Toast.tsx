@@ -69,8 +69,6 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
         <div
             style={{
                 position: 'fixed',
-                top: '96px',
-                right: '96px',
                 zIndex: 100,
                 display: 'flex',
                 alignItems: 'center',
@@ -78,12 +76,11 @@ export function Toast({ message, type, duration = 3000, onClose }: ToastProps) {
                 padding: '12px 16px',
                 borderRadius: '8px',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
-                transform: visible ? 'translateY(0)' : 'translateY(-16px)',
                 opacity: visible ? 1 : 0,
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 pointerEvents: visible ? 'auto' : 'none',
             }}
-            className={`bg-white dark:bg-neutral-900 border-2 ${getBorderColor()}`}
+            className={`bg-white dark:bg-neutral-900 border-2 ${getBorderColor()} top-24 left-1/2 -translate-x-1/2 sm:left-auto sm:right-24 sm:translate-x-0 ${visible ? 'translate-y-0' : '-translate-y-4'}`}
         >
             <div
                 style={{ width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
