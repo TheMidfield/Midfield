@@ -70,6 +70,6 @@ export const config = {
          * - auth/callback (OAuth callback handler - must not be intercepted by middleware)
          * - Legal pages (privacy, terms, about, contact) - must be crawlable by Google
          */
-        '/((?!_next/static|_next/image|favicon.ico|auth/callback|privacy|privacy-policy|terms|about|contact|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|auth/callback|privacy|terms|about|contact|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
