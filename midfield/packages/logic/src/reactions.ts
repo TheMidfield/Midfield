@@ -5,41 +5,53 @@ export type ReactionType = 'fire' | 'hmm' | 'fair' | 'dead';
  */
 export async function toggleReactionLogic(supabase: any, postId: string, userId: string, reactionType: ReactionType) {
     // Check if user already has a reaction on this post
-    const { data: existing } = await supabase
+    const { data: existing, error: fetchError } = await supabase
         .from('reactions')
         .select('*')
         .eq('post_id', postId)
         .eq('user_id', userId)
         .single();
 
+    // Ignore error 'PGRST116' (JSON object requested, multiple (or no) rows returned) 
+    // because .single() errors if 0 rows.
+    if (fetchError && fetchError.code !== 'PGRST116') {
+        return { success: false, error: fetchError.message };
+    }
+
     if (existing) {
         if (existing.reaction_type === reactionType) {
             // Same reaction - remove it
-            await supabase
+            const { error: deleteError } = await supabase
                 .from('reactions')
                 .delete()
                 .eq('post_id', postId)
                 .eq('user_id', userId);
-            return { action: 'removed', reactionType: null };
+
+            if (deleteError) return { success: false, error: deleteError.message };
+            return { success: true, action: 'removed', reactionType: null };
         } else {
             // Different reaction - update it
-            await supabase
+            const { error: updateError } = await supabase
                 .from('reactions')
                 .update({ reaction_type: reactionType })
                 .eq('post_id', postId)
                 .eq('user_id', userId);
-            return { action: 'changed', reactionType };
+
+            if (updateError) return { success: false, error: updateError.message };
+            return { success: true, action: 'changed', reactionType };
         }
     } else {
         // No existing reaction - add new one
-        await supabase
+        const { error: insertError } = await supabase
             .from('reactions')
             .insert({
                 post_id: postId,
                 user_id: userId,
                 reaction_type: reactionType
             });
-        return { action: 'added', reactionType };
+
+        if (insertError) return { success: false, error: insertError.message };
+        return { success: true, action: 'added', reactionType };
     }
 }
 
