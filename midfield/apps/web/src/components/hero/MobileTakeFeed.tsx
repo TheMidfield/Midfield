@@ -44,7 +44,7 @@ function MobileTakeCard({ take }: { take: HeroTake }) {
                                         alt={take.topic.title}
                                         fill
                                         sizes="16px"
-                                        className={(isClub || isLeague) ? 'object-contain p-0.5 dark:hidden' : PLAYER_IMAGE_STYLE.className}
+                                        className={isLeague ? 'object-contain p-0.5 dark:hidden' : (isClub ? 'object-contain p-0.5' : PLAYER_IMAGE_STYLE.className)}
                                         {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
                                         unoptimized={true}
                                         onError={(e) => {

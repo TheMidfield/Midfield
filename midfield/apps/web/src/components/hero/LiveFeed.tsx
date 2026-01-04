@@ -181,16 +181,12 @@ export function LiveFeed() {
         if (!swrTakes || swrTakes.length === 0) return;
 
         // STABLE COLUMN ASSIGNMENT
-        // We use a hash of the ID to ensure a take ALWAYS belongs to the same column.
-        // This prevents the "reshuffle flash" when new items are added.
-        const getStableColumn = (id: string): 1 | 2 => {
-            const sum = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            return (sum % 2 === 0) ? 1 : 2;
-        };
-
-        const stableTakes: TakeWithColumn[] = swrTakes.map(take => ({
+        // Previous hash-based logic caused uneven distribution (e.g. 80/20 split).
+        // NEW: Simple alternating index based on sort order guarantees 50/50 balance.
+        // Since swrTakes comes pre-sorted by date, this ensures newest items alternate.
+        const stableTakes: TakeWithColumn[] = swrTakes.map((take, index) => ({
             ...take,
-            column: getStableColumn(take.id)
+            column: (index % 2 === 0) ? 1 : 2
         }));
 
         setTakes(stableTakes);
