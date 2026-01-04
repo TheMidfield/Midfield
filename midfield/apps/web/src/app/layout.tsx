@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { LayoutContent } from "@/components/LayoutContent";
@@ -81,7 +82,9 @@ export default function RootLayout({
                     <SearchProvider>
                         <NotificationProvider>
                             <OnboardingProvider>
-                                <Navbar />
+                                <Suspense>
+                                    <Navbar />
+                                </Suspense>
 
                                 <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 pt-24 sm:pt-28 pb-12 sm:pb-16">
                                     <GlobalSearchLayout>
