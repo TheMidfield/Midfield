@@ -152,17 +152,11 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                         finalAvatarUrl = publicUrl;
                     } catch (uploadError: any) {
                         setError(`Avatar upload failed: ${uploadError.message}`);
-                        return;// Validate file size (2MB max)
-                                                        if (file.size > 2 * 1024 * 1024) {
-                                                            setError("Image must be under 2MB");
-                                                            return;
-                                                        }
-                                                        // Store file for later upload
-                                                        setAvatarFile(file);
-                                                        // Create preview URL (object URL, not base64)
-                                                        const previewUrl = URL.createObjectURL(file);
-                                                        setAvatarUrl(previewUrl);
-                                                        setError(null
+                        return;
+                    }
+                }
+
+                const { error: updateError } = await supabase
                     .from('users')
                     .update({
                         username: username.trim(),
@@ -238,11 +232,17 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                                                 onChange={(e) => {
                                                     const file = e.target.files?.[0];
                                                     if (file) {
-                                                        const reader = new FileReader();
-                                                        reader.onloadend = () => {
-                                                            setAvatarUrl(reader.result as string);
-                                                        };
-                                                        reader.readAsDataURL(file);
+                                                        // Validate file size (2MB max)
+                                                        if (file.size > 2 * 1024 * 1024) {
+                                                            setError("Image must be under 2MB");
+                                                            return;
+                                                        }
+                                                        // Store file for later upload
+                                                        setAvatarFile(file);
+                                                        // Create preview URL (object URL, not base64)
+                                                        const previewUrl = URL.createObjectURL(file);
+                                                        setAvatarUrl(previewUrl);
+                                                        setError(null);
                                                     }
                                                 }}
                                             />

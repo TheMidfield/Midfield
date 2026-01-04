@@ -90,8 +90,10 @@ export const NavbarSearch = forwardRef<NavbarSearchHandle, NavbarSearchProps>(({
                     onChange={(e) => {
                         const newValue = e.target.value;
                         setQuery(newValue);
-                        // Trigger callback when search becomes active (2+ chars)
-                        // Note: We don't auto-trigger onSearchStart here to avoid closing menu while typing
+                        // Trigger callback when search becomes active (auto-dismisses mobile menu)
+                        if (newValue.length >= 2 && onSearchStart) {
+                            onSearchStart();
+                        }
                     }}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
