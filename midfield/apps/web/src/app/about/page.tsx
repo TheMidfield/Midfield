@@ -61,7 +61,7 @@ export default function AboutPage() {
 
                 <div className="pt-8 border-t border-slate-200 dark:border-neutral-800 text-center">
                     <p className="text-sm text-slate-500 dark:text-neutral-500 mb-3">
-                        Built by a small team of football fans.
+                        Built by a lover of the game.
                     </p>
                     <p className="text-sm text-slate-600 dark:text-neutral-400">
                         Questions? <a href="mailto:team.midfield@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium">team.midfield@gmail.com</a>
