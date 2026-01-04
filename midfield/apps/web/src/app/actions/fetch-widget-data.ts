@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getTopicBySlug, getPlayersByClub, getPlayerClub, getClubsByLeague, getTopicsByType, getClubAbbreviation } from "@midfield/logic/src/topics";
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
+import { getLeagueLogoUrls } from "@/lib/entity-helpers";
 import { cache } from 'react';
 
 export type WidgetEntity = {
@@ -178,13 +179,17 @@ const getCachedTrendingTopics = unstable_cache(
                 const topic = topicsMap.get(id);
                 if (!topic) return null;
                 const metadata = topic.metadata as any;
+                const baseImageUrl = metadata?.photo_url || metadata?.badge_url || metadata?.logo_url;
+                const leagueLogos = topic.type === 'league' ? getLeagueLogoUrls(topic.slug, baseImageUrl) : null;
+
                 return {
                     id: topic.id,
                     rank: index + 1,
                     title: topic.title,
                     slug: topic.slug,
                     type: topic.type,
-                    imageUrl: metadata?.photo_url || metadata?.badge_url || metadata?.logo_url,
+                    imageUrl: leagueLogos?.imageUrl || baseImageUrl,
+                    imageDarkUrl: leagueLogos?.imageDarkUrl,
                     activity: activityMap.get(id) || 0,
                     takeCount: takeCountMap.get(id) || 0,
                     // Metadata for badges
@@ -195,8 +200,8 @@ const getCachedTrendingTopics = unstable_cache(
             })
             .filter(Boolean) as TrendingTopic[];
     },
-    ['trending-topics-widget'], // Tag for manual revalidation if needed
-    { revalidate: 300 } // 5 minutes cache
+    ['trending-topics-widget-v2'], // Tag updated to force cache invalidation for logo fix
+    { revalidate: 60 } // Reduced to 1 minute for faster feedback
 );
 
 export type TrendingTopic = {
@@ -206,6 +211,7 @@ export type TrendingTopic = {
     slug: string;
     type: string;
     imageUrl?: string;
+    imageDarkUrl?: string;
     activity: number;
     takeCount: number;
     position?: string;

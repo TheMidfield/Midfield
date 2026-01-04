@@ -48,15 +48,38 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
                 : 'w-11 h-11'
                 }`}>
                 {item.imageUrl ? (
-                    <NextImage
-                        src={item.imageUrl}
-                        alt={item.title}
-                        fill
-                        sizes="48px"
-                        unoptimized={true}
-                        className={isPlayer ? '' : 'object-contain p-0.5'}
-                        {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
-                    />
+                    item.type === 'league' ? (
+                        <>
+                            <NextImage
+                                src={item.imageUrl}
+                                alt={item.title}
+                                fill
+                                sizes="48px"
+                                unoptimized={true}
+                                className={`object-contain p-0.5 ${item.imageDarkUrl ? 'dark:hidden' : ''}`}
+                            />
+                            {item.imageDarkUrl && (
+                                <NextImage
+                                    src={item.imageDarkUrl}
+                                    alt={item.title}
+                                    fill
+                                    sizes="48px"
+                                    unoptimized={true}
+                                    className="object-contain p-0.5 hidden dark:block"
+                                />
+                            )}
+                        </>
+                    ) : (
+                        <NextImage
+                            src={item.imageUrl}
+                            alt={item.title}
+                            fill
+                            sizes="48px"
+                            unoptimized={true}
+                            className={isPlayer ? '' : 'object-contain p-0.5'}
+                            {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
+                        />
+                    )
                 ) : (
                     <div className="w-full h-full flex items-center justify-center">
                         <span className="text-xs font-bold text-slate-400 dark:text-neutral-500">#</span>

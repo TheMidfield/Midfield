@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getHeroEntities } from "@/app/actions/hero-data";
 import { TopicCard } from "@/components/TopicCard";
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
+import { getLeagueLogoUrls } from "@/lib/entity-helpers";
 
 // =============================================================================
 // HOMEPAGE - Using deep clones to avoid RSC serialization issues
@@ -152,14 +153,21 @@ export default async function Home() {
         });
     }
 
-    const leagues = leaguesPlain.map((l: any) => ({
-        id: String(l.id),
-        title: String(l.title),
-        slug: String(l.slug),
-        type: 'league',
-        metadata: l.metadata || {},
-        post_count: l.post_count || 0
-    }));
+    const leagues = leaguesPlain.map((l: any) => {
+        const logoUrls = getLeagueLogoUrls(String(l.slug), l.metadata?.badge_url || l.metadata?.logo_url);
+        return {
+            id: String(l.id),
+            title: String(l.title),
+            slug: String(l.slug),
+            type: 'league',
+            metadata: {
+                ...l.metadata,
+                logo_url: logoUrls.imageUrl,
+                logo_url_dark: logoUrls.imageDarkUrl
+            },
+            post_count: l.post_count || 0
+        };
+    });
 
     // Fetch vote counts for ALL displayed topics on this page
     const allTopicIds = [

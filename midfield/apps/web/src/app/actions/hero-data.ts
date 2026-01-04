@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { getLeagueLogoUrls } from "@/lib/entity-helpers";
 
 // =============================================================================
 // HERO DATA - Curated, optimized data for the Split Hero
@@ -193,22 +194,28 @@ export async function getHeroEntities(): Promise<HeroEntity[]> {
             .map(slug => plain.find((t: any) => t.slug === slug))
             .filter(Boolean);
 
-        return sorted.map((t: any) => ({
-            id: String(t.id),
-            title: String(t.title),
-            slug: String(t.slug),
-            type: String(t.type),
-            displayName: getDisplayName(t.title, t.type),
-            imageUrl: t.type === 'player'
-                ? t.metadata?.photo_url
-                : t.metadata?.badge_url || t.metadata?.logo_url,
-            imageDarkUrl: t.type === 'league' ? t.metadata?.logo_url_dark : undefined,
-            position: t.metadata?.position,
-            rating: t.metadata?.rating ? Number(t.metadata.rating) : undefined,
-            subtitle: t.type === 'club' ? t.metadata?.league_name : undefined,
-            upvotes: Number(voteMap.get(t.id)?.up || 0),
-            downvotes: Number(voteMap.get(t.id)?.down || 0)
-        }));
+        return sorted.map((t: any) => {
+            const leagueLogos = t.type === 'league'
+                ? getLeagueLogoUrls(String(t.slug), t.metadata?.badge_url || t.metadata?.logo_url)
+                : null;
+
+            return {
+                id: String(t.id),
+                title: String(t.title),
+                slug: String(t.slug),
+                type: String(t.type),
+                displayName: getDisplayName(t.title, t.type),
+                imageUrl: t.type === 'player'
+                    ? t.metadata?.photo_url
+                    : (leagueLogos?.imageUrl || t.metadata?.badge_url || t.metadata?.logo_url),
+                imageDarkUrl: leagueLogos?.imageDarkUrl,
+                position: t.metadata?.position,
+                rating: t.metadata?.rating ? Number(t.metadata.rating) : undefined,
+                subtitle: t.type === 'club' ? t.metadata?.league_name : undefined,
+                upvotes: Number(voteMap.get(t.id)?.up || 0),
+                downvotes: Number(voteMap.get(t.id)?.down || 0)
+            };
+        });
 
     } catch (err) {
         console.error('getHeroEntities error:', err);
@@ -308,6 +315,10 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
                 }
             }
 
+            const leagueLogos = topic.type === 'league'
+                ? getLeagueLogoUrls(String(topic.slug), topic.metadata?.badge_url || topic.metadata?.logo_url)
+                : null;
+
             return {
                 id: String(p.id),
                 content: String(p.content),
@@ -322,13 +333,10 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
                     title: String(topic.title),
                     slug: String(topic.slug),
                     type: String(topic.type),
-                    // For Premier League, use badge_url (matches trending widget); for other leagues use logo_url
                     imageUrl: topic.type === 'player'
                         ? topic.metadata?.photo_url
-                        : topic.slug === 'english-premier-league'
-                            ? topic.metadata?.badge_url
-                            : topic.metadata?.badge_url || topic.metadata?.logo_url,
-                    imageDarkUrl: topic.type === 'league' ? topic.metadata?.logo_url_dark : undefined
+                        : (leagueLogos?.imageUrl || topic.metadata?.badge_url || topic.metadata?.logo_url),
+                    imageDarkUrl: leagueLogos?.imageDarkUrl
                 }
             };
         })

@@ -116,3 +116,48 @@ export const getRatingBgColor = (rating: number | string) => {
     if (numRating >= 50) return 'bg-orange-500';
     return 'bg-red-500';
 };
+
+// =============================================================================
+// LEAGUE LOGO THEMING - Meticulous Bucket mapping
+// =============================================================================
+
+const LEAGUE_BUCKET_BASE = "https://oerbyhaqhuixpjrubshm.supabase.co/storage/v1/object/public/league-logos/";
+
+/**
+ * Get themed logo URLs for leagues, handling the dark mode split.
+ * @param slug - The league topic slug
+ * @param originalUrl - The fallback URL from DB metadata
+ */
+export const getLeagueLogoUrls = (slug: string, originalUrl?: string) => {
+    // 1. Premier League Exception (Explicit) - Keep existing logic/source
+    if (slug.includes("english-premier-league") || slug.includes("premier-league")) {
+        return { imageUrl: originalUrl, imageDarkUrl: undefined };
+    }
+
+    // 2. Exact/Fuzzy Match for mapped leagues
+    let mappedFile = null;
+
+    // Check common slug patterns
+
+    if (slug.includes("french-ligue-1") || slug === "ligue-1") mappedFile = "ligue-1.png";
+    else if (slug.includes("german-bundesliga") || slug === "bundesliga") mappedFile = "bundesliga.png";
+    else if (slug.includes("italian-serie-a") || slug === "serie-a") mappedFile = "serie-a.png";
+
+    if (mappedFile) {
+        return {
+            imageUrl: `${LEAGUE_BUCKET_BASE}${mappedFile}`,
+            imageDarkUrl: `${LEAGUE_BUCKET_BASE}dark-${mappedFile}`
+        };
+    }
+
+    // Special Case: La Liga (Bucket asset, but Single Variant only)
+    if (slug.includes("spanish-la-liga") || slug === "la-liga") {
+        return {
+            imageUrl: `${LEAGUE_BUCKET_BASE}la-liga.png`,
+            imageDarkUrl: undefined
+        };
+    }
+
+    // 3. Fallback
+    return { imageUrl: originalUrl, imageDarkUrl: undefined };
+};
