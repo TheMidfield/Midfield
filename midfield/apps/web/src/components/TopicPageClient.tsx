@@ -83,6 +83,9 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
         isLeague ? ["clubs"] : isClub ? ["players"] : isManager ? ["team-form"] : hasFC26Ratings ? ["ratings"] : ["about"]
     ));
 
+    // Optimistic post count - updates immediately when user posts a take
+    const [displayPostCount, setDisplayPostCount] = useState(topic.post_count || 0);
+
     // Collapse sections on mobile by default to save space
     useEffect(() => {
         if (window.innerWidth < 768) {
@@ -124,9 +127,13 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
         }
     };
 
-    // Handle new post - add to top of feed via ref
+    // Handle new post - add to top of feed via ref + optimistically increment counter
     const handlePostSuccess = (newPost: any) => {
+        // Add to feed
         addPostRef.current?.(newPost);
+
+        // Optimistically increment the post count
+        setDisplayPostCount(prev => prev + 1);
     };
 
     // Define sections based on entity type
@@ -302,7 +309,7 @@ export function TopicPageClient({ topic, squad, groupedSquad, playerClub, league
                 imageUrl={metadata?.photo_url}
                 badgeUrl={isLeague ? (metadata?.logo_url) : metadata?.badge_url}
                 badgeUrlDark={isLeague ? metadata?.logo_url_dark : undefined}
-                postCount={topic.post_count || 0}
+                postCount={displayPostCount}
                 shareSentence={getTopicShareSentence(topic)}
                 metadata={{
                     position: metadata?.position,
