@@ -16,15 +16,19 @@ The Badge System is a fully automated, database-driven gamification layer design
 
 All badge keys match their display titles exactly. Legacy names (`trendsetter`, `influencer`) have been purged.
 
-| Badge Key | Title | Category | Requirement | Trigger Source |
-|-----------|-------|----------|-------------|----------------|
-| `starting_xi` | Starting XI | Membership | First 11 users | Signup Trigger |
-| `club_100` | Club 100 | Membership | First 100 users | Signup Trigger |
-| `club_1k` | Club 1k | Membership | First 1,000 users | Signup Trigger |
-| `playmaker` | Playmaker | Engagement | First take on a topic | Post Trigger |
-| `crowd_provoker` | Crowd Provoker | Social | Receive 1st reaction | Reaction Trigger |
-| `regista` | Regista | Social | Receive 1st reply | Reply Trigger |
-| `hat-trick` | Hat-Trick | Social | Receive 3 replies | Reply Trigger |
+| Badge Key | Title | Description | Requirement | Category | Rank | Trigger |
+|-----------|-------|-------------|-------------|----------|------|---------|
+| `starting_xi` | Starting XI | Legendary status. First 11 users. | Be among the first 11 users to join Midfield | membership | 3 | Signup Trigger |
+| `club_100` | Club 100 | Early adopter. First 100 users. | Be among the first 100 users to join Midfield | membership | 2 | Signup Trigger |
+| `club_1k` | Club 1k | Founding member. First 1,000 users. | Be among the first 1,000 users to join Midfield | membership | 1 | Signup Trigger |
+| `playmaker` | Playmaker | Started conversation. First take on any topic. | Be the first to post a take on any topic page | engagement | 1 | Post Trigger |
+| `crowd_provoker` | Crowd Provoker | Got crowd going. First reaction received. | Receive your first reaction on any of your takes | social | 1 | Reaction Trigger |
+| `hat-trick` | Hat-Trick | Triple threat. 3 replies received. | Receive 3 replies on your takes | social | 2 | Reply Trigger |
+| `regista` | Regista | Deep-lying playmaker. First reply received. | Receive your first reply on any of your takes | social | 3 | Reply Trigger |
+
+**Code Reference**: `BADGE_INFO` object in `midfield/apps/web/src/lib/badges.ts`
+**Database**: Keys stored in `user_badges.badge_id` and `notifications.resource_slug`
+**Frontend Import**: `import { BADGE_INFO } from '@/lib/badges'` (Uses: BadgeModal, NotificationItem, ProfileClient)
 
 ---
 
@@ -77,3 +81,5 @@ All badge keys match their display titles exactly. Legacy names (`trendsetter`, 
 - ✅ **Safety**: Duplicate prevention fully audited and verified.
 
 **System is 100% Production Ready.**
+
+
