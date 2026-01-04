@@ -160,7 +160,7 @@ function shuffleArray<T>(arr: T[]): T[] {
  * EntityCycler - Animated hero invitation
  */
 export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
-    const [shuffledEntities, setShuffledEntities] = useState<HeroEntity[]>([]);
+    const [shuffledEntities, setShuffledEntities] = useState<HeroEntity[]>(entities);
     const [index, setIndex] = useState(0);
     const { isAuthModalOpen, authModalContext, openAuthModal, closeAuthModal } = useAuthModal();
     const router = useRouter();

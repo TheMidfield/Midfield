@@ -1,11 +1,17 @@
 'use client'
 
 import { Moon, Sun } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTheme } from '@/components/providers/ThemeProvider'
 import { IconButton } from './IconButton'
 
 export function ThemeToggle() {
-    const { theme, toggleTheme, mounted } = useTheme()
+    const { theme, toggleTheme } = useTheme()
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     // Prevent hydration mismatch by rendering a placeholder until mounted
     if (!mounted) {
