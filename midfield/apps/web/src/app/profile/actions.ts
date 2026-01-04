@@ -153,38 +153,24 @@ export async function getUserProfile() {
             return { user, profile: null };
         }
 
-        // Calculate User Rank (First 10/100/1000)
-        const { count: olderUsersCount } = await supabase
-            .from('users')
-            .select('*', { count: 'exact', head: true })
-            .lt('created_at', profile.created_at)
-
-        const userRank = (olderUsersCount || 0) + 1
-
-        // Calculate "Seeded Topic" (First take on a topic)
-        const { data: hasSeeded } = await supabase
-            .rpc('has_seeded_topic' as any, { user_id: user.id })
-
         // Get Activity Stats (Reactions Received, Topics Interacted)
         const { data: activityStats } = await supabase
             .rpc('get_user_activity_stats' as any, { target_user_id: user.id })
 
-        const badges: string[] = []
+        // Fetch earned badges from database (new source of truth)
+        const { data: earnedBadges } = await supabase
+            .from('user_badges')
+            .select('badge_id')
+            .eq('user_id', user.id);
 
-        // Rank Badges (Mutually exclusive tiers)
-        if (userRank <= 11) badges.push('original-10')
-        else if (userRank <= 100) badges.push('club-100')
-        else if (userRank <= 1000) badges.push('club-1000')
+        const badges = earnedBadges?.map(b => b.badge_id) || [];
 
-        // Trendsetter Badge
-        if (hasSeeded) badges.push('trendsetter')
 
         // Return augmented profile
         return {
             user,
             profile: {
                 ...profile,
-                user_rank: userRank,
                 badges,
                 activity_stats: activityStats || { reactions_received: 0, topics_interacted: 0 }
             }
