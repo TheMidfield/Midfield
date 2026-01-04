@@ -108,7 +108,7 @@ export function AuthModal({
                 return {
                     icon: <Sparkles className="w-5 h-5" />,
                     headline: "Join Midfield",
-                    subheadline: "Where football debate meets data-driven analysis"
+                    subheadline: "The place for conversation around the beautiful game"
                 };
         }
     };
@@ -150,13 +150,13 @@ export function AuthModal({
                             Check your email
                         </h2>
                         <p className="text-sm sm:text-base text-slate-600 dark:text-neutral-400">
-                            We sent a magic link to
+                            We've sent a sign-in link to
                         </p>
                         <p className="font-semibold text-sm sm:text-base text-slate-900 dark:text-neutral-100 break-all px-4">
                             {email}
                         </p>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 pt-3 sm:pt-4">
-                            Click the link to sign in. You can close this window.
+                            Click the link in your email to complete sign-in. You can close this page.
                         </p>
                     </div>
                 ) : (
@@ -247,13 +247,13 @@ export function AuthModal({
                             {/* Footer copy */}
                             <p className="text-[10px] xs:text-xs text-center text-slate-500 dark:text-neutral-500">
                                 By continuing, you agree to our{" "}
-                                <span className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">
-                                    Terms
-                                </span>{" "}
+                                <a href="/terms" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                                    Terms of Service
+                                </a>{" "}
                                 and{" "}
-                                <span className="text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer">
+                                <a href="/privacy" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline">
                                     Privacy Policy
-                                </span>
+                                </a>
                             </p>
                         </div>
                     </>

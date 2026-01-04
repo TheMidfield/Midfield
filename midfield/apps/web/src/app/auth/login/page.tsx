@@ -43,10 +43,10 @@ export default function LoginPage() {
             <div style={{ width: '100%', maxWidth: '448px', margin: '0 auto', paddingTop: '64px', paddingBottom: '64px' }}>
                 <div style={{ textAlign: 'center' }}>
                     <h1 className="text-3xl font-bold mb-4 text-slate-900 dark:text-neutral-100">Check your email</h1>
-                    <p className="text-lg text-slate-600 dark:text-neutral-400 mb-2">We sent a magic link to</p>
+                    <p className="text-lg text-slate-600 dark:text-neutral-400 mb-2">We've sent a sign-in link to</p>
                     <p className="text-lg font-semibold text-slate-900 dark:text-neutral-100">{email}</p>
                     <p className="mt-6 text-sm text-slate-500 dark:text-neutral-400">
-                        Click the link in the email to sign in. You can close this page.
+                        Click the link in your email to complete sign-in. You can close this page.
                     </p>
                 </div>
             </div>
@@ -115,6 +115,17 @@ export default function LoginPage() {
                 <Link href="/auth/signup" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
                     Join Midfield
                 </Link>
+            </p>
+
+            <p className="mt-4 text-xs text-center text-slate-500 dark:text-neutral-400">
+                By continuing, you agree to our{" "}
+                <a href="/terms" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+                    Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="/privacy" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+                    Privacy Policy
+                </a>.
             </p>
         </div>
     );
