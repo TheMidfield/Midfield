@@ -60,7 +60,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                                     sizes="20px"
                                     priority={true}
                                     unoptimized={true}
-                                    className={(isClub || isLeague) ? 'object-contain p-0.5 dark:hidden' : `${PLAYER_IMAGE_STYLE.className}`}
+                                    className={isLeague ? 'object-contain p-0.5 dark:hidden' : (isClub ? 'object-contain p-0.5' : `${PLAYER_IMAGE_STYLE.className}`)}
                                     {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
                                     onError={(e) => {
                                         console.error('Image failed to load:', displayImageUrl, 'for', take.topic.title, 'type:', take.topic.type);
