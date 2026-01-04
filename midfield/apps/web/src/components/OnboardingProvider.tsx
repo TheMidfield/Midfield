@@ -11,12 +11,15 @@ export const OnboardingContext = createContext<{ isOnboardingOpen: boolean }>({ 
 // Hook for consuming
 export const useOnboarding = () => useContext(OnboardingContext);
 
+import { useNotification } from "@/context/NotificationContext"; // Add import
+
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
     const [showOnboarding, setShowOnboarding] = useState(false);
     const [userId, setUserId] = useState<string | null>(null);
     const [userEmail, setUserEmail] = useState<string | null>(null);
     const [isChecking, setIsChecking] = useState(true);
     const router = useRouter();
+    const { triggerWelcomeToast } = useNotification(); // Consume context
 
     // 1. Auth & Onboarding Check Effect (Runs once on mount + auth changes)
     useEffect(() => {
@@ -80,6 +83,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
     const handleOnboardingComplete = () => {
         setShowOnboarding(false);
+        triggerWelcomeToast();
         router.refresh();
     };
 

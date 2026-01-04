@@ -10,6 +10,7 @@ interface NotificationContextType {
     refreshUnreadCount: () => Promise<void>;
     refreshNotifications: () => void;
     lastNotificationTrigger: number;
+    triggerWelcomeToast: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -72,7 +73,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                             // Only trigger the "new notification" toast for INSERT events
                             if (payload.eventType === 'INSERT') {
                                 refreshNotifications();
-                                
+
                                 // Delay notification toasts for 3 seconds after onboarding completion
                                 const onboardingCompletedAt = localStorage.getItem('onboarding_completed_at');
                                 if (onboardingCompletedAt) {
@@ -83,7 +84,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                                         return;
                                     }
                                 }
-                                
+
                                 setToastMessage("You have new notifications");
                                 setToastType('notification');
                             }
@@ -108,8 +109,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         };
     }, [refreshUnreadCount, refreshNotifications]);
 
+    const triggerWelcomeToast = useCallback(() => {
+        setToastMessage("You have new notifications");
+        setToastType('notification');
+        refreshNotifications(); // Ensure the bell updates too
+    }, [refreshNotifications]);
+
     return (
-        <NotificationContext.Provider value={{ unreadCount, refreshUnreadCount, refreshNotifications, lastNotificationTrigger }}>
+        <NotificationContext.Provider value={{ unreadCount, refreshUnreadCount, refreshNotifications, lastNotificationTrigger, triggerWelcomeToast }}>
             {children}
             <Toast
                 message={toastMessage}

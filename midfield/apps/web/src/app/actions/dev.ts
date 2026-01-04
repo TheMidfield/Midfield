@@ -21,7 +21,7 @@ export async function simulateNotification(type: 'reply' | 'upvote' | 'badge_rec
             await supabase.from('notifications').insert({
                 recipient_id: user.id,
                 type: 'badge_received',
-                resource_slug: 'trendsetter'
+                resource_slug: 'playmaker'
             });
         }
         else if (type === 'reply') {

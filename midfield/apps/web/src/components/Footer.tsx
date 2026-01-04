@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-export function Footer() {
+export function Footer({ className }: { className?: string }) {
     return (
-        <footer className="w-full border-t border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 mt-16">
+        <footer className={`w-full border-t border-slate-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 mt-auto ${className || ''}`}>
             <div className="w-full max-w-[1600px] mx-auto px-10 sm:px-16 lg:px-24 py-12">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     {/* Copyright */}
