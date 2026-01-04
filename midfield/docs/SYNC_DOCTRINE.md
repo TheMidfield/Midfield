@@ -11,67 +11,65 @@ To balance the need for specific, sub-minute live scores with deep, heavy histor
 
 | Feature | **⚡️ Realtime Engine** | **🗿 Atlas Engine** |
 | :--- | :--- | :--- |
-| **Focus** | Time (When? What score? Who won?) | Structure (Who are they? History? Kits?) |
-| **Frequency** | **Every Minute** (Live) <br> **Every 6 Hours** (Schedule) | **Weekly** (Sundays) |
-| **Technology** | `Next.js API Routes` (Runs on Vercel) | `GitHub Actions` / `Workers` |
-| **Data Types** | • Fixtures (Schedule/Results)<br>• Live Scores (Goals/Events)<br>• **League Standings** | • Club Metadata (Stadium, Socials)<br>• Player Profiles (Height, Age)<br>• Transfers / Rosters |
-| **Key File** | `apps/web/src/app/api/cron/...`<br>*(Note: `supabase/functions` is deprecated/archived)* | `scripts/sync-static-metadata.ts` |
+| **Focus** | Time (Livescores) + Hygiene (Purge) | History (Schedule) + Structure (Metadata) |
+| **Frequency** | **Every Minute** (Livescores) <br> **Daily** (Purge) | **Every 6 Hours** (Schedule) <br> **Weekly** (Metadata) |
+| **Technology** | `Supabase Edge Functions` (via `pg_cron`) | `GitHub Actions` (Node.js Scripts) |
+| **Data Types** | • Live Scores (Goals/Events)<br>• Notification Cleanup | • Fixtures (Schedule/Results)<br>• Standings<br>• Club/Player Metadata |
+| **Key File** | `supabase/functions/cron-livescores`<br>`supabase/functions/cron-purge` | `scripts/sync-daily-schedule.ts`<br>`scripts/sync-static-metadata.ts` |
 
 ---
 
-## 2. ⚡️ The Realtime Engine (V2)
+## 2. ⚡️ The Realtime Engine (Edge)
 
-**"The Surgical Striker"**
+**"The Pulse"**
 
-This engine is lightweight, stateless, and runs on Vercel's Edge/Serverless infrastructure, triggered by Supabase `pg_cron`.
+Lightweight, stateless functions running on Supabase Edge Network. Triggered internally by `pg_cron`.
 
-### A. The 6-Hour Cycle (Schedule & Standings)
-**Trigger**: `0 */6 * * *` (Every 6 hours)
-**Endpoint**: `GET /api/cron/daily-schedule`
-**Authentication**: `CRON_SECRET` or `SUPABASE_SERVICE_ROLE_KEY`
-
-**What it does:**
-1.  **Schedule Sync**: Fetches matches for the next 30 days and results for the last 7 days.
-2.  **Stub Creation**: If a team in a fixture does not exist in our DB, it **immediately** creates a "Stub" topic (placeholder) so the match can be saved. This is the **Stub Law**.
-3.  **Standings Sync**: Iterates through the 5 Core Leagues (EPL, La Liga, Bundesliga, Serie A, Ligue 1) and updates the `league_standings` table.
-
-### B. The 1-Minute Cycle (Livescores)
+### A. The 1-Minute Livescores
 **Trigger**: `* * * * *` (Every minute)
-**Endpoint**: `GET /api/cron/livescores`
+**Mechanism**: `pg_cron` -> `POST /functions/v1/cron-livescores`
 
-**What it does:**
-1.  **Adaptive Polling**: Checks DB for *any* matches currently marked `LIVE`, finished today (`FT`), or scheduled to start within 30 minutes.
-2.  **12-Hour Backward Window**: Polls matches from the last 12 hours to catch late-finishing games (CRITICAL: previously 2.5 hours, causing matches to be stuck as `NS` if the cron missed them).
-3.  **Surgical Update**: If matches are found, it polls the API specifically for those league IDs and updates score/status/minute.
-4.  **Sleep**: If no matches qualify, it does nothing (Conserves API limits).
+**Thinking Process:**
+1.  **Snapshot**: Check DB for matches that are `LIVE`, `HT`, or starting in < 30m.
+2.  **Safety Net (Grim Reaper)**: Check for "Zombie" matches (stuck `LIVE/HT` > 4h after start time). Auto-terminates them to `FT` if found.
+3.  **Poll**: If active matches exist, fetch API data for those specific leagues.
+4.  **Update**: Upsert result/status/score to DB.
+5.  **Sleep**: If no matches, exit immediately (0 API calls).
 
-### C. The Daily Maintenance Cycle (Cleanup)
-**Trigger**: `0 0 * * *` (Daily at Midnight UTC)
-**Endpoint**: `POST /api/cron/purge-notifications`
-**Authentication**: `CRON_SECRET` or `SUPABASE_SERVICE_ROLE_KEY`
+### B. The Daily Maintenance (Purge)
+**Trigger**: `0 0 * * *` (Midnight UTC)
+**Mechanism**: `pg_cron` -> `POST /functions/v1/cron-purge-notifications`
 
-**What it does:**
-1.  **Hygiene**: Deletes all notifications older than **30 days** to keep the `notifications` table performant.
-2.  **Privacy**: Ensures ephemeral social interactions don't persist forever.
+**Thinking Process:**
+1.  **Hygiene**: Delete notifications > 30 days old.
+2.  **Performance**: Keeps the table small for fast reads.
 
 ---
 
-## 3. 🗿 The Atlas Engine (Structural)
+## 3. 🗿 The Atlas Engine (GitHub Actions)
 
 **"The Heavy Lifter"**
 
-This engine handles the massive, slow-moving data. It ensures our database is rich with context.
+Complex, batch-processing scripts running on GitHub Infrastructure. Handles heavy API loads and long-running tasks.
 
-### A. The Weekly Metadata Sync
-**Trigger**: `0 3 * * 0` (Sundays at 3:00 AM UTC)
-**Executor**: GitHub Actions (`.github/workflows/weekly-metadata-sync.yml`)
+### A. The 6-Hour Cycle (Schedule & Standings)
+**Trigger**: `0 */6 * * *` (GitHub Schedule)
+**Script**: `scripts/sync-daily-schedule.ts`
+
+**Thinking Process:**
+1.  **Global Schedule**: Fetch full season schedule (Past Results + Future Fixtures).
+2.  **Stub Law**: If a team is missing, create a placeholder `topic` immediately.
+3.  **Club Sync**: Updates precise match times (Last 5 / Next 15 events) for all 157 Core Clubs (Parallel Stream, 120 req/min).
+4.  **Standings**: Updates tables for the 5 Core Leagues.
+
+### B. The Weekly Metadata Sync
+**Trigger**: `0 3 * * 0` (Sundays 3AM UTC)
 **Script**: `scripts/sync-static-metadata.ts`
 
-**What it does:**
-1.  **Team-Centric Fetch**: Iterates through all **157 Core Clubs**.
-2.  **Deep Dive**: Fetches full roster (Players) and Club details.
-3.  **Enrichment**: Updates Jersey Numbers, Heights, Weights, Birth Dates, Stadium Capacities, Founded Years.
-4.  **Healing**: If a "Stub" was created by the Realtime Engine during the week, the Atlas Engine finds it and "hydrates" it with real logos and data.
+**Thinking Process:**
+1.  **Deep Dive**: Iterates all Core Clubs.
+2.  **Roster check**: Updates players, kits, stadium info, ages, heights.
+3.  **Healing**: Replaces "Stubs" with full rich data.
 
 ---
 
@@ -79,13 +77,10 @@ This engine handles the massive, slow-moving data. It ensures our database is ri
 
 | Scenario | System Behavior |
 | :--- | :--- |
-| **Missing Team in Fixture** | **Stub Law**: Realtime Engine creates a minimal placeholder instantly. Sync validates. |
-| **Missing Team in Standings** | **Fail-Safe**: Standings row is skipped (warns in logs). Requires manual seed if persistent. |
-| **API Down** | Cron fails gracefully. Retries next run. No data corruption. |
-| **Zombie Matches** | **Definition**: Matches marked `LIVE`/`HT` but started > 4 hours ago.<br>**Protocol**: Realtime Engine auto-cures these to `FT` if API confirms completion or if age > 5.5 hours (force cure). |
-| **False Future Lives** | **Definition**: Matches scheduled > 4 hours in FUTURE but marked `LIVE`.<br>**Protocol**: "Bogie Sweep" Logic resets these to `NS` to prevent "Pulsating Green Rows" on entity pages. |
-| **Cross-League Support** | **Stub Law**: If a Core Club plays an "Unknown" opponent (e.g., Club World Cup), a **Stub Topic** is auto-created. Stubs have badges/names but are **not clickable** (is_stub: true). |
-| **Sync Fragility** | **Warning**: The "Club Schedule Sync" is the only lifeline for Cross-League matches. If it crashes (timeout/API error), these matches will vanish from the DB. Monitor `manual-sync-clubs.ts` if missing. |
+| **Zombie Matches** | **Grim Reaper**: Livescores Edge Function auto-detects `LIVE/HT` matches > 4h old and forces `FT`. |
+| **API Limit (429)** | **Backoff**: Both Engines have exponential backoff. GH Actions use `p-limit` to respect 100 req/min. |
+| **Edge Timeout** | **Fast Fail**: One minute execution limit. Livescores is optimized to finish in seconds. |
+| **Actions Timeout** | **Slow & Steady**: GH Actions allows 6h execution. Sync usually takes ~5 mins. |
 
 ---
 
@@ -93,22 +88,22 @@ This engine handles the massive, slow-moving data. It ensures our database is ri
 
 ### Essential Commands
 
-**Run Manual Schedule/Standings Sync:**
+**Manual Edge Invocation (Test):**
 ```bash
-curl -X GET https://midfield.one/api/cron/daily-schedule \
-     -H "Authorization: Bearer [CRON_SECRET]"
+curl -X POST https://[PROJECT].supabase.co/functions/v1/cron-livescores \
+  -H "Authorization: Bearer [CRON_SECRET]"
 ```
 
-**Run Manual Metadata Sync:**
+**Run Manual Schedule Sync:**
 ```bash
-npx tsx scripts/sync-static-metadata.ts
+# Triggers the GitHub Action remotely (requires gh cli) or run locally:
+npx tsx scripts/sync-daily-schedule.ts
 ```
 
-**Verify System Health (All Green):**
+**Kill Zombie Matches (Manual Tool):**
 ```bash
-npx tsx scripts/verify-production-readiness.ts
+npx tsx scripts/manage-fixtures.ts --kill
 ```
-*Checks: Fixture counts, Standings coverage, API connectivity.*
 
 ---
 

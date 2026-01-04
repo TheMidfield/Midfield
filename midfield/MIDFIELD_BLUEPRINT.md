@@ -111,22 +111,24 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
 - **Resolution**: Atlas Engine fills in deep details (images, players) later.
 
 **B) FC26 RATINGS & SOFIFA**
-- Source: SoFIFA (Python Scraper -> Edge Function).
+- Source: SoFIFA (Python Scraper). **Manual Execution by Admin**.
 - Storage: `topics.fc26_data` JSONB column.
 - **Safety**: Protected by `smartUpsertTopic`. Never overwritten by regular sync jobs.
 
-**C) HYBRID ARCHITECTURE ("Realtime & Atlas")**
+**C) HYBRID ARCHITECTURE ("Dual Engine")**
 - **Reference**: See [docs/SYNC_DOCTRINE.md](file:///Users/roycim/Documents/[5] Code/Projects/Midfield-proto/midfield/docs/SYNC_DOCTRINE.md) for the definitive architecture.
-- **I. ATLAS ENGINE (Legacy Edge)**:
-  - **Domain**: Structure (Clubs, Players, Leagues, Standings).
-  - **Frequency**: Deep/Heavy. Weekly runs (GitHub Actions).
-- **II. REALTIME ENGINE (V2 pg_cron)**:
-  - **Domain**: Time (Fixtures, Live Scores, Match Status).
-  - **Driver**: Supabase `pg_cron` (Internal Database Scheduler). **Vercel Cron is BANNED**.
+- **I. ATLAS ENGINE (GitHub Actions)**:
+  - **Domain**: Structure (Clubs, Players, Leagues, Metadata) + Heavy Schedule Sync.
   - **Frequency**: 
-    - **Schedule**: Every 6 Hours (`0 */6 * * *`).
-    - **Livescores**: Every Minute (`* * * * *`).
-  - **Rule**: Sole authority for `fixtures` table.
+    - **Schedule**: Every 6 Hours (`sync-daily-schedule.ts`).
+    - **Metadata**: Weekly (`sync-static-metadata.ts`).
+- **II. REALTIME ENGINE (Edge Functions)**:
+  - **Domain**: Time (Livescores) + Hygiene (Purge).
+  - **Driver**: Supabase `pg_cron` triggering internal Edge Functions.
+  - **Frequency**: 
+    - **Livescores**: Every Minute (`cron-livescores`).
+    - **Purge**: Daily (`cron-purge-notifications`).
+  - **Rule**: Sole authority for *live* match status updates.
 
 **D) STRICT FIXTURE ENUMS**
 - **Values**: `NS`, `LIVE`, `HT`, `FT`, `PST`, `ABD`.

@@ -43,9 +43,9 @@ const TrendingItemRow = memo(({ item }: { item: TrendingTopic }) => {
             </span>
 
             {/* Entity Image */}
-            <div className={`relative shrink-0 flex items-center justify-center border transition-colors ${isPlayer
-                ? 'w-11 h-11 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border-slate-200 dark:border-neutral-700'
-                : 'w-11 h-11 bg-slate-50 dark:bg-neutral-800/50 rounded-md p-1.5 border-slate-200 dark:border-neutral-700 group-hover:border-slate-300 dark:group-hover:border-neutral-600'
+            <div className={`relative shrink-0 flex items-center justify-center transition-colors ${isPlayer
+                ? 'w-11 h-11 bg-slate-100 dark:bg-neutral-800 rounded-full overflow-hidden border border-slate-200 dark:border-neutral-700'
+                : 'w-11 h-11'
                 }`}>
                 {item.imageUrl ? (
                     <NextImage
