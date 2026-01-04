@@ -30,22 +30,29 @@ Search likely queries posts directly with a `COUNT(*)` which returns 0 (correct)
 
 **Symptoms:**
 - LiveFeed works on mobile via `MobileTakeFeed`
-- LiveFeed appears empty/broken on desktop
+- LiveFeed appears empty/broken on desktop even with 1 take
 - Posting a take doesn't show it in the desktop feed
 
 **Root Cause:**
-The `LiveFeed` component in `SplitHero.tsx`:
-1. Uses SWR to fetch takes via `useHeroTakes(16)` 
-2. `getHeroTakes()` filters for `content.length > 0` (line 302 in hero-data.ts)
-3. If NO takes exist in DB, it returns `[]`
-4. The component has animation logic that waits for takes before showing
-5. When `swrTakes.length < 2`, the stable column assignment might fail
-6. Result: Component renders but shows nothing (or skeleton forever)
+The `LiveFeed` component had a **hard-coded minimum requirement of 2 takes** to display anything!
 
-**Additionally:**
-- Desktop LiveFeed uses `absolute` positioning (line 73, SplitHero.tsx)
-- The parent container has `overflow: hidden` and a fade mask
-- If the animation logic fails, content might be rendered but invisible
+```typescript
+// Line 167 in LiveFeed.tsx - THE BUG:
+if (!swrTakes || swrTakes.length < 2) return;
+```
+
+Why this existed:
+1. The component has a two-column layout (col1 and col2)
+2. The original design assumed there would always be multiple takes
+3. The early return was likely meant to prevent rendering with insufficient data
+4. But it created a **chicken-and-egg problem**: you can't see takes until you have 2 takes!
+
+**Impact:**
+- With 0 takes: Loading skeleton shows (expected)
+- With 1 take: **Nothing shows** (BUG!)
+- With 2+ takes: Works perfectly
+
+This is why mobile worked - `MobileTakeFeed` doesn't have this restriction!
 
 ---
 
@@ -87,22 +94,27 @@ This forces the `unstable_cache` to refresh and fetch new data instead of servin
 
 ---
 
+### Fix 3: Remove 2-Take Minimum from LiveFeed
+
+**File**: `apps/web/src/components/hero/LiveFeed.tsx`  
+**Change**: Line 167 changed from `if (!swrTakes || swrTakes.length < 2) return;` to `if (!swrTakes || swrTakes.length === 0) return;`
+
+This allows the LiveFeed to display with **any number of takes** (1 or more) instead of requiring at least 2.
+
+**Status**: ✅ Already applied in codebase
+
+---
+
 ## 🚀 Deployment Steps
 
-1. **Run the SQL script** on your production Supabase:
-   ```bash
-   # Copy the SQL to Supabase Dashboard SQL Editor, or:
-   cat reset_post_counts.sql | pbcopy  # Copy to clipboard
-   ```
+1. ~~**Run the SQL script** on your production Supabase~~ ✅ **DONE**
 
-2. **Deploy the code changes**:
-   ```bash
-   git add .
-   git commit -m "fix: reset stale take counts and invalidate trending cache"
-   git push
-   ```
+2. ~~**Deploy the code changes**~~ ✅ **DONE** (Already pushed to main)
 
 3. **Verify on production**:
+   - LiveFeed on desktop should now show your 1 take
+   - All take counts should show accurate values
+   - Post a new take → it should appear immediately
    - Check homepage entity cards → should show "0 Takes"
    - Check EntityHeader → should show "0 Takes"  
    - Check trending widget → should show correct counts
