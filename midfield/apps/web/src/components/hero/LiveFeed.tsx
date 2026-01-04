@@ -35,7 +35,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                 {/* Header: Entity */}
                 <div className="flex items-center gap-1.5">
                     <ArrowDownWideNarrow className="w-3 h-3 text-slate-400 dark:text-neutral-500 shrink-0" />
-                    <div className={`relative shrink-0 overflow-hidden ${isPlayer ? 'w-5 h-5 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800' : 'w-5 h-5'}`}>
+                    <div className={`relative shrink-0 overflow-hidden border border-slate-200 dark:border-neutral-700 ${isPlayer ? 'w-5 h-5 rounded-full bg-slate-100 dark:bg-neutral-800' : 'w-5 h-5 rounded-sm bg-slate-50 dark:bg-neutral-800/50'}`}>
                         {take.topic.imageUrl ? (
                             <>
                                 {/* Light mode image */}
