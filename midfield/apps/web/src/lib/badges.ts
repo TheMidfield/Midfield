@@ -6,7 +6,8 @@ import {
     IconShoe,
     IconBuildingStadium,
     IconGitBranchDeleted,
-    IconCircleDashedNumber3
+    IconCircleDashedNumber3,
+    IconHeart
 } from "@tabler/icons-react";
 
 export interface BadgeMetadata {
@@ -111,6 +112,20 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         text: 'text-violet-700 dark:text-violet-400',
         category: 'social',
         rank: 3
+    },
+
+    // SPECIAL BADGES
+    'best_sister': {
+        title: 'Big Sister',
+        description: 'Thank you Romy for being the most amazing big sister.',
+        unlockRequirement: 'Be the most amazing big sister',
+        icon: IconHeart,
+        color: 'pink',
+        bg: 'bg-pink-100 dark:bg-pink-900/30',
+        border: 'border-pink-200 dark:border-pink-800',
+        text: 'text-pink-600 dark:text-pink-400',
+        category: 'membership',
+        rank: 999
     }
 };
 
@@ -123,4 +138,5 @@ export const BADGE_DISPLAY_ORDER = [
     'crowd_provoker', // Crowd Provoker
     'regista',        // Regista
     'hat-trick'       // Hat-Trick
+    // 'best_sister' excluded - only visible to badge owner
 ];

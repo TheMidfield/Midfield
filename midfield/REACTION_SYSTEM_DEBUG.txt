@@ -1,0 +1,138 @@
+REACTION SYSTEM BUG - DEBUG CONTEXT
+=====================================
+Date: January 4, 2026
+Status: IN PROGRESS - Needs browser-side testing
+
+ISSUE DESCRIPTION
+-----------------
+1. User clicks reaction (fire/hmm/fair/dead) on a take
+2. UI shows the reaction with count "1"
+3. On page refresh, reaction shows with count "0"
+4. Post author does NOT receive notification about the reaction
+5. The reaction is not persisting to the database
+
+EXPECTED BEHAVIOR
+-----------------
+- Reaction should persist to database
+- posts.reaction_count should increment
+- Post author should get notification "X reacted to your post"
+
+DATABASE STATE (VERIFIED)
+--------------------------
+✅ reactions table structure is correct:
+   - id (uuid, primary key)
+   - post_id (uuid, foreign key to posts)
+   - user_id (uuid, foreign key to users)
+   - reaction_type (text) - stores 'fire', 'hmm', 'fair', 'dead'
+   - created_at (timestamp)
+
+✅ RLS policies exist and look correct:
+   - "Authenticated users can add reactions" (INSERT with check: auth.uid() = user_id)
+   - "Public reactions are viewable by everyone" (SELECT using true)
+   - "Users can delete their own reactions" (DELETE using auth.uid() = user_id)
+   - "Users can update their own reactions" (UPDATE using auth.uid() = user_id)
+
+✅ Triggers exist on reactions table:
+   - on_reaction_change (INSERT/DELETE) → calls update_post_reaction_count()
+   - on_reaction_created (INSERT) → calls handle_new_upvote()
+
+✅ Functions exist:
+   - update_post_reaction_count() - increments/decrements posts.reaction_count
+   - handle_new_upvote() - creates notification (recently fixed to work with all reaction types, not just 'upvote')
+
+✅ Only 1 reaction exists in the database (test data)
+
+CODE FILES
+----------
+Frontend:
+- /apps/web/src/components/ReactionBar.tsx - UI component with reaction picker
+- /apps/web/src/components/TakeCard.tsx - uses ReactionBar component
+- /apps/web/src/app/actions.ts - toggleReaction() server action (lines 221-231)
+
+Logic:
+- /packages/logic/src/reactions.ts - toggleReactionLogic() function
+  - Checks for existing reaction
+  - If same type: DELETE
+  - If different type: UPDATE
+  - If none: INSERT
+
+WHAT WE'VE DONE
+---------------
+1. ✅ Verified database schema
+2. ✅ Verified RLS policies exist
+3. ✅ Verified triggers are attached
+4. ✅ Fixed handle_new_upvote() to work with all reaction types (not just 'upvote')
+5. ✅ Confirmed reaction_count trigger function exists
+6. ❌ NOT TESTED: Manual insert via browser console to see actual error
+
+NEXT STEPS (URGENT)
+-------------------
+1. TEST in browser console on https://www.midfield.one:
+   - Open browser DevTools console
+   - Run the browser test script (see below)
+   - This will show the ACTUAL error from Supabase
+
+2. Likely issues to check:
+   a) Frontend error handling might be swallowing errors silently
+   b) toggleReactionLogic might have a bug in the query
+   c) RLS policy "check" clause might be failing for INSERT
+   d) Missing await or promise handling in ReactionBar.tsx
+
+3. Check ReactionBar.tsx line 77:
+   - Does it await toggleReaction()?
+   - Does it handle errors?
+   - Does it revalidate/refetch after success?
+
+BROWSER TEST SCRIPT
+-------------------
+Open browser console on https://www.midfield.one and paste:
+
+```javascript
+const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+const supabase = createClient(
+  'https://oerbyhaqhuixpjrubshm.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lcmJ5aGFxaHVpeHBqcnVic2htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ3MzI1NTAsImV4cCI6MjA1MDMwODU1MH0.OZ4_zJGc4_vYhcbUbsz9_hDYMLo24pItFGEAHlQtPsI'
+);
+
+const { data: { user } } = await supabase.auth.getUser();
+console.log('✅ User ID:', user?.id);
+
+const { data: posts } = await supabase.from('posts').select('id').limit(1);
+console.log('✅ Post ID:', posts?.[0]?.id);
+
+const result = await supabase.from('reactions').insert({
+  post_id: posts[0].id,
+  user_id: user.id,
+  reaction_type: 'fire'
+});
+
+console.log('Result:', result);
+if (result.error) {
+  console.error('❌ ERROR:', result.error.message);
+  console.error('Details:', result.error);
+} else {
+  console.log('✅ SUCCESS - Reaction inserted!');
+}
+```
+
+HYPOTHESIS
+----------
+Most likely: The INSERT is failing silently due to:
+1. RLS check constraint failing (auth.uid() = user_id might not match)
+2. Frontend not awaiting the promise properly
+3. Error being caught and not re-thrown
+
+The fact that only 1 reaction exists in DB (probably from SQL console insert)
+suggests that the frontend code path is NOT successfully inserting.
+
+DATABASE ACCESS
+---------------
+Supabase Dashboard: https://supabase.com/dashboard/project/oerbyhaqhuixpjrubshm
+Tables: public.reactions, public.posts, public.notifications
+SQL Editor: Available in dashboard
+
+CRITICAL NOTE
+-------------
+The trigger handle_new_upvote() was just updated to remove the condition
+"IF NEW.reaction_type = 'upvote'" so it now works for all reaction types.
+This fix has been applied to production via SQL console.

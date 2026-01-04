@@ -52,3 +52,10 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Recreate the trigger (DROP first to avoid duplicates)
+DROP TRIGGER IF EXISTS on_user_created ON public.users;
+CREATE TRIGGER on_user_created
+    AFTER INSERT ON public.users
+    FOR EACH ROW
+    EXECUTE FUNCTION on_user_created_welcome();
