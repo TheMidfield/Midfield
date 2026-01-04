@@ -62,7 +62,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     },
 
     // ENGAGEMENT & QUALITY
-    'trendsetter': {
+    'playmaker': {
         title: 'Playmaker',
         description: 'You started the conversation. The first to open a take on any topic page.',
         unlockRequirement: 'Be the first to post a take on any topic page',
@@ -76,7 +76,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     },
 
     // SOCIAL & COMMUNITY
-    'playmaker': {
+    'crowd_provoker': {
         title: 'Crowd Provoker',
         description: 'You got the crowd going. First reaction received from another user.',
         unlockRequirement: 'Receive your first reaction on any of your takes',
@@ -100,7 +100,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         category: 'social',
         rank: 2
     },
-    'influencer': {
+    'regista': {
         title: 'Regista',
         description: 'Deep-lying playmaker. First reply received from another user.',
         unlockRequirement: 'Receive your first reply on any of your takes',
@@ -119,8 +119,8 @@ export const BADGE_DISPLAY_ORDER = [
     'starting_xi',    // Starting XI
     'club_100',       // Club 100
     'club_1k',        // Club 1k
-    'trendsetter',    // Playmaker
-    'playmaker',      // Crowd Provoker
-    'influencer',     // Regista
+    'playmaker',      // Playmaker
+    'crowd_provoker', // Crowd Provoker
+    'regista',        // Regista
     'hat-trick'       // Hat-Trick
 ];
