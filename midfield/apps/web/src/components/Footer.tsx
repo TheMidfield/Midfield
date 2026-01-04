@@ -20,7 +20,7 @@ export function Footer() {
                             About
                         </Link>
                         <Link
-                            href="/privacy"
+                            href="/privacy-static.html"
                             prefetch={false}
                             className="text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                         >

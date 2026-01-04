@@ -123,7 +123,7 @@ export default function SignupPage() {
                     Terms of Service
                 </a>{" "}
                 and{" "}
-                <a href="/privacy" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
+                <a href="/privacy-static.html" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">
                     Privacy Policy
                 </a>.
             </p>

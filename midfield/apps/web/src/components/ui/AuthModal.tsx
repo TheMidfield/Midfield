@@ -251,7 +251,7 @@ export function AuthModal({
                                     Terms of Service
                                 </a>{" "}
                                 and{" "}
-                                <a href="/privacy" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline">
+                                <a href="/privacy-static.html" target="_blank" className="text-emerald-600 dark:text-emerald-400 hover:underline">
                                     Privacy Policy
                                 </a>
                             </p>
