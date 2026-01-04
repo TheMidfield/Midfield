@@ -83,9 +83,10 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         router.refresh();
     };
 
-    if (isChecking) {
-        return null; // Or a loading spinner
-    }
+    // Non-blocking render to ensure SEO/Crawlers can see page content immediately
+    // if (isChecking) {
+    //     return null; 
+    // }
 
     return (
         <OnboardingContext.Provider value={{ isOnboardingOpen: showOnboarding }}>
