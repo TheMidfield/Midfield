@@ -108,7 +108,11 @@ export function AuthModal({
                 return {
                     icon: <Sparkles className="w-5 h-5" />,
                     headline: "Join Midfield",
-                    subheadline: "The place for conversation around the beautiful game"
+                    subheadline: (
+                        <>
+                            The place for conversation <br /> around the beautiful game
+                        </>
+                    )
                 };
         }
     };
