@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "./Button";
 import { Input } from "./Input";
-import { X, Mail, Sparkles, MessageSquare, TrendingUp, Speech } from "lucide-react";
+import { X, Mail, MessageSquare, TrendingUp, Speech } from "lucide-react";
+import { IconPlayFootball } from "@tabler/icons-react";
 import { signInWithEmail, signInWithGoogle } from "@/app/auth/actions";
 
 interface AuthModalProps {
@@ -106,7 +107,7 @@ export function AuthModal({
                 };
             default:
                 return {
-                    icon: <Sparkles className="w-5 h-5" />,
+                    icon: <IconPlayFootball className="w-5 h-5" stroke={1.5} />,
                     headline: "Join Midfield",
                     subheadline: (
                         <>
