@@ -35,9 +35,13 @@ function TakeCard({ take }: { take: HeroTake }) {
             title: take.topic.title,
             slug: take.topic.slug,
             imageUrl: take.topic.imageUrl,
+            metadataBadgeUrl: take.topic.metadata?.badge_url,
             hasImage: !!take.topic.imageUrl
         });
     }
+
+    // Get the image URL - use imageUrl if present, otherwise fall back to metadata (matching TopicCard logic)
+    const displayImageUrl = take.topic.imageUrl || (isClub ? take.topic.metadata?.badge_url : undefined);
 
     return (
         <Link href={`/topic/${take.topic.slug}`} className="block group">
@@ -46,11 +50,11 @@ function TakeCard({ take }: { take: HeroTake }) {
                 <div className="flex items-center gap-1.5">
                     <ArrowDownWideNarrow className="w-3 h-3 text-slate-400 dark:text-neutral-500 shrink-0" />
                     <div className={`relative shrink-0 overflow-hidden ${isPlayer ? 'w-5 h-5 rounded-full border border-slate-200 dark:border-neutral-700 bg-slate-100 dark:bg-neutral-800' : 'w-5 h-5'}`}>
-                        {take.topic.imageUrl ? (
+                        {displayImageUrl ? (
                             <>
                                 {/* Light mode image */}
                                 <NextImage
-                                    src={take.topic.imageUrl}
+                                    src={displayImageUrl}
                                     alt={take.topic.title}
                                     fill
                                     sizes="20px"
@@ -59,14 +63,14 @@ function TakeCard({ take }: { take: HeroTake }) {
                                     className={(isClub || isLeague) ? 'object-contain p-0.5 dark:hidden' : `${PLAYER_IMAGE_STYLE.className}`}
                                     {...(isPlayer ? PLAYER_IMAGE_STYLE : {})}
                                     onError={(e) => {
-                                        console.error('Image failed to load:', take.topic.imageUrl, 'for', take.topic.title, 'type:', take.topic.type);
+                                        console.error('Image failed to load:', displayImageUrl, 'for', take.topic.title, 'type:', take.topic.type);
                                         e.currentTarget.style.display = 'none';
                                     }}
                                 />
                                 {/* Dark mode image (for leagues) */}
                                 {isLeague && (
                                     <NextImage
-                                        src={take.topic.imageDarkUrl || take.topic.imageUrl}
+                                        src={take.topic.imageDarkUrl || displayImageUrl}
                                         alt={take.topic.title}
                                         fill
                                         sizes="20px"
@@ -74,7 +78,7 @@ function TakeCard({ take }: { take: HeroTake }) {
                                         unoptimized={true}
                                         className="object-contain p-0.5 hidden dark:block"
                                         onError={(e) => {
-                                            console.error('[Dark] Image failed to load:', take.topic.imageDarkUrl || take.topic.imageUrl, 'for', take.topic.title);
+                                            console.error('[Dark] Image failed to load:', take.topic.imageDarkUrl || displayImageUrl, 'for', take.topic.title);
                                             e.currentTarget.style.display = 'none';
                                         }}
                                     />

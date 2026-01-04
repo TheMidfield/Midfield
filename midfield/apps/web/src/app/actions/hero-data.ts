@@ -40,6 +40,7 @@ export type HeroTake = {
         type: string;
         imageUrl?: string;
         imageDarkUrl?: string; // Dark mode variant (for leagues)
+        metadata?: any; // Full metadata object so components can access badge_url directly
     };
     reactionCount: number;
 };
@@ -353,7 +354,8 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
                     imageUrl: topic.type === 'player'
                         ? topic.metadata?.photo_url
                         : (leagueLogos?.imageUrl || topic.metadata?.badge_url || topic.metadata?.logo_url),
-                    imageDarkUrl: leagueLogos?.imageDarkUrl
+                    imageDarkUrl: leagueLogos?.imageDarkUrl,
+                    metadata: topic.metadata // Pass through full metadata object
                 }
             };
         })
