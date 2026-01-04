@@ -200,7 +200,7 @@ const getCachedTrendingTopics = unstable_cache(
             })
             .filter(Boolean) as TrendingTopic[];
     },
-    ['trending-topics-widget-v2'], // Tag updated to force cache invalidation for logo fix
+    ['trending-topics-widget-v3'], // Tag updated to force cache invalidation after post_count reset
     { revalidate: 60 } // Reduced to 1 minute for faster feedback
 );
 
