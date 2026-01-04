@@ -68,7 +68,8 @@ export const config = {
          * - _next/image (image optimization files)
          * - favicon.ico (favicon file)
          * - auth/callback (OAuth callback handler - must not be intercepted by middleware)
+         * - Legal pages (privacy, terms, about, contact) - must be crawlable by Google
          */
-        '/((?!_next/static|_next/image|favicon.ico|auth/callback|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+        '/((?!_next/static|_next/image|favicon.ico|auth/callback|privacy|terms|about|contact|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
