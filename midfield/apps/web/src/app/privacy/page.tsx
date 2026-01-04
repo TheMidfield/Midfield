@@ -124,9 +124,22 @@ export default function PrivacyPage() {
                         </p>
                     </section>
 
+                    {/* Section 10 */}
+                    <section>
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-3">10. Google User Data</h2>
+                        <p className="mb-3">
+                            If you verify your account using Google (Google OAuth), we will access your email address, name, and profile picture.
+                        </p>
+                        <ul className="list-disc pl-5 space-y-2">
+                            <li><strong>How we use it:</strong> We use this data solely to authenticate your identity and create your user profile.</li>
+                            <li><strong>Data Sharing:</strong> We do not verify, sell, or transfer your Google user data to third parties for advertising or any other purpose unrelated to the core functionality of our Service.</li>
+                            <li><strong>Retention:</strong> This data is retained only as long as your account is active. You may request deletion at any time.</li>
+                        </ul>
+                    </section>
+
                     {/* Contact */}
                     <div className="pt-8 mt-8 border-t border-slate-200 dark:border-neutral-800">
-                        <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-3">10. Contact Us</h2>
+                        <h2 className="text-lg font-semibold text-slate-900 dark:text-neutral-100 mb-3">11. Contact Us</h2>
                         <p>
                             If you have any questions about this Privacy Policy, please contact us at{" "}
                             <a href="mailto:team.midfield@gmail.com" className="text-emerald-600 dark:text-emerald-400 hover:underline">
