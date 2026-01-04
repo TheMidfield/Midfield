@@ -16,10 +16,60 @@ interface OnboardingWizardProps {
 
 import { FavoriteClubSelector, type Club } from "./onboarding/FavoriteClubSelector";
 
+/**
+ * Compress image to max 500x500px, JPEG 80% quality
+ * Enforces Blueprint Decision #8 (Egress Defense)
+ */
+async function compressImage(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        img.onload = () => {
+            const MAX_SIZE = 500;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+                if (width > MAX_SIZE) {
+                    height *= MAX_SIZE / width;
+                    width = MAX_SIZE;
+                }
+            } else {
+                if (height > MAX_SIZE) {
+                    width *= MAX_SIZE / height;
+                    height = MAX_SIZE;
+                }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx?.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+                (blob) => {
+                    if (blob) {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    } else {
+                        reject(new Error('Compression failed'));
+                    }
+                },
+                'image/jpeg',
+                0.8
+            );
+        };
+
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+    });
+}
+
 export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWizardProps) {
     const [step, setStep] = useState(1);
     const [username, setUsername] = useState("");
     const [avatarUrl, setAvatarUrl] = useState("");
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [selectedClub, setSelectedClub] = useState<Club | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -75,11 +125,48 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
             // Complete onboarding
             startTransition(async () => {
                 const supabase = createClient();
-                const { error: updateError } = await supabase
+                let finalAvatarUrl: string | null = null;
+
+                // Upload avatar to Supabase Storage if file exists
+                if (avatarFile) {
+                    try {
+                        // Compress image before upload
+                        const compressedFile = await compressImage(avatarFile);
+                        const fileExt = compressedFile.name.split('.').pop();
+                        const fileName = `${userId}-${Date.now()}.${fileExt}`;
+
+                        const { data: uploadData, error: uploadError } = await supabase.storage
+                            .from('user-content')
+                            .upload(`avatars/${fileName}`, compressedFile, {
+                                cacheControl: '3600',
+                                upsert: false
+                            });
+
+                        if (uploadError) throw uploadError;
+
+                        // Get public URL
+                        const { data: { publicUrl } } = supabase.storage
+                            .from('user-content')
+                            .getPublicUrl(uploadData.path);
+
+                        finalAvatarUrl = publicUrl;
+                    } catch (uploadError: any) {
+                        setError(`Avatar upload failed: ${uploadError.message}`);
+                        return;// Validate file size (2MB max)
+                                                        if (file.size > 2 * 1024 * 1024) {
+                                                            setError("Image must be under 2MB");
+                                                            return;
+                                                        }
+                                                        // Store file for later upload
+                                                        setAvatarFile(file);
+                                                        // Create preview URL (object URL, not base64)
+                                                        const previewUrl = URL.createObjectURL(file);
+                                                        setAvatarUrl(previewUrl);
+                                                        setError(null
                     .from('users')
                     .update({
                         username: username.trim(),
-                        avatar_url: avatarUrl || null,
+                        avatar_url: finalAvatarUrl,
                         favorite_club_id: selectedClub?.id || null,
                         onboarding_completed: true
                     })
