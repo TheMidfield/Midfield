@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { X, Mail, MessageSquare, TrendingUp, Speech } from "lucide-react";
-import { IconPlayFootball } from "@tabler/icons-react";
+import { IconBuildingStadium } from "@tabler/icons-react";
 import { signInWithEmail, signInWithGoogle } from "@/app/auth/actions";
 
 interface AuthModalProps {
@@ -107,13 +107,9 @@ export function AuthModal({
                 };
             default:
                 return {
-                    icon: <IconPlayFootball className="w-5 h-5" stroke={1.5} />,
+                    icon: <IconBuildingStadium className="w-7 h-7" stroke={1.5} />,
                     headline: "Join Midfield",
-                    subheadline: (
-                        <>
-                            The place for conversation <br /> around the beautiful game
-                        </>
-                    )
+                    subheadline: "The place for conversation around the beautiful game"
                 };
         }
     };
@@ -178,7 +174,7 @@ export function AuthModal({
                                     <h2 className="text-base sm:text-lg md:text-xl font-bold text-slate-900 dark:text-neutral-100 leading-tight">
                                         {headline}
                                     </h2>
-                                    <p className="text-xs sm:text-sm text-slate-500 dark:text-neutral-400 leading-tight">
+                                    <p className="text-[11px] sm:text-xs text-slate-500 dark:text-neutral-400 leading-tight">
                                         {subheadline}
                                     </p>
                                 </div>
