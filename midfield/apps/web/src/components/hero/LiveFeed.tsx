@@ -164,7 +164,7 @@ export function LiveFeed() {
 
     // Handle SWR data updates
     useEffect(() => {
-        if (!swrTakes || swrTakes.length < 2) return;
+        if (!swrTakes || swrTakes.length === 0) return;
 
         // STABLE COLUMN ASSIGNMENT
         // We use a hash of the ID to ensure a take ALWAYS belongs to the same column.
