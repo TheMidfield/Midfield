@@ -56,13 +56,14 @@ export function BadgeModal({ badgeId, onClose, isUnlocked = true }: BadgeModalPr
                             )}
                         </div>
 
-                        {/* Button - Badge color matched, less enthusiastic */}
-                        <button
+                        {/* Button - Green Primary */}
+                        <Button
                             onClick={onClose}
-                            className={`w-full max-w-[160px] px-4 py-2 rounded-lg text-sm font-semibold transition-all ${badge.bg} ${badge.border} ${badge.text} border hover:opacity-80`}
+                            className="w-full max-w-40 cursor-pointer"
+                            size="sm"
                         >
-                            Close
-                        </button>
+                            Cool!
+                        </Button>
                     </div>
                 )}
             </DialogContent>

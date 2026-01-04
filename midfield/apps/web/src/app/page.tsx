@@ -21,7 +21,7 @@ import { getLeagueLogoUrls } from "@/lib/entity-helpers";
 // =============================================================================
 
 // Add cache revalidation
-export const revalidate = 300; // 5 minutes - balance between performance and freshness
+export const revalidate = 60; // 1 minute - fresher content for hero feed
 
 const COUNTRY_FLAG_IMAGES: Record<string, string> = {
     "England": "https://bocldhavewgfxmbuycxy.supabase.co/storage/v1/object/public/league-logos/england.png",

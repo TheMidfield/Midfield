@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Notification } from "@/app/actions/notifications";
 import { cn } from "@/lib/utils";
+import { BADGE_INFO } from "@/lib/badges";
 
 interface NotificationItemProps {
     notification: Notification;
@@ -113,9 +114,10 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
                     </>
                 );
             case 'badge_received':
-                const badgeText = notification.resource_slug
-                    ? notification.resource_slug.replace(/_/g, ' ').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-                    : 'New Badge';
+                // Use badge_id from enriched notification data and BADGE_INFO for proper title
+                const badgeId = notification.badge_id || notification.resource_slug || 'badge';
+                const badgeInfo = BADGE_INFO[badgeId];
+                const badgeText = badgeInfo ? badgeInfo.title : badgeId.replace(/_/g, ' ').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
                 return (
                     <>
                         <div className="shrink-0 w-12 h-12 sm:w-10 sm:h-10 rounded-md bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center">
@@ -166,7 +168,7 @@ export function NotificationItem({ notification, onRead, onNavigate, onWelcomeCl
     }
 
     if (notification.type === 'badge_received') {
-        const badgeId = notification.resource_slug || '';
+        const badgeId = notification.badge_id || notification.resource_slug || '';
         return (
             <div
                 onClick={(e) => {

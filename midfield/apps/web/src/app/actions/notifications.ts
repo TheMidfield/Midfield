@@ -51,8 +51,16 @@ export async function getNotifications(offset: number = 0, limit: number = 15) {
         return { notifications: [], count: 0, hasMore: false };
     }
 
+    // Custom sort: system_welcome notifications always appear LAST (bottom/oldest)
+    const sortedData = data.sort((a, b) => {
+        if (a.type === 'system_welcome' && b.type !== 'system_welcome') return 1;  // a goes after b
+        if (b.type === 'system_welcome' && a.type !== 'system_welcome') return -1; // b goes after a
+        // Otherwise maintain created_at order (already sorted by query)
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
     // Enrich notifications with entity data
-    const notifications = await Promise.all(data.map(async (n: any) => {
+    const notifications = await Promise.all(sortedData.map(async (n: any) => {
         // Badge enrichment
         if (n.type === 'badge_received' && n.resource_id) {
             const { data: badge } = await supabase

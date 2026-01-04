@@ -120,7 +120,7 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
 
             {/* Clubs Grid */}
             <div
-                className="max-h-[320px] overflow-y-auto -mx-2 px-2 custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]"
+                className="max-h-[280px] overflow-y-auto -mx-2 px-2 custom-scrollbar [mask-image:linear-gradient(to_bottom,transparent,black_20px,black_calc(100%-20px),transparent)]"
                 onScroll={handleScroll}
             >
                 {filteredClubs.length > 0 ? (

@@ -263,6 +263,8 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
         .from('posts')
         .select('id, content, created_at, reaction_count, author_id, topic_id')
         .not('topic_id', 'is', null)
+        .is('parent_post_id', null)  // Only parent posts (not replies)
+        .eq('is_deleted', false)      // Only non-deleted posts
         .order('created_at', { ascending: false })
         .limit(limit * 2);
 
@@ -297,12 +299,15 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
     const plainPosts = JSON.parse(JSON.stringify(posts));
 
     return plainPosts
-        .filter((p: any) => p.content && p.content.length > 5)
+        .filter((p: any) => p.content && p.content.length > 0) // Allow any non-empty content
         .slice(0, limit)
         .map((p: any) => {
             const author = authorMap.get(p.author_id) as any;
             const topic = topicMap.get(p.topic_id) as any;
-            if (!topic) return null;
+            if (!topic) {
+                console.warn('[Hero Feed] Missing topic for post:', p.id, 'topic_id:', p.topic_id);
+                return null;
+            }
 
             let favoriteClub = undefined;
             if (author?.favorite_club_id) {

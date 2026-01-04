@@ -72,6 +72,18 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                             // Only trigger the "new notification" toast for INSERT events
                             if (payload.eventType === 'INSERT') {
                                 refreshNotifications();
+                                
+                                // Delay notification toasts for 3 seconds after onboarding completion
+                                const onboardingCompletedAt = localStorage.getItem('onboarding_completed_at');
+                                if (onboardingCompletedAt) {
+                                    const elapsedTime = Date.now() - parseInt(onboardingCompletedAt);
+                                    if (elapsedTime < 3000) {
+                                        // Skip toast if less than 3 seconds since onboarding
+                                        console.log('[Notifications] Skipping toast - within 3s of onboarding');
+                                        return;
+                                    }
+                                }
+                                
                                 setToastMessage("You have new notifications");
                                 setToastType('notification');
                             }

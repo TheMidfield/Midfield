@@ -24,9 +24,9 @@ export interface BadgeMetadata {
 
 export const BADGE_INFO: Record<string, BadgeMetadata> = {
     // MEMBERSHIP TIER (Mutually Exclusive)
-    'original-10': {
+    'starting_xi': {
         title: 'Starting XI',
-        description: 'Legendary status. You were one of the first 11 users to join Midfield.',
+        description: 'Legendary status. You were among the first 11 users to join Midfield.',
         unlockRequirement: 'Be among the first 11 users to join Midfield',
         icon: IconCrown,
         color: 'amber',
@@ -36,7 +36,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         category: 'membership',
         rank: 3
     },
-    'club-100': {
+    'club_100': {
         title: 'Club 100',
         description: 'Early adopter. You were among the first 100 users on the platform.',
         unlockRequirement: 'Be among the first 100 users to join Midfield',
@@ -48,9 +48,9 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
         category: 'membership',
         rank: 2
     },
-    'club-1000': {
+    'club_1k': {
         title: 'Club 1k',
-        description: 'Founding Member. You joined with the first 1000 users.',
+        description: 'Founding member. You joined with the first 1,000 users.',
         unlockRequirement: 'Be among the first 1,000 users to join Midfield',
         icon: IconMedal,
         color: 'blue',
@@ -64,7 +64,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     // ENGAGEMENT & QUALITY
     'trendsetter': {
         title: 'Playmaker',
-        description: 'You started the conversation! Awarded for being the first to post a take on any topic.',
+        description: 'You started the conversation. The first to open a take on any topic page.',
         unlockRequirement: 'Be the first to post a take on any topic page',
         icon: IconShoe,
         color: 'emerald',
@@ -78,7 +78,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     // SOCIAL & COMMUNITY
     'playmaker': {
         title: 'Crowd Provoker',
-        description: 'Got the crowd going. You received your first reaction from another user.',
+        description: 'You got the crowd going. First reaction received from another user.',
         unlockRequirement: 'Receive your first reaction on any of your takes',
         icon: IconBuildingStadium,
         color: 'sky',
@@ -90,7 +90,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     },
     'hat-trick': {
         title: 'Hat-Trick',
-        description: 'Triple threat! You received 3 replies on your takes.',
+        description: 'Triple threat. You received 3 replies on your takes.',
         unlockRequirement: 'Receive 3 replies on your takes',
         icon: IconCircleDashedNumber3,
         color: 'orange',
@@ -102,7 +102,7 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
     },
     'influencer': {
         title: 'Regista',
-        description: 'Deep lying playmaker. You received your first reply from another user.',
+        description: 'Deep-lying playmaker. First reply received from another user.',
         unlockRequirement: 'Receive your first reply on any of your takes',
         icon: IconGitBranchDeleted,
         color: 'violet',
@@ -116,9 +116,9 @@ export const BADGE_INFO: Record<string, BadgeMetadata> = {
 
 // Order for displaying badges on profile
 export const BADGE_DISPLAY_ORDER = [
-    'original-10',    // Starting XI
-    'club-100',       // Club 100
-    'club-1000',      // Club 1k
+    'starting_xi',    // Starting XI
+    'club_100',       // Club 100
+    'club_1k',        // Club 1k
     'trendsetter',    // Playmaker
     'playmaker',      // Crowd Provoker
     'influencer',     // Regista

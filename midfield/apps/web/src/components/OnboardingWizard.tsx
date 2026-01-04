@@ -169,6 +169,8 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
                 if (updateError) {
                     setError(updateError.message);
                 } else {
+                    // Set flag to delay notification toasts (they trigger 3 seconds after onboarding)
+                    localStorage.setItem('onboarding_completed_at', Date.now().toString());
                     onComplete();
                 }
             });
@@ -306,7 +308,7 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
 
                     {/* Step 2: Favorite Club */}
                     {step === 2 && (
-                        <div className="space-y-6 relative w-full animate-in fade-in slide-in-from-right-4 duration-300 pt-2">
+                        <div className="space-y-6 relative w-full animate-in fade-in slide-in-from-right-4 duration-300">
                             {/* Corner Badge */}
                             <div className="absolute -top-2 -right-2 sm:right-0 hidden sm:block">
                                 <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/50 shadow-sm animate-in fade-in slide-in-from-top-1">

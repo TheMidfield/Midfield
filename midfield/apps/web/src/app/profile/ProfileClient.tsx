@@ -4,7 +4,7 @@ import { useState, useRef, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield, Loader2, MessageSquare, Heart, Hash, Award, Flame, Zap, Crown, Trophy, Medal } from "lucide-react";
+import { Upload, User, Mail, Calendar, Check, X, Pencil, AlertCircle, Bookmark, ChevronRight, Shield, Loader2, MessageSquare, Heart, Hash, Award, Flame, Zap, Crown, Trophy, Medal, Lock } from "lucide-react";
 import { uploadAvatar, updateProfile } from "./actions";
 import { FavoriteClubSelector, type Club } from "@/components/onboarding/FavoriteClubSelector";
 import { signOut } from "@/app/auth/actions";
@@ -619,13 +619,16 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                                     <button
                                         key={`placeholder-${badgeKey}`}
                                         onClick={() => setSelectedBadge(badgeKey)}
-                                        className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40 hover:opacity-60 transition-opacity cursor-pointer"
+                                        className="rounded-xl bg-slate-50 dark:bg-neutral-800/20 border border-slate-200/50 dark:border-neutral-800/50 flex items-center justify-center opacity-40 hover:opacity-60 transition-opacity cursor-pointer relative"
                                         style={{ width: '40px', height: '40px' }}
-                                        onMouseEnter={() => setHoveredBadgeTitle(`🔒 ${info.title}`)}
+                                        onMouseEnter={() => setHoveredBadgeTitle(info.title)}
                                         onMouseLeave={() => setHoveredBadgeTitle(null)}
                                         title={`Locked: ${info.unlockRequirement}`}
                                     >
                                         <Icon className="w-5 h-5 text-slate-300 dark:text-neutral-700" strokeWidth={1} />
+                                        <div className="absolute inset-0 flex items-center justify-center">
+                                            <Lock className="w-3 h-3 text-slate-400 dark:text-neutral-600" />
+                                        </div>
                                     </button>
                                 );
                             });
