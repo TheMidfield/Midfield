@@ -296,6 +296,12 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
       - useRef for Supabase client to prevent multiple instances
     - **Security**: All queries filter by `recipient_id = user.id` (RLS + explicit filter)
     - **Modal Exceptions**: `system_welcome` and `badge_received` use `e.stopPropagation()` to keep sidebar open
+23. **Badge System Architecture** (Jan 4, 2026):
+    - **Documentation**: See [docs/BADGE_SYSTEM_MASTER.md](file:///Users/roycim/Documents/[5] Code/Projects/Midfield-proto/midfield/BADGE_SYSTEM_MASTER.md) for full audit/schema.
+    - **Keys**: All badge keys match DB keys exactly (e.g., `starting_xi`, `playmaker`).
+    - **Automation**: Triggers handle ALL grants. Retroactive grants supported via migration.
+    - **Duplicate Prevention**: 4-layer defense (Schema Unique, On Conflict, Logic Check, Notification Unique Index).
+    - **Frontend**: `user_badges` table is single source of truth. Manual frontend calculation banned.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS
