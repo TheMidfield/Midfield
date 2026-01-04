@@ -215,9 +215,18 @@ export function EntityCycler({ entities }: { entities: HeroEntity[] }) {
 
     useEffect(() => {
         const supabase = createClient();
+
+        // Initial check
         supabase.auth.getSession().then(({ data }) => {
             setIsAuthenticated(!!data.session);
         });
+
+        // Realtime subscription
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsAuthenticated(!!session);
+        });
+
+        return () => subscription.unsubscribe();
     }, []);
 
     useEffect(() => {
