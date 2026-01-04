@@ -29,6 +29,16 @@ function TakeCard({ take }: { take: HeroTake }) {
     const isClub = take.topic.type === 'club';
     const isLeague = take.topic.type === 'league';
 
+    // Debug logging for clubs
+    if (isClub) {
+        console.log('[LiveFeed TakeCard DEBUG] Club rendering:', {
+            title: take.topic.title,
+            slug: take.topic.slug,
+            imageUrl: take.topic.imageUrl,
+            hasImage: !!take.topic.imageUrl
+        });
+    }
+
     return (
         <Link href={`/topic/${take.topic.slug}`} className="block group">
             <Card variant="interactive" className="p-3 sm:p-4 hover:border-emerald-500/30 transition-all bg-white dark:bg-neutral-900 flex flex-col gap-2.5 backdrop-blur-sm">

@@ -324,6 +324,18 @@ async function getAnyRecentTakes(supabase: any, limit: number): Promise<HeroTake
                 ? getLeagueLogoUrls(String(topic.slug), topic.metadata?.badge_url || topic.metadata?.logo_url)
                 : null;
 
+            // Debug logging for club images
+            if (topic.type === 'club') {
+                console.log('[Hero Feed DEBUG] Club topic:', {
+                    title: topic.title,
+                    slug: topic.slug,
+                    metadata: topic.metadata,
+                    badge_url: topic.metadata?.badge_url,
+                    logo_url: topic.metadata?.logo_url,
+                    final_imageUrl: topic.metadata?.badge_url || topic.metadata?.logo_url
+                });
+            }
+
             return {
                 id: String(p.id),
                 content: String(p.content),
