@@ -40,29 +40,22 @@ export function BadgeModal({ badgeId, onClose, isUnlocked = true }: BadgeModalPr
 
                             {/* Show description ONLY if unlocked */}
                             {isUnlocked && (
-                                <p className="text-sm text-slate-600 dark:text-neutral-400 max-w-[280px] mb-2">
+                                <p className="text-sm text-slate-600 dark:text-neutral-400 max-w-[280px]">
                                     {badge.description}
                                 </p>
                             )}
 
-                            {/* ALWAYS show unlock requirement */}
-                            <div className={`mt-2 p-3 rounded-lg w-full ${isUnlocked
-                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800'
-                                    : 'bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800'
-                                }`}>
-                                <p className={`text-xs font-semibold uppercase tracking-wider mb-1.5 ${isUnlocked
-                                        ? 'text-emerald-800 dark:text-emerald-300'
-                                        : 'text-amber-800 dark:text-amber-300'
-                                    }`}>
-                                    How to Unlock
-                                </p>
-                                <p className={`text-sm ${isUnlocked
-                                        ? 'text-emerald-900 dark:text-emerald-200'
-                                        : 'text-amber-900 dark:text-amber-200'
-                                    }`}>
-                                    {badge.unlockRequirement}
-                                </p>
-                            </div>
+                            {/* Show unlock requirement ONLY if locked */}
+                            {!isUnlocked && (
+                                <div className="mt-2 p-3 rounded-lg w-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                    <p className="text-xs font-semibold uppercase tracking-wider mb-1.5 text-amber-800 dark:text-amber-300">
+                                        How to Unlock
+                                    </p>
+                                    <p className="text-sm text-amber-900 dark:text-amber-200">
+                                        {badge.unlockRequirement}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Button - Enthusiastic for earned, neutral for locked */}
