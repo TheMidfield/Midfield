@@ -74,8 +74,17 @@ export function AuthModal({
             return;
         }
 
-        if (password.length < 6) {
-            setError("Password must be at least 6 characters");
+        // Password requirements validation
+        if (password.length < 8) {
+            setError("Password must be at least 8 characters");
+            return;
+        }
+
+        const hasLetter = /[a-zA-Z]/.test(password);
+        const hasDigit = /[0-9]/.test(password);
+
+        if (!hasLetter || !hasDigit) {
+            setError("Password must contain both letters and digits");
             return;
         }
 
@@ -245,7 +254,7 @@ export function AuthModal({
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="At least 6 characters"
+                                    placeholder="At least 8 characters"
                                     required
                                     disabled={isPending}
                                     style={{ width: '100%' }}
@@ -264,6 +273,36 @@ export function AuthModal({
                                     )}
                                 </button>
                             </div>
+
+                            {/* Password requirements (only show during signup) */}
+                            {mode === "signup" && password.length > 0 && (
+                                <div className="mt-2 space-y-1">
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                            {password.length >= 8 ? "✓" : "○"}
+                                        </span>
+                                        <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                            At least 8 characters
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                            {/[a-zA-Z]/.test(password) ? "✓" : "○"}
+                                        </span>
+                                        <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                            Contains letters
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-xs">
+                                        <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                            {/[0-9]/.test(password) ? "✓" : "○"}
+                                        </span>
+                                        <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                            Contains digits
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <Button
