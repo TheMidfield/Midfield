@@ -53,7 +53,7 @@ const CLUB_ROTATIONS = [
     // Rotation 2: Premier League Powers
     ['arsenal-133604', 'liverpool-133602', 'chelsea-133610', 'manchester-united-133612'],
     // Rotation 3: European Challengers
-    ['paris-sg-133714', 'inter-milan-133676', 'atletico-madrid-133729', 'borussia-dortmund-133665'],
+    ['paris-sg-133714', 'inter-milan-133681', 'atltico-madrid-133729', 'borussia-dortmund-133650'],
     // Rotation 4: Rising Forces
     ['tottenham-hotspur-133612', 'newcastle-united-133616', 'aston-villa-133601', 'ac-milan-133667']
 ];

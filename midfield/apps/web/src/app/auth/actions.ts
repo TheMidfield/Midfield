@@ -25,6 +25,7 @@ export async function signInWithEmail(email: string) {
         email,
         options: {
             emailRedirectTo: `${baseUrl}auth/callback`,
+            shouldCreateUser: true, // Explicit user creation on signup
         },
     })
 
