@@ -708,6 +708,25 @@ export function ProfileClient({ initialData }: ProfileClientProps) {
                     </a>
                 </Card>
 
+                {/* Account Settings Card */}
+                <Card className="col-span-6" style={{ padding: 0, overflow: 'hidden' }}>
+                    <a
+                        href="/profile/settings"
+                        className="flex items-center justify-between p-4 h-full hover:bg-slate-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer group"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-md bg-slate-50 dark:bg-neutral-800 flex items-center justify-center border border-slate-200 dark:border-neutral-700">
+                                <Shield className="w-5 h-5 text-slate-600 dark:text-neutral-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-slate-900 dark:text-neutral-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Account Settings</p>
+                                <p className="text-xs text-slate-500 dark:text-neutral-400">Manage email and password</p>
+                            </div>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-slate-300 dark:text-neutral-600 group-hover:text-emerald-500 transition-colors" />
+                    </a>
+                </Card>
+
                 {/* Sign Out Card */}
                 <Card className="col-span-6" style={{ padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px' }}>
                     <div className="flex flex-col">
