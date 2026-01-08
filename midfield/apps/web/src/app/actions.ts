@@ -95,22 +95,42 @@ export async function getTakes(topicId: string) {
     const supabase = await createClient();
     const posts = await getTakesLogic(supabase, topicId);
 
-    // Enrich with user reaction
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && posts.length > 0) {
-        const { data: reactions } = await supabase
-            .from('reactions')
-            .select('post_id, reaction_type')
-            .eq('user_id', user.id)
-            .in('post_id', posts.map((p: any) => p.id));
+    if (posts.length === 0) return posts;
 
-        if (reactions) {
-            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
-            posts.forEach((p: any) => {
-                p.userReaction = reactionMap.get(p.id) || null;
-            });
+    // Fetch ALL reactions for these posts to get counts
+    const { data: allReactions } = await supabase
+        .from('reactions')
+        .select('post_id, reaction_type, user_id')
+        .in('post_id', posts.map((p: any) => p.id));
+
+    // Calculate reaction counts per post
+    const reactionCountsMap = new Map<string, Record<ReactionType, number>>();
+    allReactions?.forEach((r: any) => {
+        if (!reactionCountsMap.has(r.post_id)) {
+            reactionCountsMap.set(r.post_id, { fire: 0, hmm: 0, fair: 0, dead: 0 });
         }
+        const counts = reactionCountsMap.get(r.post_id)!;
+        if (r.reaction_type in counts) {
+            counts[r.reaction_type as ReactionType]++;
+        }
+    });
+
+    // Get user's reactions
+    const { data: { user } } = await supabase.auth.getUser();
+    const userReactionMap = new Map<string, ReactionType>();
+    if (user) {
+        allReactions?.forEach((r: any) => {
+            if (r.user_id === user.id) {
+                userReactionMap.set(r.post_id, r.reaction_type);
+            }
+        });
     }
+
+    // Enrich posts with reaction data
+    posts.forEach((p: any) => {
+        p.reactionCounts = reactionCountsMap.get(p.id) || { fire: 0, hmm: 0, fair: 0, dead: 0 };
+        p.userReaction = userReactionMap.get(p.id) || null;
+    });
 
     return posts;
 }
@@ -125,22 +145,42 @@ export async function getTakesPaginated(
     const supabase = await createClient();
     const result = await getTakesPaginatedLogic(supabase, topicId, options);
 
-    // Enrich with user reaction
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && result.posts.length > 0) {
-        const { data: reactions } = await supabase
-            .from('reactions')
-            .select('post_id, reaction_type')
-            .eq('user_id', user.id)
-            .in('post_id', result.posts.map((p: any) => p.id));
+    if (result.posts.length === 0) return result;
 
-        if (reactions) {
-            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
-            result.posts.forEach((p: any) => {
-                p.userReaction = reactionMap.get(p.id) || null;
-            });
+    // Fetch ALL reactions for these posts to get counts
+    const { data: allReactions } = await supabase
+        .from('reactions')
+        .select('post_id, reaction_type, user_id')
+        .in('post_id', result.posts.map((p: any) => p.id));
+
+    // Calculate reaction counts per post
+    const reactionCountsMap = new Map<string, Record<ReactionType, number>>();
+    allReactions?.forEach((r: any) => {
+        if (!reactionCountsMap.has(r.post_id)) {
+            reactionCountsMap.set(r.post_id, { fire: 0, hmm: 0, fair: 0, dead: 0 });
         }
+        const counts = reactionCountsMap.get(r.post_id)!;
+        if (r.reaction_type in counts) {
+            counts[r.reaction_type as ReactionType]++;
+        }
+    });
+
+    // Get user's reactions
+    const { data: { user } } = await supabase.auth.getUser();
+    const userReactionMap = new Map<string, ReactionType>();
+    if (user) {
+        allReactions?.forEach((r: any) => {
+            if (r.user_id === user.id) {
+                userReactionMap.set(r.post_id, r.reaction_type);
+            }
+        });
     }
+
+    // Enrich posts with reaction data
+    result.posts.forEach((p: any) => {
+        p.reactionCounts = reactionCountsMap.get(p.id) || { fire: 0, hmm: 0, fair: 0, dead: 0 };
+        p.userReaction = userReactionMap.get(p.id) || null;
+    });
 
     return result;
 }
@@ -152,22 +192,42 @@ export async function getReplies(rootPostId: string) {
     const supabase = await createClient();
     const replies = await getRepliesLogic(supabase, rootPostId);
 
-    // Enrich with user reaction
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && replies.length > 0) {
-        const { data: reactions } = await supabase
-            .from('reactions')
-            .select('post_id, reaction_type')
-            .eq('user_id', user.id)
-            .in('post_id', replies.map((p: any) => p.id));
+    if (replies.length === 0) return replies;
 
-        if (reactions) {
-            const reactionMap = new Map(reactions.map((r: any) => [r.post_id, r.reaction_type]));
-            replies.forEach((p: any) => {
-                p.userReaction = reactionMap.get(p.id) || null;
-            });
+    // Fetch ALL reactions for these replies to get counts
+    const { data: allReactions } = await supabase
+        .from('reactions')
+        .select('post_id, reaction_type, user_id')
+        .in('post_id', replies.map((p: any) => p.id));
+
+    // Calculate reaction counts per post
+    const reactionCountsMap = new Map<string, Record<ReactionType, number>>();
+    allReactions?.forEach((r: any) => {
+        if (!reactionCountsMap.has(r.post_id)) {
+            reactionCountsMap.set(r.post_id, { fire: 0, hmm: 0, fair: 0, dead: 0 });
         }
+        const counts = reactionCountsMap.get(r.post_id)!;
+        if (r.reaction_type in counts) {
+            counts[r.reaction_type as ReactionType]++;
+        }
+    });
+
+    // Get user's reactions
+    const { data: { user } } = await supabase.auth.getUser();
+    const userReactionMap = new Map<string, ReactionType>();
+    if (user) {
+        allReactions?.forEach((r: any) => {
+            if (r.user_id === user.id) {
+                userReactionMap.set(r.post_id, r.reaction_type);
+            }
+        });
     }
+
+    // Enrich replies with reaction data
+    replies.forEach((p: any) => {
+        p.reactionCounts = reactionCountsMap.get(p.id) || { fire: 0, hmm: 0, fair: 0, dead: 0 };
+        p.userReaction = userReactionMap.get(p.id) || null;
+    });
 
     return replies;
 }
@@ -348,21 +408,40 @@ export async function getBookmarkedPostsPaginated(options?: { cursor?: string; l
 
     const result = await getBookmarkedPostsPaginatedLogic(supabase, user.id, options);
 
-    // Enrich with user reaction and bookmark status
-    if (result.posts.length > 0) {
-        const { data: reactions } = await supabase
-            .from('reactions')
-            .select('post_id, reaction_type')
-            .eq('user_id', user.id)
-            .in('post_id', result.posts.map((p: any) => p.id));
+    if (result.posts.length === 0) return result;
 
-        const reactionMap = new Map(reactions?.map((r: any) => [r.post_id, r.reaction_type]) || []);
+    // Fetch ALL reactions for these posts to get counts
+    const { data: allReactions } = await supabase
+        .from('reactions')
+        .select('post_id, reaction_type, user_id')
+        .in('post_id', result.posts.map((p: any) => p.id));
 
-        result.posts.forEach((p: any) => {
-            (p as any).userReaction = reactionMap.get(p.id) || null;
-            (p as any).isBookmarked = true;
-        });
-    }
+    // Calculate reaction counts per post
+    const reactionCountsMap = new Map<string, Record<ReactionType, number>>();
+    allReactions?.forEach((r: any) => {
+        if (!reactionCountsMap.has(r.post_id)) {
+            reactionCountsMap.set(r.post_id, { fire: 0, hmm: 0, fair: 0, dead: 0 });
+        }
+        const counts = reactionCountsMap.get(r.post_id)!;
+        if (r.reaction_type in counts) {
+            counts[r.reaction_type as ReactionType]++;
+        }
+    });
+
+    // Get user's reactions
+    const userReactionMap = new Map<string, ReactionType>();
+    allReactions?.forEach((r: any) => {
+        if (r.user_id === user.id) {
+            userReactionMap.set(r.post_id, r.reaction_type);
+        }
+    });
+
+    // Enrich posts with reaction data
+    result.posts.forEach((p: any) => {
+        p.reactionCounts = reactionCountsMap.get(p.id) || { fire: 0, hmm: 0, fair: 0, dead: 0 };
+        p.userReaction = userReactionMap.get(p.id) || null;
+        p.isBookmarked = true;
+    });
 
     return result;
 }

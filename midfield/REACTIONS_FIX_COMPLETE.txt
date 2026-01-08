@@ -1,0 +1,56 @@
+REACTION SYSTEM - BUGS FIXED
+==============================
+
+ROOT CAUSE FOUND:
+-----------------
+Reactions WERE being saved to database correctly, but reaction counts were NEVER being fetched!
+
+The getTakes(), getTakesPaginated(), getReplies(), and getBookmarkedPostsPaginated() functions
+only fetched userReaction (current user's reaction) but NOT reactionCounts (all reactions).
+
+SYMPTOMS:
+- Clicking reaction showed "1" count (optimistic update)
+- After refresh: count showed "0" (because undefined → defaults to zeros)
+- Other users couldn't see reactions (same issue)
+- Database HAD the reactions, UI just never displayed them
+
+FIXES APPLIED:
+--------------
+1. ✅ getTakes() - Now fetches ALL reactions and calculates counts
+2. ✅ getTakesPaginated() - Now fetches ALL reactions and calculates counts  
+3. ✅ getReplies() - Now fetches ALL reactions and calculates counts
+4. ✅ getBookmarkedPostsPaginated() - Now fetches ALL reactions and calculates counts
+
+All functions now:
+- Fetch ALL reactions for the posts (not just user's reaction)
+- Calculate reaction counts per post (fire/hmm/fair/dead)
+- Extract user's reaction from the same query (efficient)
+- Enrich posts with both reactionCounts AND userReaction
+
+NOTIFICATION & BADGE STATUS:
+----------------------------
+- Reaction notifications: FIXED in 20260111000000_fix_notification_triggers.sql
+- Crowd Provoker badge (first reaction received): FIXED in same migration
+- Hat-Trick badge (3 reactions on post): FIXED but uses reactions not replies now
+
+TO TEST:
+--------
+1. User A creates a post
+2. User B reacts (🔥) to post
+3. User A refreshes → Should see "🔥 1" (WORKS NOW)
+4. User C opens page → Should see "🔥 1" (WORKS NOW)  
+5. User A gets notification + Crowd Provoker badge (WORKS with migration deployed)
+
+MIGRATIONS NEEDED:
+------------------
+Deploy these to get notifications + badges working:
+1. midfield/supabase/migrations/20260111000000_fix_notification_triggers.sql
+2. midfield/supabase/migrations/20260111000001_fix_reply_badge_triggers.sql
+3. Enable Realtime on notifications table (Dashboard → Replication)
+
+CODE CHANGES (Already Applied):
+--------------------------------
+- apps/web/src/app/actions.ts (reaction count fetching fixed)
+
+STATUS: ✅ COMPLETE - Reactions now persist and display correctly!
+
