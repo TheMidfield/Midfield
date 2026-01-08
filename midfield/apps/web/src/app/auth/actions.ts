@@ -7,26 +7,16 @@ import { headers } from 'next/headers'
 import { getURL } from '@/lib/url'
 
 /**
- * Sign in with email (magic link)
- * Uses implicit flow (hash-based) instead of PKCE for cross-device compatibility
+ * Sign up with email and password
  */
-export async function signInWithEmail(email: string) {
+export async function signUpWithPassword(email: string, password: string) {
     const supabase = await createClient()
 
-    // Attempt to get the origin from the request headers to support Vercel Preview URLs
-    const headersList = await headers()
-    const origin = headersList.get('origin')
-
-    // Only use origin if it's a valid http(s) URL.
-    // This prevents issues where origin might be 'null' or malformed.
-    const isValidOrigin = origin && origin.startsWith('http')
-    const baseUrl = isValidOrigin ? `${origin}/` : getURL()
-
-    const { error } = await supabase.auth.signInWithOtp({
+    const { data, error } = await supabase.auth.signUp({
         email,
+        password,
         options: {
-            emailRedirectTo: `${baseUrl}auth/callback`,
-            shouldCreateUser: true,
+            emailRedirectTo: undefined, // No email confirmation needed
         },
     })
 
@@ -34,7 +24,29 @@ export async function signInWithEmail(email: string) {
         return { success: false, error: error.message }
     }
 
-    return { success: true }
+    if (!data.user) {
+        return { success: false, error: 'Failed to create account' }
+    }
+
+    return { success: true, user: data.user }
+}
+
+/**
+ * Sign in with email and password
+ */
+export async function signInWithPassword(email: string, password: string) {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+    })
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    return { success: true, user: data.user }
 }
 
 /**
