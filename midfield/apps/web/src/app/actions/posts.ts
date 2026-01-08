@@ -3,50 +3,49 @@
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Fetch a specific post and its thread (parent + replies)
- * Used for notification deep-linking
+ * Fetch the full thread for a post (used for notification deep-linking)
+ * Returns the root post + all replies, with the target post ID for highlighting
  */
-export async function getPostThread(postId: string) {
+export async function getPostThread(targetPostId: string) {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
 
-    // Fetch the target post
-    const { data: post, error } = await supabase
+    // Fetch the target post to get its root
+    const { data: targetPost, error } = await supabase
         .from('posts')
-        .select(`
-            *,
-            author:author_id (username, avatar_url)
-        `)
-        .eq('id', postId)
+        .select('id, root_post_id, parent_post_id')
+        .eq('id', targetPostId)
         .single();
 
-    if (error || !post) {
-        return { post: null, replies: [], parent: null };
+    if (error || !targetPost) {
+        return { rootPost: null, allReplies: [], targetPostId };
     }
 
-    // If this is a reply, fetch parent
-    let parent = null;
-    if (post.parent_post_id) {
-        const { data: parentPost } = await supabase
-            .from('posts')
-            .select(`
-                *,
-                author:author_id (username, avatar_url)
-            `)
-            .eq('id', post.parent_post_id)
-            .single();
-        parent = parentPost;
-    }
+    // Find the root post ID (if target is a reply, use root_post_id, else it's the root)
+    const rootPostId = targetPost.root_post_id || targetPost.id;
 
-    // Fetch replies to this post
-    const { data: replies = [] } = await supabase
+    // Fetch the root post with full details
+    const { data: rootPost } = await supabase
         .from('posts')
         .select(`
             *,
-            author:author_id (username, avatar_url)
+            author:author_id (username, avatar_url, favorite_club:topics!favorite_club_id(title, slug, metadata))
         `)
-        .eq('parent_post_id', postId)
+        .eq('id', rootPostId)
+        .single();
+
+    if (!rootPost) {
+        return { rootPost: null, allReplies: [], targetPostId };
+    }
+
+    // Fetch ALL replies to the root post
+    const { data: allReplies = [] } = await supabase
+        .from('posts')
+        .select(`
+            *,
+            author:author_id (username, avatar_url, favorite_club:topics!favorite_club_id(title, slug, metadata))
+        `)
+        .eq('root_post_id', rootPostId)
         .order('created_at', { ascending: true });
 
-    return { post, replies, parent };
+    return { rootPost, allReplies, targetPostId };
 }

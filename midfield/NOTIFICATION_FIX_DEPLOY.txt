@@ -1,0 +1,38 @@
+NOTIFICATION & BADGE FIX - DEPLOY
+====================================
+
+BUGS FIXED:
+-----------
+1. Reply notifications: 0% → 100% (trigger checked wrong column: reply_to_post_id → parent_post_id)
+2. Badge notifications from reactions: 0% → 100% (invalid badge_id column)
+3. Regista badge: Awards to PARENT post author (not ROOT) - nested replies work correctly
+4. Hat-Trick badge: Counts per-post (not globally) - 3 replies on SAME post
+
+DEPLOY (Supabase Dashboard → SQL Editor):
+------------------------------------------
+Run BOTH migrations in order:
+
+1. midfield/supabase/migrations/20260111000000_fix_notification_triggers.sql
+2. midfield/supabase/migrations/20260111000001_fix_reply_badge_triggers.sql
+
+Enable Realtime:
+----------------
+Supabase Dashboard → Database → Replication → Toggle ON for "notifications" table
+
+TEST:
+-----
+1. User A creates post
+2. User B replies to A → A gets:
+   - Reply notification instantly ✓
+   - Regista badge + notification ✓
+   
+3. User C replies to A's post (2nd reply)
+4. User D replies to A's post (3rd reply) → A gets:
+   - Hat-Trick badge + notification ✓
+
+5. User E replies to B's reply → B gets:
+   - Reply notification ✓
+   - Regista badge ✓ (if first time)
+
+All notifications should appear instantly with toast (no refresh needed).
+

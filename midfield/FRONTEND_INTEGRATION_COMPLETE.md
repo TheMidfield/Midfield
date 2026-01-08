@@ -342,3 +342,4 @@ The frontend is now fully integrated with the Supabase database:
 
 
 
+

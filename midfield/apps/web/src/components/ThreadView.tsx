@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { TakeCard } from "./TakeCard";
 import { getPostThread } from "@/app/actions/posts";
@@ -33,12 +33,18 @@ export function ThreadView({
     onBackToAll
 }: ThreadViewProps) {
     const [loading, setLoading] = useState(true);
-    const [thread, setThread] = useState<{ post: any; parent: any; replies: any[] } | null>(null);
+    const [thread, setThread] = useState<{ rootPost: any; allReplies: any[]; targetPostId: string } | null>(null);
+    const targetRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         getPostThread(postId).then((data) => {
             setThread(data);
             setLoading(false);
+            
+            // Scroll to highlighted post after render
+            setTimeout(() => {
+                targetRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         });
     }, [postId]);
 
@@ -50,7 +56,7 @@ export function ThreadView({
         );
     }
 
-    if (!thread || !thread.post) {
+    if (!thread || !thread.rootPost) {
         return (
             <div className="p-6 rounded-md border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800/50 text-center">
                 <p className="text-sm text-slate-500 dark:text-neutral-400">Post not found</p>
@@ -64,7 +70,8 @@ export function ThreadView({
         );
     }
 
-    const { post, parent, replies } = thread;
+    const { rootPost, allReplies, targetPostId } = thread;
+    const isRootHighlighted = rootPost.id === targetPostId;
 
     return (
         <div className="flex flex-col gap-3">
@@ -77,26 +84,13 @@ export function ThreadView({
                 Back to all takes
             </button>
 
-            {/* Parent post (if this is a reply) */}
-            {parent && (
-                <div className="opacity-75">
-                    <TakeCard
-                        post={parent}
-                        currentUser={currentUser}
-                        topicTitle={topicTitle}
-                        topicImageUrl={topicImageUrl}
-                        topicType={topicType}
-                        clubName={clubName}
-                        clubBadgeUrl={clubBadgeUrl}
-                        topicPosition={topicPosition}
-                    />
-                </div>
-            )}
-
-            {/* Highlighted post */}
-            <div className="ring-2 ring-emerald-500 dark:ring-emerald-600 rounded-lg">
+            {/* Root post - highlight if it's the target */}
+            <div 
+                ref={isRootHighlighted ? targetRef : null}
+                className={isRootHighlighted ? "ring-2 ring-emerald-500 dark:ring-emerald-400 rounded-lg" : ""}
+            >
                 <TakeCard
-                    post={post}
+                    post={rootPost}
                     currentUser={currentUser}
                     topicTitle={topicTitle}
                     topicImageUrl={topicImageUrl}
@@ -107,22 +101,30 @@ export function ThreadView({
                 />
             </div>
 
-            {/* Replies */}
-            {replies.length > 0 && (
-                <div className="flex flex-col gap-3 pl-6 border-l-2 border-slate-200 dark:border-neutral-700">
-                    {replies.map((reply) => (
-                        <TakeCard
-                            key={reply.id}
-                            post={reply}
-                            currentUser={currentUser}
-                            topicTitle={topicTitle}
-                            topicImageUrl={topicImageUrl}
-                            topicType={topicType}
-                            clubName={clubName}
-                            clubBadgeUrl={clubBadgeUrl}
-                            topicPosition={topicPosition}
-                        />
-                    ))}
+            {/* All replies - highlight the target if it's a reply */}
+            {allReplies.length > 0 && (
+                <div className="flex flex-col gap-3">
+                    {allReplies.map((reply) => {
+                        const isHighlighted = reply.id === targetPostId;
+                        return (
+                            <div 
+                                key={reply.id}
+                                ref={isHighlighted ? targetRef : null}
+                                className={isHighlighted ? "ring-2 ring-emerald-500 dark:ring-emerald-400 rounded-lg" : ""}
+                            >
+                                <TakeCard
+                                    post={reply}
+                                    currentUser={currentUser}
+                                    topicTitle={topicTitle}
+                                    topicImageUrl={topicImageUrl}
+                                    topicType={topicType}
+                                    clubName={clubName}
+                                    clubBadgeUrl={clubBadgeUrl}
+                                    topicPosition={topicPosition}
+                                />
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
