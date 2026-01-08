@@ -320,80 +320,81 @@ export function AuthModal({
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="you@example.com"
+                                    placeholder="Enter your email"
                                     required
                                     disabled={isPending}
                                     style={{ width: '100%' }}
-                                    className="h-10 sm:h-11 md:h-12 text-sm sm:text-base"
+                                    className="h-9 sm:h-10 text-sm sm:text-base"
                                 />
                             </div>
 
-                            <div className="space-y-1.5 sm:space-y-2">
-                                <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
-                                    Password
-                                </label>
-                                <div className="relative">
-                                    <Input
-                                        type={showPassword ? "text" : "password"}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="At least 8 characters"
-                                        required
-                                        disabled={isPending}
-                                        style={{ width: '100%' }}
-                                        className="h-10 sm:h-11 md:h-12 text-sm sm:text-base pr-10"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-                                        tabIndex={-1}
-                                    >
-                                        {showPassword ? (
-                                            <EyeOff className="w-4 h-4" />
-                                        ) : (
-                                            <Eye className="w-4 h-4" />
-                                        )}
-                                    </button>
-                                </div>
-
-                                {/* Password requirements (only show during signup) */}
-                                {mode === "signup" && password.length > 0 && (
-                                    <div className="mt-2 space-y-1">
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
-                                                {password.length >= 8 ? "✓" : "○"}
-                                            </span>
-                                            <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
-                                                At least 8 characters
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
-                                                {/[a-zA-Z]/.test(password) ? "✓" : "○"}
-                                            </span>
-                                            <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
-                                                Contains letters
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs">
-                                            <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
-                                                {/[0-9]/.test(password) ? "✓" : "○"}
-                                            </span>
-                                            <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
-                                                Contains digits
-                                            </span>
-                                        </div>
+                            {mode !== "reset" && (
+                                <div className="space-y-1.5 sm:space-y-2">
+                                    <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
+                                        Password
+                                    </label>
+                                    <div className="relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            placeholder="Enter your password"
+                                            required
+                                            disabled={isPending}
+                                            style={{ width: '100%' }}
+                                            className="h-9 sm:h-10 text-sm sm:text-base pr-10"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors cursor-pointer"
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-4 h-4" />
+                                            ) : (
+                                                <Eye className="w-4 h-4" />
+                                            )}
+                                        </button>
                                     </div>
-                                )}
-                            </div>
 
+                                    {/* Password requirements (only show during signup) */}
+                                    {mode === "signup" && password.length > 0 && (
+                                        <div className="mt-2 space-y-1">
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                                    {password.length >= 8 ? "✓" : "○"}
+                                                </span>
+                                                <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                                    At least 8 characters
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                                    {/[a-zA-Z]/.test(password) ? "✓" : "○"}
+                                                </span>
+                                                <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                                    Contains letters
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs">
+                                                <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                                    {/[0-9]/.test(password) ? "✓" : "○"}
+                                                </span>
+                                                <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                                    Contains digits
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             <Button
                                 type="submit"
                                 size="lg"
                                 disabled={isPending || !email.trim() || !password.trim()}
                                 style={{ width: '100%' }}
-                                className="h-10 sm:h-11 md:h-12 text-sm sm:text-base font-semibold"
+                                className="h-9 sm:h-10 text-sm sm:text-base font-semibold"
                             >
                                 {isPending ? (mode === "signup" ? "Creating account..." : "Signing in...") : (mode === "signup" ? "Create account" : "Sign in")}
                             </Button>
@@ -405,7 +406,7 @@ export function AuthModal({
                         {mode === "signin" && (
                             <button
                                 onClick={() => setMode("reset")}
-                                className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                             >
                                 Forgot password?
                             </button>
@@ -417,7 +418,7 @@ export function AuthModal({
                                     setMode(mode === "signup" ? "signin" : "signup");
                                     setError(null);
                                 }}
-                                className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors cursor-pointer"
                             >
                                 {mode === "signup" ? (
                                     <>Already have an account? <span className="font-semibold">Sign in</span></>

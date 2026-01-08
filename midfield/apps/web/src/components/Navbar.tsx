@@ -14,11 +14,13 @@ import { useSearch } from "@/context/SearchContext";
 import { Logo } from "@/components/Logo";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/DropdownMenu";
 import { simulateNotification } from "@/app/actions/dev";
+import { useAuthModal } from "./ui/useAuthModal";
 
 export function Navbar() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const { closeSearch } = useSearch();
+    const { openAuthModal } = useAuthModal();
     const [userAvatar, setUserAvatar] = useState<string | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -226,10 +228,10 @@ export function Navbar() {
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <Link href="/auth/login" className="hidden md:block">
+                                    <button onClick={() => openAuthModal()} className="hidden md:block">
                                         <Button variant="ghost" size="sm">Log in</Button>
-                                    </Link>
-                                    <Link href="/auth/signup">
+                                    </button>
+                                    <button onClick={() => openAuthModal()}>
                                         <Button variant="default" size="sm" className="hidden sm:flex group">
                                             <span>Join Midfield</span>
                                             <svg className="w-4 h-4 ml-1 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -237,7 +239,7 @@ export function Navbar() {
                                             </svg>
                                         </Button>
                                         <IconButton icon={UserIcon} variant="ghost" className="flex sm:hidden" />
-                                    </Link>
+                                    </button>
                                 </div>
                             )
                         ) : (

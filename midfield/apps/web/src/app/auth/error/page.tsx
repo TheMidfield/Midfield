@@ -15,8 +15,8 @@ export default function AuthErrorPage() {
                 <p className="text-slate-600 dark:text-neutral-400 mb-8">
                     Something went wrong during sign in. This can happen if you cancelled the sign-in process or the link expired.
                 </p>
-                <Link href="/auth">
-                    <Button>Try Again</Button>
+                <Link href="/">
+                    <Button>Return to home</Button>
                 </Link>
             </div>
         </div>
