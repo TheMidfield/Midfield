@@ -5,7 +5,7 @@ import { Button } from "./Button";
 import { Input } from "./Input";
 import { X, Eye, EyeOff, MessageSquare, TrendingUp, Speech } from "lucide-react";
 import { IconBuildingStadium } from "@tabler/icons-react";
-import { signUpWithPassword, signInWithPassword, signInWithGoogle } from "@/app/auth/actions";
+import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPassword } from "@/app/auth/actions";
 import { useRouter } from "next/navigation";
 
 interface AuthModalProps {
@@ -25,7 +25,8 @@ export function AuthModal({
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [mode, setMode] = useState<"signin" | "signup">("signup");
+    const [mode, setMode] = useState<"signin" | "signup" | "reset">("signup");
+    const [resetSent, setResetSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -61,6 +62,7 @@ export function AuthModal({
             setPassword("");
             setMode("signup");
             setShowPassword(false);
+            setResetSent(false);
         }
     }, [isOpen]);
 
@@ -109,6 +111,25 @@ export function AuthModal({
             const result = await signInWithGoogle();
             if (result.error) {
                 setError(result.error);
+            }
+        });
+    };
+
+    const handleResetPassword = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        if (!email.trim()) {
+            setError("Please enter your email address");
+            return;
+        }
+
+        startTransition(async () => {
+            const result = await resetPassword(email);
+            if (result.success) {
+                setResetSent(true);
+            } else {
+                setError(result.error || "Failed to send reset email");
             }
         });
     };
@@ -227,110 +248,184 @@ export function AuthModal({
                         </div>
                     </div>
 
-                    {/* Email/Password Form */}
-                    <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-                        <div className="space-y-1.5 sm:space-y-2">
-                            <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
-                                Email address
-                            </label>
-                            <Input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="you@example.com"
-                                required
-                                disabled={isPending}
-                                style={{ width: '100%' }}
-                                className="h-10 sm:h-11 md:h-12 text-sm sm:text-base"
-                            />
-                        </div>
-
-                        <div className="space-y-1.5 sm:space-y-2">
-                            <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
-                                Password
-                            </label>
-                            <div className="relative">
+                    {/* Email/Password Form or Reset Form */}
+                    {mode === "reset" ? (
+                        /* Password Reset Form */
+                        resetSent ? (
+                            <div className="text-center space-y-3">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto">
+                                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-neutral-100">
+                                    Check your email
+                                </h3>
+                                <p className="text-sm text-slate-600 dark:text-neutral-400">
+                                    We've sent a password reset link to <strong className="text-slate-900 dark:text-neutral-100">{email}</strong>
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        setMode("signin");
+                                        setResetSent(false);
+                                    }}
+                                    className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline"
+                                >
+                                    Back to sign in
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleResetPassword} className="space-y-3 sm:space-y-4">
+                                <div className="space-y-1.5 sm:space-y-2">
+                                    <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
+                                        Email address
+                                    </label>
+                                    <Input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="you@example.com"
+                                        required
+                                        disabled={isPending}
+                                        style={{ width: '100%' }}
+                                        className="h-10 sm:h-11 md:h-12 text-sm sm:text-base"
+                                    />
+                                </div>
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    disabled={isPending || !email.trim()}
+                                    style={{ width: '100%' }}
+                                    className="h-10 sm:h-11 md:h-12 text-sm sm:text-base font-semibold"
+                                >
+                                    {isPending ? "Sending..." : "Send reset link"}
+                                </Button>
+                                <button
+                                    type="button"
+                                    onClick={() => setMode("signin")}
+                                    className="w-full text-center text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                                >
+                                    Back to sign in
+                                </button>
+                            </form>
+                        )
+                    ) : (
+                        /* Regular Email/Password Form */
+                        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                            <div className="space-y-1.5 sm:space-y-2">
+                                <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
+                                    Email address
+                                </label>
                                 <Input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="At least 8 characters"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="you@example.com"
                                     required
                                     disabled={isPending}
                                     style={{ width: '100%' }}
-                                    className="h-10 sm:h-11 md:h-12 text-sm sm:text-base pr-10"
+                                    className="h-10 sm:h-11 md:h-12 text-sm sm:text-base"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-                                    tabIndex={-1}
-                                >
-                                    {showPassword ? (
-                                        <EyeOff className="w-4 h-4" />
-                                    ) : (
-                                        <Eye className="w-4 h-4" />
-                                    )}
-                                </button>
                             </div>
 
-                            {/* Password requirements (only show during signup) */}
-                            {mode === "signup" && password.length > 0 && (
-                                <div className="mt-2 space-y-1">
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
-                                            {password.length >= 8 ? "✓" : "○"}
-                                        </span>
-                                        <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
-                                            At least 8 characters
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
-                                            {/[a-zA-Z]/.test(password) ? "✓" : "○"}
-                                        </span>
-                                        <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
-                                            Contains letters
-                                        </span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
-                                            {/[0-9]/.test(password) ? "✓" : "○"}
-                                        </span>
-                                        <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
-                                            Contains digits
-                                        </span>
-                                    </div>
+                            <div className="space-y-1.5 sm:space-y-2">
+                                <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        placeholder="At least 8 characters"
+                                        required
+                                        disabled={isPending}
+                                        style={{ width: '100%' }}
+                                        className="h-10 sm:h-11 md:h-12 text-sm sm:text-base pr-10"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="w-4 h-4" />
+                                        ) : (
+                                            <Eye className="w-4 h-4" />
+                                        )}
+                                    </button>
                                 </div>
-                            )}
-                        </div>
 
-                        <Button
-                            type="submit"
-                            size="lg"
-                            disabled={isPending || !email.trim() || !password.trim()}
-                            style={{ width: '100%' }}
-                            className="h-10 sm:h-11 md:h-12 text-sm sm:text-base font-semibold"
-                        >
-                            {isPending ? (mode === "signup" ? "Creating account..." : "Signing in...") : (mode === "signup" ? "Create account" : "Sign in")}
-                        </Button>
-                    </form>
+                                {/* Password requirements (only show during signup) */}
+                                {mode === "signup" && password.length > 0 && (
+                                    <div className="mt-2 space-y-1">
+                                        <div className="flex items-center gap-2 text-xs">
+                                            <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                                {password.length >= 8 ? "✓" : "○"}
+                                            </span>
+                                            <span className={password.length >= 8 ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                                At least 8 characters
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                                {/[a-zA-Z]/.test(password) ? "✓" : "○"}
+                                            </span>
+                                            <span className={/[a-zA-Z]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                                Contains letters
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs">
+                                            <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-neutral-500"}>
+                                                {/[0-9]/.test(password) ? "✓" : "○"}
+                                            </span>
+                                            <span className={/[0-9]/.test(password) ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-slate-500 dark:text-neutral-400"}>
+                                                Contains digits
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
 
-                    {/* Toggle between signin/signup */}
-                    <div className="text-center">
-                        <button
-                            onClick={() => {
-                                setMode(mode === "signup" ? "signin" : "signup");
-                                setError(null);
-                            }}
-                            className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                        >
-                            {mode === "signup" ? (
-                                <>Already have an account? <span className="font-semibold">Sign in</span></>
-                            ) : (
-                                <>Don't have an account? <span className="font-semibold">Sign up</span></>
-                            )}
-                        </button>
+                            <Button
+                                type="submit"
+                                size="lg"
+                                disabled={isPending || !email.trim() || !password.trim()}
+                                style={{ width: '100%' }}
+                                className="h-10 sm:h-11 md:h-12 text-sm sm:text-base font-semibold"
+                            >
+                                {isPending ? (mode === "signup" ? "Creating account..." : "Signing in...") : (mode === "signup" ? "Create account" : "Sign in")}
+                            </Button>
+                        </form>
+                    )}
+
+                    {/* Toggle between signin/signup or Forgot password link */}
+                    <div className="text-center space-y-2">
+                        {mode === "signin" && (
+                            <button
+                                onClick={() => setMode("reset")}
+                                className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                            >
+                                Forgot password?
+                            </button>
+                        )}
+
+                        {mode !== "reset" && (
+                            <button
+                                onClick={() => {
+                                    setMode(mode === "signup" ? "signin" : "signup");
+                                    setError(null);
+                                }}
+                                className="text-xs sm:text-sm text-slate-600 dark:text-neutral-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                            >
+                                {mode === "signup" ? (
+                                    <>Already have an account? <span className="font-semibold">Sign in</span></>
+                                ) : (
+                                    <>Don't have an account? <span className="font-semibold">Sign up</span></>
+                                )}
+                            </button>
+                        )}
                     </div>
 
                     {/* Footer copy */}

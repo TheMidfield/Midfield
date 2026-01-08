@@ -116,3 +116,67 @@ export async function getUser() {
 
     return user
 }
+
+/**
+ * Reset password (forgot password flow)
+ */
+export async function resetPassword(email: string) {
+    const supabase = await createClient()
+
+    const headersList = await headers()
+    const origin = headersList.get('origin')
+    const isValidOrigin = origin && origin.startsWith('http')
+    const baseUrl = isValidOrigin ? `${origin}/` : getURL()
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${baseUrl}auth/reset-password`,
+    })
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    return { success: true }
+}
+
+/**
+ * Update password (when user is authenticated)
+ */
+export async function updatePassword(newPassword: string) {
+    const supabase = await createClient()
+
+    const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+    })
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    return { success: true }
+}
+
+/**
+ * Update email address
+ */
+export async function updateEmail(newEmail: string) {
+    const supabase = await createClient()
+
+    const headersList = await headers()
+    const origin = headersList.get('origin')
+    const isValidOrigin = origin && origin.startsWith('http')
+    const baseUrl = isValidOrigin ? `${origin}/` : getURL()
+
+    const { error } = await supabase.auth.updateUser(
+        { email: newEmail },
+        {
+            emailRedirectTo: `${baseUrl}auth/callback`,
+        }
+    )
+
+    if (error) {
+        return { success: false, error: error.message }
+    }
+
+    return { success: true }
+}
