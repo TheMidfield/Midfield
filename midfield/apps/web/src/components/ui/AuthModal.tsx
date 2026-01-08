@@ -7,6 +7,7 @@ import { X, Eye, EyeOff, MessageSquare, TrendingUp, Speech } from "lucide-react"
 import { IconBuildingStadium } from "@tabler/icons-react";
 import { signUpWithPassword, signInWithPassword, signInWithGoogle, resetPassword } from "@/app/auth/actions";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -101,13 +102,11 @@ export function AuthModal({
                 : await signInWithPassword(email, password);
 
             if (result.success) {
-                // For signup/signin, give time for auth state to propagate
-                if (mode === "signup" || mode === "signin") {
-                    // Wait a bit for the session to be fully established
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
+                // FORCE client session update so Navbar/Onboarding pick it up instantly
+                const supabase = createClient();
+                await supabase.auth.refreshSession();
 
-                // Close modal and refresh to update auth state
+                // Close modal and refresh router (for server components)
                 onClose();
                 router.refresh();
             } else {

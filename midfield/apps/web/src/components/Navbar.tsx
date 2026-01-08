@@ -16,6 +16,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { simulateNotification } from "@/app/actions/dev";
 import { useAuthModal } from "./ui/useAuthModal";
 
+import { createClient } from "@/lib/supabase/client";
+
 export function Navbar() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -33,14 +35,23 @@ export function Navbar() {
     const isDev = process.env.NODE_ENV === 'development';
 
     useEffect(() => {
+        const supabase = createClient();
+
         // Fetch user profile for avatar
         async function loadUserProfile() {
             try {
-                const response = await fetch('/api/user-profile');
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserAvatar(data.avatar_url);
-                    setIsAuthenticated(data.isAuthenticated || false);
+                // Get session directly from Supabase client first for speed
+                const { data: { session } } = await supabase.auth.getSession();
+                setIsAuthenticated(!!session);
+
+                if (session?.user) {
+                    const response = await fetch('/api/user-profile');
+                    if (response.ok) {
+                        const data = await response.json();
+                        setUserAvatar(data.avatar_url);
+                        // Double check auth status from API
+                        setIsAuthenticated(true);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load user profile:', error);
@@ -52,12 +63,25 @@ export function Navbar() {
 
         loadUserProfile();
 
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event: string, session: any) => {
+            setIsAuthenticated(!!session);
+            if (session) {
+                loadUserProfile();
+            } else {
+                setUserAvatar(null);
+            }
+        });
+
         const handleAvatarUpdate = (event: CustomEvent) => {
             setUserAvatar(event.detail.avatarUrl);
         };
 
         window.addEventListener('avatar-updated', handleAvatarUpdate as EventListener);
-        return () => window.removeEventListener('avatar-updated', handleAvatarUpdate as EventListener);
+        return () => {
+            window.removeEventListener('avatar-updated', handleAvatarUpdate as EventListener);
+            subscription.unsubscribe();
+        };
     }, []);
 
     // Handle Navigation Loading State
