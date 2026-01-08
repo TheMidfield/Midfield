@@ -55,7 +55,7 @@ const CLUB_ROTATIONS = [
     // Rotation 3: European Challengers
     ['paris-sg-133714', 'inter-milan-133681', 'atltico-madrid-133729', 'borussia-dortmund-133650'],
     // Rotation 4: Rising Forces
-    ['tottenham-hotspur-133612', 'newcastle-united-133616', 'aston-villa-133601', 'ac-milan-133667']
+    ['tottenham-hotspur-133616', 'newcastle-united-134777', 'aston-villa-133601', 'ac-milan-133667']
 ];
 
 // Randomly select one club rotation

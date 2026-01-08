@@ -57,13 +57,14 @@ export function AuthModal({
         };
     }, [isOpen]);
 
-    // Reset state when modal closes
+    // Reset state when modal closes or opens
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen) {
+            setMode(initialMode);
+        } else {
             setError(null);
             setEmail("");
             setPassword("");
-            setMode(initialMode);
             setShowPassword(false);
             setResetSent(false);
             setIsGooglePending(false);
