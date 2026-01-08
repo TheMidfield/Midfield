@@ -328,7 +328,7 @@ export function AuthModal({
                                 />
                             </div>
 
-                            {mode !== "reset" && (
+                            {(mode === "signin" || mode === "signup") && (
                                 <div className="space-y-1.5 sm:space-y-2">
                                     <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-neutral-300">
                                         Password
