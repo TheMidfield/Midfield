@@ -8,6 +8,7 @@ import { getURL } from '@/lib/url'
 
 /**
  * Sign in with email (magic link)
+ * Uses implicit flow (hash-based) instead of PKCE for cross-device compatibility
  */
 export async function signInWithEmail(email: string) {
     const supabase = await createClient()
@@ -25,7 +26,7 @@ export async function signInWithEmail(email: string) {
         email,
         options: {
             emailRedirectTo: `${baseUrl}auth/callback`,
-            shouldCreateUser: true, // Explicit user creation on signup
+            shouldCreateUser: true,
         },
     })
 
