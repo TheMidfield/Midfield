@@ -21,12 +21,14 @@ export function Hero() {
                         Share your hottest takes, engage in lively debates, and connect with fans around the world.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
-                        <button onClick={() => openAuthModal()}>
-                            <Button size="lg" className="font-semibold gap-2">
-                                <MessageSquare className="w-5 h-5" />
-                                Join the conversation
-                            </Button>
-                        </button>
+                        <Button
+                            size="lg"
+                            onClick={() => openAuthModal()}
+                            className="font-semibold gap-2"
+                        >
+                            <MessageSquare className="w-5 h-5" />
+                            Join the conversation
+                        </Button>
                         <Link href="/about">
                             <Button variant="outline" size="lg">
                                 How it works

@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Check, Search, Shield } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import NextImage from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 import { ALLOWED_LEAGUES } from "@midfield/logic/src/constants";
@@ -148,12 +147,11 @@ export function FavoriteClubSelector({ initialClubId, onSelect, className }: Fav
 
                                     <div className="relative w-12 h-12 shrink-0 transition-transform duration-200 group-hover:scale-110">
                                         {club.metadata?.badge_url ? (
-                                            <NextImage
+                                            <img
                                                 src={club.metadata.badge_url}
                                                 alt={club.title}
-                                                fill
-                                                className="object-contain"
-                                                sizes="48px"
+                                                className="w-full h-full object-contain"
+                                                loading="lazy"
                                             />
                                         ) : (
                                             <Shield className="w-full h-full text-slate-300 dark:text-neutral-600" />

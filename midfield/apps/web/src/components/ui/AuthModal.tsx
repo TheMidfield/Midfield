@@ -29,6 +29,7 @@ export function AuthModal({
     const [resetSent, setResetSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
+    const [isGooglePending, setIsGooglePending] = useState(false);
 
     // Close on escape key
     useEffect(() => {
@@ -63,6 +64,7 @@ export function AuthModal({
             setMode("signup");
             setShowPassword(false);
             setResetSent(false);
+            setIsGooglePending(false);
         }
     }, [isOpen]);
 
@@ -96,6 +98,12 @@ export function AuthModal({
                 : await signInWithPassword(email, password);
 
             if (result.success) {
+                // For signup, give time for auth state to propagate
+                if (mode === "signup") {
+                    // Wait a bit for the session to be fully established
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+
                 // Close modal and refresh to update auth state
                 onClose();
                 router.refresh();
@@ -105,14 +113,16 @@ export function AuthModal({
         });
     };
 
-    const handleGoogleLogin = () => {
+    const handleGoogleLogin = async () => {
         setError(null);
-        startTransition(async () => {
-            const result = await signInWithGoogle();
-            if (result.error) {
-                setError(result.error);
-            }
-        });
+        setIsGooglePending(true);
+
+        const result = await signInWithGoogle();
+        if (result.error) {
+            setError(result.error);
+            setIsGooglePending(false);
+        }
+        // Note: if successful, user will be redirected, so no need to reset loading
     };
 
     const handleResetPassword = (e: React.FormEvent) => {
@@ -223,7 +233,7 @@ export function AuthModal({
                     {/* Google OAuth Button */}
                     <button
                         onClick={handleGoogleLogin}
-                        disabled={isPending}
+                        disabled={isGooglePending || isPending}
                         style={{ width: '100%' }}
                         className="inline-flex items-center justify-center gap-2 sm:gap-3 h-10 sm:h-11 md:h-12 px-4 sm:px-6 rounded-md border-2 border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-slate-900 dark:text-neutral-100 font-bold hover:border-slate-400 dark:hover:border-neutral-500 hover:bg-slate-50 dark:hover:bg-neutral-800 transition-all active:scale-[0.98] lg:active:scale-100 disabled:opacity-50 disabled:pointer-events-none cursor-pointer text-sm sm:text-base"
                     >
@@ -233,7 +243,7 @@ export function AuthModal({
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                         </svg>
-                        <span>{isPending ? "Connecting..." : "Continue with Google"}</span>
+                        <span>{isGooglePending ? "Connecting..." : "Continue with Google"}</span>
                     </button>
 
                     {/* Divider */}
@@ -396,7 +406,10 @@ export function AuthModal({
                                 style={{ width: '100%' }}
                                 className="h-9 sm:h-10 text-sm sm:text-base font-semibold"
                             >
-                                {isPending ? (mode === "signup" ? "Creating account..." : "Signing in...") : (mode === "signup" ? "Create account" : "Sign in")}
+                                {isPending
+                                    ? (mode === "signup" ? "Creating account..." : "Signing in...")
+                                    : (mode === "signup" ? "Create account" : "Sign in")
+                                }
                             </Button>
                         </form>
                     )}

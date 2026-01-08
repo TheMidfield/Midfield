@@ -181,16 +181,16 @@ export function OnboardingWizard({ userId, userEmail, onComplete }: OnboardingWi
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
-            <Card className="max-h-[90vh] overflow-hidden" style={{ width: 'calc(100% - 2rem)', maxWidth: '768px' }}>
+            <Card className="w-full max-w-[768px] max-h-[calc(100vh-80px)] flex flex-col overflow-hidden">
                 {/* Progress Bar */}
-                <div className="h-1.5 bg-slate-200 dark:bg-neutral-800">
+                <div className="h-1.5 bg-slate-200 dark:bg-neutral-800 shrink-0">
                     <div
                         className="h-full bg-emerald-600 dark:bg-emerald-500 transition-all duration-300"
                         style={{ width: `${(step / 2) * 100}%` }}
                     />
                 </div>
 
-                <div className="p-6 sm:p-8 min-h-[520px] flex flex-col justify-center relative">
+                <div className="p-6 sm:p-8 flex-1 min-h-0 overflow-y-auto flex flex-col justify-center relative">
                     {/* Step 1: Username & Avatar */}
                     {step === 1 && (
                         <div className="space-y-6 w-full animate-in fade-in slide-in-from-right-4 duration-300">
