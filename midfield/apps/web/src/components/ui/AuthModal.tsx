@@ -13,19 +13,21 @@ interface AuthModalProps {
     onClose: () => void;
     /** Context for why we're showing this - impacts copy */
     context?: "take" | "reply" | "bookmark" | "default";
+    initialMode?: "signin" | "signup";
 }
 
 export function AuthModal({
     isOpen,
     onClose,
-    context = "default"
+    context = "default",
+    initialMode = "signup"
 }: AuthModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [mode, setMode] = useState<"signin" | "signup" | "reset">("signup");
+    const [mode, setMode] = useState<"signin" | "signup" | "reset">(initialMode);
     const [resetSent, setResetSent] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -61,12 +63,12 @@ export function AuthModal({
             setError(null);
             setEmail("");
             setPassword("");
-            setMode("signup");
+            setMode(initialMode);
             setShowPassword(false);
             setResetSent(false);
             setIsGooglePending(false);
         }
-    }, [isOpen]);
+    }, [isOpen, initialMode]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -98,8 +100,8 @@ export function AuthModal({
                 : await signInWithPassword(email, password);
 
             if (result.success) {
-                // For signup, give time for auth state to propagate
-                if (mode === "signup") {
+                // For signup/signin, give time for auth state to propagate
+                if (mode === "signup" || mode === "signin") {
                     // Wait a bit for the session to be fully established
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
@@ -334,7 +336,7 @@ export function AuthModal({
                                     required
                                     disabled={isPending}
                                     style={{ width: '100%' }}
-                                    className="h-9 sm:h-10 text-sm sm:text-base"
+                                    className="h-9 sm:h-10 text-sm sm:text-base placeholder:text-slate-400/60 dark:placeholder:text-neutral-500/60"
                                 />
                             </div>
 
@@ -352,18 +354,18 @@ export function AuthModal({
                                             required
                                             disabled={isPending}
                                             style={{ width: '100%' }}
-                                            className="h-9 sm:h-10 text-sm sm:text-base pr-10"
+                                            className="h-9 sm:h-10 text-sm sm:text-base pr-10 placeholder:text-slate-400/60 dark:placeholder:text-neutral-500/60"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors cursor-pointer"
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md text-slate-400 dark:text-neutral-500 hover:text-slate-700 dark:hover:text-neutral-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
                                             tabIndex={-1}
                                         >
                                             {showPassword ? (
-                                                <EyeOff className="w-4 h-4" />
+                                                <EyeOff className="w-3.5 h-3.5" />
                                             ) : (
-                                                <Eye className="w-4 h-4" />
+                                                <Eye className="w-3.5 h-3.5" />
                                             )}
                                         </button>
                                     </div>
@@ -415,7 +417,7 @@ export function AuthModal({
                     )}
 
                     {/* Toggle between signin/signup or Forgot password link */}
-                    <div className="text-center space-y-2">
+                    <div className="flex flex-col items-center gap-2">
                         {mode === "signin" && (
                             <button
                                 onClick={() => setMode("reset")}

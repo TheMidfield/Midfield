@@ -8,6 +8,7 @@ import { NotificationProvider } from "@/context/NotificationContext";
 import { GlobalSearchLayout } from "@/components/GlobalSearchLayout";
 import { OnboardingProvider } from "@/components/OnboardingProvider";
 import { GlobalWelcomeModal } from "@/components/GlobalWelcomeModal";
+import { AuthModalProvider } from "@/components/ui/AuthModalProvider";
 import "./globals.css";
 import type { Metadata } from "next";
 import { DM_Sans, Onest } from "next/font/google";
@@ -79,28 +80,30 @@ export default function RootLayout({
             </head>
             <body className="min-h-screen antialiased selection:bg-emerald-100 dark:selection:bg-emerald-900/50 flex flex-col">
                 <ThemeProvider>
-                    <SearchProvider>
-                        <NotificationProvider>
-                            <OnboardingProvider>
-                                <div className="flex flex-col min-h-screen">
-                                    <Suspense>
-                                        <Navbar />
-                                    </Suspense>
+                    <AuthModalProvider>
+                        <SearchProvider>
+                            <NotificationProvider>
+                                <OnboardingProvider>
+                                    <div className="flex flex-col min-h-screen">
+                                        <Suspense>
+                                            <Navbar />
+                                        </Suspense>
 
-                                    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 pt-24 sm:pt-28 pb-12 sm:pb-16">
-                                        <GlobalSearchLayout>
-                                            <LayoutContent>
-                                                {children}
-                                            </LayoutContent>
-                                        </GlobalSearchLayout>
+                                        <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-24 pt-24 sm:pt-28 pb-12 sm:pb-16">
+                                            <GlobalSearchLayout>
+                                                <LayoutContent>
+                                                    {children}
+                                                </LayoutContent>
+                                            </GlobalSearchLayout>
+                                        </div>
+
+                                        <Footer className="mt-16" />
                                     </div>
-
-                                    <Footer className="mt-16" />
-                                </div>
-                                <GlobalWelcomeModal />
-                            </OnboardingProvider>
-                        </NotificationProvider>
-                    </SearchProvider>
+                                    <GlobalWelcomeModal />
+                                </OnboardingProvider>
+                            </NotificationProvider>
+                        </SearchProvider>
+                    </AuthModalProvider>
                 </ThemeProvider>
             </body>
         </html>

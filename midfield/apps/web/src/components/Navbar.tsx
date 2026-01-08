@@ -231,7 +231,7 @@ export function Navbar() {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        onClick={() => openAuthModal()}
+                                        onClick={() => openAuthModal("default", "signin")}
                                         className="hidden md:flex"
                                     >
                                         Log in
@@ -239,7 +239,7 @@ export function Navbar() {
                                     <Button
                                         variant="default"
                                         size="sm"
-                                        onClick={() => openAuthModal()}
+                                        onClick={() => openAuthModal("default", "signup")}
                                         className="hidden sm:flex group"
                                     >
                                         <span>Join Midfield</span>
@@ -250,7 +250,7 @@ export function Navbar() {
                                     <IconButton
                                         icon={UserIcon}
                                         variant="ghost"
-                                        onClick={() => openAuthModal()}
+                                        onClick={() => openAuthModal("default", "signin")}
                                         className="flex sm:hidden"
                                     />
                                 </div>
