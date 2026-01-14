@@ -317,4 +317,26 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
   - **Efficient RLS**: RLS policies MUST wrap auth calls in subqueries: `(select auth.uid())`. Never use bare `auth.uid()`. This prevents N+1 execution per row (InitPlan optimization).
   - **RLS Bypass Hardening**: If a Postgres function MUST bypass RLS (e.g. for Cron jobs), it must be `security definer` AND explicitly set `SET search_path = public` to prevent pathjacking.
 
+──────────────────────────────────────────────────────────────────────────────
+9) ENVIRONMENT SEPARATION (CRITICAL)
+──────────────────────────────────────────────────────────────────────────────
+
+**Two Supabase Projects Exist:**
+
+| Environment | Project ID | Purpose |
+|-------------|------------|---------|
+| **DEV** | `bocldhavewgfxmbuycxy` | Local development & testing |
+| **PROD** | `oerbyhaqhuixpjrubshm` | Production (Vercel + GitHub Actions) |
+
+**Environment Configuration:**
+- **Local `.env`** → Points to **DEV** database (for safe local testing)
+- **Vercel Env Vars** → Points to **PROD** database (serves production traffic)
+- **GitHub Actions Secrets** → MUST point to **PROD** database (sync scripts affect real data)
+
+**⚠️ Critical Rule**: When running sync scripts locally (e.g., `npx tsx scripts/sync-*.ts`), you are modifying **DEV** data, NOT production. To run against production:
+  - Option A: Temporarily update `.env` with PROD values, run script, revert
+  - Option B: Use inline env vars: `NEXT_PUBLIC_SUPABASE_URL=https://oerbyhaqhuixpjrubshm.supabase.co SUPABASE_SERVICE_ROLE_KEY=[key] npx tsx scripts/...`
+
+**Jan 2026 Incident**: GitHub Actions secrets were incorrectly pointing to DEV. This caused sync scripts to update DEV instead of PROD, leading to stale image URLs in production. **Always verify** GitHub Secrets match Vercel env vars.
+
 END OF DOCTRINE.
