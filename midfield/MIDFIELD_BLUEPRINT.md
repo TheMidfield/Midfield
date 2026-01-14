@@ -1,6 +1,14 @@
 # ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.10)
 
 <!--
+UPDATE LOG (Jan 14, 2026):
+- **COMPLETE SYNC OVERHAUL**: Fixed 1,900 broken image URLs + enabled player creation for 96 supported clubs.
+- **Bulk URL Fix**: Single SQL UPDATE fixed all www.thesportsdb.com → r2.thesportsdb.com migrations instantly.
+- **Player Creation**: Weekly sync now CREATES new players (transfers, rookies) instead of skipping them.
+- **Scope Optimization**: Sync now targets ONLY 96 supported clubs (5 major leagues), not all 629 clubs.
+- **Slug Collision Handling**: Automatic retry with nationality/club suffix for duplicate player names.
+- **Performance**: 1,687 players created/updated (was 145), 5.4x faster sync speed (75.8/s vs 14.0/s).
+
 UPDATE LOG (Jan 13, 2026):
 - **CRITICAL SYNC FIX**: Refactored `sync-static-metadata.ts` to use `smartUpsertTopic` (was bypassing protection).
 - **Database Verification**: Added explicit PROD/DEV logging to prevent GitHub Actions secret mix-ups.
@@ -306,18 +314,22 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - **Duplicate Prevention**: 4-layer defense (Schema Unique, On Conflict, Logic Check, Notification Unique Index).
     - **Frontend**: `user_badges` table is single source of truth. Manual frontend calculation banned.
     - **Reply Badge Fix** (Jan 11): Regista/Hat-Trick now awarded to PARENT post author (person being replied to), not root post author. Supports nested reply chains correctly.
-24. **Sync Script Smart Upsert Enforcement** (Jan 13, 2026):
+24. **Sync Script Smart Upsert Enforcement** (Jan 13-14, 2026):
     - **Rule**: ALL sync scripts MUST use `smartUpsertTopic` utility from `packages/logic/src/sync/smart-upsert.ts`. Direct `.update()` calls are banned.
     - **Rationale**: Direct updates bypass metadata merging and risk overwriting expensive data (fc26_data, follower_count).
     - **Database Verification**: All scripts MUST log which database (PROD/DEV) they're connecting to at startup.
+    - **Supported Club Filtering**: Weekly sync targets ONLY 96 clubs from 5 major leagues (EPL, La Liga, Bundesliga, Serie A, Ligue 1).
+    - **Player Creation**: Weekly sync now CREATES new players for supported clubs (with slug generation), not just updates existing ones.
+    - **Slug Collision Handling**: Automatic retry with nationality/club suffix for duplicate player names (e.g., `lucas-da-cunha-bra`).
     - **Pattern**:
       ```typescript
       const projectId = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
       const isProduction = projectId === 'oerbyhaqhuixpjrubshm';
       console.log(isProduction ? '✅ PRODUCTION' : '⚠️  DEVELOPMENT');
       ```
-    - **Image URL Migration**: TheSportsDB CDN migration (www.thesportsdb.com → r2.thesportsdb.com) handled automatically by `smartUpsertTopic` shallow merge.
-    - **Reference**: See `docs/SYNC_FIX_JAN_2026.md` for full incident report and fix details.
+    - **Image URL Migration**: TheSportsDB CDN migration (www.thesportsdb.com → r2.thesportsdb.com) handled automatically by `smartUpsertTopic` shallow merge. 1,900 broken URLs fixed via single SQL UPDATE.
+    - **Performance**: Sync now processes 1,687 players (was 145), runs 5.4x faster (75.8/s vs 14.0/s).
+    - **Reference**: See `docs/SYNC_FIX_COMPLETE_JAN_2026.md` for full incident report, performance comparison, and deployment guide.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS

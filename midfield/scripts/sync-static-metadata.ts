@@ -4,6 +4,21 @@ import { config } from 'dotenv';
 import { smartUpsertTopic } from '../packages/logic/src/sync/smart-upsert';
 import type { Database } from '../packages/types/src/supabase';
 
+// Slugify function (from smart-upsert Edge Function)
+const slugify = (text: string, suffix?: string): string => {
+    const base = text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+    
+    return suffix ? `${base}-${suffix}` : base;
+};
+
 config();
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -24,8 +39,7 @@ let stats = {
     clubsProcessed: 0,
     clubsUpdated: 0,
     playersProcessed: 0,
-    playersUpdated: 0,
-    playersSkipped: 0,
+    playersCreatedOrUpdated: 0,
     errors: 0
 };
 
@@ -39,30 +53,22 @@ async function processClub(club: any) {
         const playersData = await playersRes.json();
         const players = playersData.player || [];
 
-        // 2. Update each player using smartUpsertTopic
+        // 2. Sync each player (create or update) using smartUpsertTopic
         for (const p of players) {
             if (!p.strPlayer || !p.idPlayer) continue;
 
             stats.playersProcessed++;
 
             try {
-                // Check if player exists first (this is a metadata UPDATE sync, not a creation sync)
-                const { data: existing } = await supabase
-                    .from('topics')
-                    .select('id')
-                    .eq('type', 'player')
-                    .filter('metadata->external->>thesportsdb_id', 'eq', p.idPlayer)
-                    .maybeSingle();
-
-                if (!existing) {
-                    // Player doesn't exist yet - skip (they'll be created by schedule sync)
-                    stats.playersSkipped++;
-                    continue;
-                }
-
-                // Prepare metadata object - smartUpsertTopic will merge with existing
+                // Prepare player data with slug for potential INSERT
+                // Use nationality as suffix to handle duplicate names (e.g. "lucas-da-cunha-brazil")
+                const slugSuffix = p.strNationality ? slugify(p.strNationality).substring(0, 3) : undefined;
+                const baseSlug = slugify(p.strPlayer);
+                const fullSlug = slugSuffix && baseSlug.length < 40 ? slugify(p.strPlayer, slugSuffix) : baseSlug;
+                
                 const playerData = {
                     title: p.strPlayer,
+                    slug: fullSlug,
                     type: 'player' as const,
                     description: p.strDescriptionEN?.substring(0, 300) || `Player for ${club.title}.`,
                     metadata: {
@@ -81,6 +87,7 @@ async function processClub(club: any) {
                     }
                 };
 
+                // smartUpsertTopic handles both INSERT (new) and UPDATE (existing)
                 const { data, error } = await smartUpsertTopic(
                     supabase,
                     playerData,
@@ -89,25 +96,46 @@ async function processClub(club: any) {
                 );
 
                 if (error) {
-                    console.error(`   ⚠️  Failed to update player ${p.strPlayer}: ${error.message}`);
-                    stats.errors++;
+                    // If slug conflict, try with club suffix as fallback
+                    if (error.message?.includes('duplicate key') && error.message?.includes('slug')) {
+                        const clubSlug = slugify(club.title).substring(0, 3);
+                        playerData.slug = slugify(p.strPlayer, clubSlug);
+                        
+                        const retryResult = await smartUpsertTopic(
+                            supabase,
+                            playerData,
+                            'player',
+                            p.idPlayer
+                        );
+                        
+                        if (retryResult.error) {
+                            console.error(`   ⚠️  Failed to sync player ${p.strPlayer}: ${retryResult.error.message}`);
+                            stats.errors++;
+                        } else if (retryResult.data) {
+                            stats.playersCreatedOrUpdated++;
+                        }
+                    } else {
+                        console.error(`   ⚠️  Failed to sync player ${p.strPlayer}: ${error.message}`);
+                        stats.errors++;
+                    }
                 } else if (data) {
-                    stats.playersUpdated++;
+                    stats.playersCreatedOrUpdated++;
                 }
             } catch (err: any) {
-                console.error(`   ⚠️  Exception updating player ${p.strPlayer}: ${err.message}`);
+                console.error(`   ⚠️  Exception syncing player ${p.strPlayer}: ${err.message}`);
                 stats.errors++;
             }
         }
 
-        // 3. Update club metadata using smartUpsertTopic
+        // 3. Sync club metadata using smartUpsertTopic
         const clubRes = await fetch(`https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupteam.php?id=${thesportsdbId}`);
         const clubData = await clubRes.json();
         const t = clubData.teams?.[0];
 
         if (t) {
-            const clubUpdateData = {
+            const clubSyncData = {
                 title: t.strTeam || club.title,
+                slug: slugify(t.strTeam || club.title),
                 type: 'club' as const,
                 description: t.strDescriptionEN?.substring(0, 500) || club.description,
                 metadata: {
@@ -131,7 +159,7 @@ async function processClub(club: any) {
 
             const { data, error } = await smartUpsertTopic(
                 supabase,
-                clubUpdateData,
+                clubSyncData,
                 'club',
                 t.idTeam
             );
@@ -139,7 +167,7 @@ async function processClub(club: any) {
             if (!error && data) {
                 stats.clubsUpdated++;
             } else if (error) {
-                console.error(`   ⚠️  Failed to update club ${club.title}: ${error.message}`);
+                console.error(`   ⚠️  Failed to sync club ${club.title}: ${error.message}`);
             }
         }
 
@@ -177,29 +205,36 @@ async function main() {
 
     const start = Date.now();
 
-    // Fetch ALL clubs
-    console.log('📊 Fetching all clubs...');
+    // Fetch ONLY supported clubs (5 major leagues - 96 clubs total)
+    console.log('📊 Fetching supported clubs (5 major leagues)...');
     const { data: clubs } = await supabase
         .from('topics')
         .select('id, title, description, metadata')
         .eq('type', 'club')
-        .not('metadata->external->>thesportsdb_id', 'is', null);
+        .not('metadata->external->>thesportsdb_id', 'is', null)
+        .in('metadata->>league', [
+            'English Premier League',
+            'Spanish La Liga',
+            'German Bundesliga',
+            'Italian Serie A',
+            'French Ligue 1'
+        ]);
 
     if (!clubs) {
         console.error('❌ Failed to fetch clubs');
         return;
     }
 
-    console.log(`✅ Found ${clubs.length} clubs\n`);
+    console.log(`✅ Found ${clubs.length} supported clubs (5 major leagues)\n`);
     console.log('🔄 Processing clubs and their players...\n');
 
     // Progress tracking
     const interval = setInterval(() => {
         const elapsed = ((Date.now() - start) / 1000).toFixed(1);
         const clubProgress = ((stats.clubsProcessed / clubs.length) * 100).toFixed(1);
-        const rate = (stats.playersUpdated / (Date.now() - start) * 1000).toFixed(1);
+        const rate = (stats.playersCreatedOrUpdated / (Date.now() - start) * 1000).toFixed(1);
 
-        console.log(`⏱️  ${elapsed}s | Clubs: ${stats.clubsProcessed}/${clubs.length} (${clubProgress}%) | Players: ${stats.playersUpdated} | ${rate}/s | Errors: ${stats.errors}`);
+        console.log(`⏱️  ${elapsed}s | Clubs: ${stats.clubsProcessed}/${clubs.length} (${clubProgress}%) | Players: ${stats.playersCreatedOrUpdated} | ${rate}/s | Errors: ${stats.errors}`);
     }, 3000);
 
     // Process all clubs concurrently
@@ -208,16 +243,15 @@ async function main() {
     clearInterval(interval);
 
     const time = ((Date.now() - start) / 1000).toFixed(2);
-    const avgRate = (stats.playersUpdated / (Date.now() - start) * 1000).toFixed(1);
+    const avgRate = (stats.playersCreatedOrUpdated / (Date.now() - start) * 1000).toFixed(1);
 
     console.log('\n' + '═'.repeat(70));
     console.log('🎉 SYNC COMPLETE!');
     console.log('═'.repeat(70));
     console.log(`⏱️  Total Time: ${time}s`);
-    console.log(`🏢 Clubs Updated: ${stats.clubsUpdated}/${stats.clubsProcessed}`);
+    console.log(`🏢 Clubs Synced: ${stats.clubsUpdated}/${stats.clubsProcessed}`);
     console.log(`👤 Players Processed: ${stats.playersProcessed}`);
-    console.log(`👤 Players Updated: ${stats.playersUpdated}`);
-    console.log(`⏭️  Players Skipped: ${stats.playersSkipped}`);
+    console.log(`✅ Players Created/Updated: ${stats.playersCreatedOrUpdated}`);
     console.log(`⚡ Average Rate: ${avgRate} players/second`);
     console.log(`❌ Errors: ${stats.errors}`);
     console.log('═'.repeat(70));
