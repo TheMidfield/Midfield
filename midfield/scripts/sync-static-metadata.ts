@@ -21,8 +21,21 @@ const isProduction = projectId === 'oerbyhaqhuixpjrubshm';
 const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || '3';
-const CONCURRENCY = 10;
+const CONCURRENCY = 3; // Low concurrency to respect API rate limits
+const DELAY_MS = 600; // 600ms between requests = ~100 req/min
 const limit = pLimit(CONCURRENCY);
+
+// Rate-limited fetch
+async function rateLimitedFetch(url: string): Promise<Response | null> {
+    await new Promise(r => setTimeout(r, DELAY_MS));
+    const res = await fetch(url);
+    if (res.status === 429) {
+        console.log('   ⏳ Rate limited, waiting 5s...');
+        await new Promise(r => setTimeout(r, 5000));
+        return fetch(url);
+    }
+    return res.ok ? res : null;
+}
 
 const ALLOWED_LEAGUES = [
     'English Premier League', 'Spanish La Liga', 'German Bundesliga',
@@ -38,8 +51,8 @@ async function processClub(club: any, isCore: boolean) {
     try {
         // 1. CORE clubs: sync players
         if (isCore) {
-            const res = await fetch(`https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookup_all_players.php?id=${tsdbId}`);
-            if (!res.ok) { stats.errors++; return; }
+            const res = await rateLimitedFetch(`https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookup_all_players.php?id=${tsdbId}`);
+            if (!res) { stats.errors++; return; }
             
             const data = await res.json();
             for (const p of (data.player || [])) {
@@ -74,8 +87,8 @@ async function processClub(club: any, isCore: boolean) {
         }
 
         // 2. ALL clubs: sync club metadata
-        const clubRes = await fetch(`https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupteam.php?id=${tsdbId}`);
-        if (!clubRes.ok) { stats.errors++; return; }
+        const clubRes = await rateLimitedFetch(`https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupteam.php?id=${tsdbId}`);
+        if (!clubRes) { stats.errors++; return; }
         
         const clubData = await clubRes.json();
         const t = clubData.teams?.[0];
@@ -128,13 +141,15 @@ async function main() {
     const coreCount = clubs.filter(c => leagueSet.has((c.metadata as any)?.league)).length;
     
     console.log(`\n📊 ${clubs.length} clubs (${coreCount} CORE + ${clubs.length - coreCount} STUB)`);
+    console.log(`⏳ Estimated time: ~${Math.ceil(clubs.length * DELAY_MS / 1000 / 60)} minutes (rate limited)`);
     console.log('🔄 Processing...\n');
 
     // Progress tracker
     const interval = setInterval(() => {
-        const elapsed = ((Date.now() - start) / 1000).toFixed(0);
-        console.log(`⏱️  ${elapsed}s | Clubs: ${stats.clubs} | Players: ${stats.players} | Errors: ${stats.errors}`);
-    }, 5000);
+        const elapsed = ((Date.now() - start) / 1000 / 60).toFixed(1);
+        const progress = ((stats.clubs / clubs.length) * 100).toFixed(0);
+        console.log(`⏱️  ${elapsed}m | ${progress}% | Clubs: ${stats.clubs} | Players: ${stats.players} | Errors: ${stats.errors}`);
+    }, 10000);
 
     // Process all clubs
     await Promise.all(clubs.map(club => {
