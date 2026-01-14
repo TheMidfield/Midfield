@@ -1,6 +1,11 @@
 # ⚡ MIDFIELD_BLUEPRINT.md — THE LIVING DOCTRINE (v7.10)
 
 <!--
+UPDATE LOG (Jan 13, 2026):
+- **CRITICAL SYNC FIX**: Refactored `sync-static-metadata.ts` to use `smartUpsertTopic` (was bypassing protection).
+- **Database Verification**: Added explicit PROD/DEV logging to prevent GitHub Actions secret mix-ups.
+- **Image URL Migration**: TheSportsDB CDN migration (www → r2) now handled automatically by weekly sync.
+
 UPDATE LOG (Jan 2, 2026 - EVENING):
 - **Sync Doctrine Consolidation**: Merged all sync documentation into a single source of truth: `docs/SYNC_DOCTRINE.md`.
 - **Standings Sync**: Formally integrated Standings Sync into Realtime Engine (6-hour cycle).
@@ -301,6 +306,18 @@ It bridges hard stats (TheSportsDB) and community opinion (Takes).
     - **Duplicate Prevention**: 4-layer defense (Schema Unique, On Conflict, Logic Check, Notification Unique Index).
     - **Frontend**: `user_badges` table is single source of truth. Manual frontend calculation banned.
     - **Reply Badge Fix** (Jan 11): Regista/Hat-Trick now awarded to PARENT post author (person being replied to), not root post author. Supports nested reply chains correctly.
+24. **Sync Script Smart Upsert Enforcement** (Jan 13, 2026):
+    - **Rule**: ALL sync scripts MUST use `smartUpsertTopic` utility from `packages/logic/src/sync/smart-upsert.ts`. Direct `.update()` calls are banned.
+    - **Rationale**: Direct updates bypass metadata merging and risk overwriting expensive data (fc26_data, follower_count).
+    - **Database Verification**: All scripts MUST log which database (PROD/DEV) they're connecting to at startup.
+    - **Pattern**:
+      ```typescript
+      const projectId = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+      const isProduction = projectId === 'oerbyhaqhuixpjrubshm';
+      console.log(isProduction ? '✅ PRODUCTION' : '⚠️  DEVELOPMENT');
+      ```
+    - **Image URL Migration**: TheSportsDB CDN migration (www.thesportsdb.com → r2.thesportsdb.com) handled automatically by `smartUpsertTopic` shallow merge.
+    - **Reference**: See `docs/SYNC_FIX_JAN_2026.md` for full incident report and fix details.
 
 ──────────────────────────────────────────────────────────────────────────────
 8) EGRESS DEFENSE & SECURITY PROTOCOLS

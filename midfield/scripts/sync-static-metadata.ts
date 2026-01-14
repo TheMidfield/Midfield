@@ -1,13 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 import pLimit from 'p-limit';
 import { config } from 'dotenv';
+import { smartUpsertTopic } from '../packages/logic/src/sync/smart-upsert';
+import type { Database } from '../packages/types/src/supabase';
 
 config();
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+// Database verification - Extract project ID from URL
+const projectId = supabaseUrl.match(/https:\/\/([^.]+)\.supabase\.co/)?.[1];
+const isProduction = projectId === 'oerbyhaqhuixpjrubshm';
+const isDevelopment = projectId === 'bocldhavewgfxmbuycxy';
+
+const supabase = createClient<Database>(supabaseUrl, supabaseKey);
 
 const API_KEY = process.env.THESPORTSDB_API_KEY || '3';
 const CONCURRENCY = 20;
@@ -18,6 +25,7 @@ let stats = {
     clubsUpdated: 0,
     playersProcessed: 0,
     playersUpdated: 0,
+    playersSkipped: 0,
     errors: 0
 };
 
@@ -31,26 +39,31 @@ async function processClub(club: any) {
         const playersData = await playersRes.json();
         const players = playersData.player || [];
 
-        // 2. Update each player
+        // 2. Update each player using smartUpsertTopic
         for (const p of players) {
             if (!p.strPlayer || !p.idPlayer) continue;
 
             stats.playersProcessed++;
 
-            // Find player in our database
-            const { data: existing } = await supabase
-                .from('topics')
-                .select('id')
-                .eq('type', 'player')
-                .filter('metadata->external->>thesportsdb_id', 'eq', p.idPlayer)
-                .maybeSingle();
+            try {
+                // Check if player exists first (this is a metadata UPDATE sync, not a creation sync)
+                const { data: existing } = await supabase
+                    .from('topics')
+                    .select('id')
+                    .eq('type', 'player')
+                    .filter('metadata->external->>thesportsdb_id', 'eq', p.idPlayer)
+                    .maybeSingle();
 
-            if (!existing) continue;
+                if (!existing) {
+                    // Player doesn't exist yet - skip (they'll be created by schedule sync)
+                    stats.playersSkipped++;
+                    continue;
+                }
 
-            // Update with full metadata
-            const { error } = await supabase
-                .from('topics')
-                .update({
+                // Prepare metadata object - smartUpsertTopic will merge with existing
+                const playerData = {
+                    title: p.strPlayer,
+                    type: 'player' as const,
                     description: p.strDescriptionEN?.substring(0, 300) || `Player for ${club.title}.`,
                     metadata: {
                         external: {
@@ -66,43 +79,68 @@ async function processClub(club: any) {
                         weight: p.strWeight,
                         jersey_number: p.strNumber ? parseInt(p.strNumber) : null
                     }
-                })
-                .eq('id', existing.id);
+                };
 
-            if (!error) stats.playersUpdated++;
+                const { data, error } = await smartUpsertTopic(
+                    supabase,
+                    playerData,
+                    'player',
+                    p.idPlayer
+                );
+
+                if (error) {
+                    console.error(`   ⚠️  Failed to update player ${p.strPlayer}: ${error.message}`);
+                    stats.errors++;
+                } else if (data) {
+                    stats.playersUpdated++;
+                }
+            } catch (err: any) {
+                console.error(`   ⚠️  Exception updating player ${p.strPlayer}: ${err.message}`);
+                stats.errors++;
+            }
         }
 
-        // 3. Update club metadata
+        // 3. Update club metadata using smartUpsertTopic
         const clubRes = await fetch(`https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupteam.php?id=${thesportsdbId}`);
         const clubData = await clubRes.json();
         const t = clubData.teams?.[0];
 
         if (t) {
-            const { error } = await supabase
-                .from('topics')
-                .update({
-                    description: t.strDescriptionEN?.substring(0, 500) || club.description,
-                    metadata: {
-                        external: {
-                            thesportsdb_id: t.idTeam,
-                            source: 'thesportsdb'
-                        },
-                        badge_url: t.strBadge || t.strTeamBadge,
-                        stadium: t.strStadium,
-                        founded: t.intFormedYear ? parseInt(String(t.intFormedYear)) : null,
-                        league: t.strLeague,
-                        capacity: t.intStadiumCapacity ? parseInt(String(t.intStadiumCapacity)) : null,
-                        socials: {
-                            website: t.strWebsite,
-                            twitter: t.strTwitter,
-                            instagram: t.strInstagram,
-                            facebook: t.strFacebook
-                        }
+            const clubUpdateData = {
+                title: t.strTeam || club.title,
+                type: 'club' as const,
+                description: t.strDescriptionEN?.substring(0, 500) || club.description,
+                metadata: {
+                    external: {
+                        thesportsdb_id: t.idTeam,
+                        source: 'thesportsdb'
+                    },
+                    badge_url: t.strBadge || t.strTeamBadge,
+                    stadium: t.strStadium,
+                    founded: t.intFormedYear ? parseInt(String(t.intFormedYear)) : null,
+                    league: t.strLeague,
+                    capacity: t.intStadiumCapacity ? parseInt(String(t.intStadiumCapacity)) : null,
+                    socials: {
+                        website: t.strWebsite,
+                        twitter: t.strTwitter,
+                        instagram: t.strInstagram,
+                        facebook: t.strFacebook
                     }
-                })
-                .eq('id', club.id);
+                }
+            };
 
-            if (!error) stats.clubsUpdated++;
+            const { data, error } = await smartUpsertTopic(
+                supabase,
+                clubUpdateData,
+                'club',
+                t.idTeam
+            );
+
+            if (!error && data) {
+                stats.clubsUpdated++;
+            } else if (error) {
+                console.error(`   ⚠️  Failed to update club ${club.title}: ${error.message}`);
+            }
         }
 
         stats.clubsProcessed++;
@@ -113,10 +151,27 @@ async function processClub(club: any) {
 }
 
 async function main() {
-    console.log('\n🚀 FINAL GENESIS - TEAM-BASED PLAYER SYNC');
+    console.log('\n🚀 STATIC METADATA SYNC - WEEKLY UPDATE');
     console.log('═'.repeat(70));
+    
+    // 🔍 DATABASE VERIFICATION (Critical for Prod/Dev separation)
+    console.log('🔍 DATABASE CONNECTION:');
+    console.log(`   URL: ${supabaseUrl}`);
+    console.log(`   Project ID: ${projectId}`);
+    if (isProduction) {
+        console.log('   ✅ Environment: PRODUCTION (oerbyhaqhuixpjrubshm)');
+    } else if (isDevelopment) {
+        console.log('   ⚠️  Environment: DEVELOPMENT (bocldhavewgfxmbuycxy)');
+    } else {
+        console.log('   ❌ Environment: UNKNOWN - Check your environment variables!');
+        console.log('   Expected PROD: oerbyhaqhuixpjrubshm');
+        console.log('   Expected DEV: bocldhavewgfxmbuycxy');
+    }
+    console.log('═'.repeat(70));
+    
     console.log(`⚡ Concurrency: ${CONCURRENCY}`);
     console.log(`📡 Using V1 API: lookup_all_players.php (PROVEN)`);
+    console.log(`🔧 Using smartUpsertTopic: Metadata merging enabled`);
     console.log('═'.repeat(70));
     console.log('');
 
@@ -156,15 +211,24 @@ async function main() {
     const avgRate = (stats.playersUpdated / (Date.now() - start) * 1000).toFixed(1);
 
     console.log('\n' + '═'.repeat(70));
-    console.log('🎉 GENESIS COMPLETE!');
+    console.log('🎉 SYNC COMPLETE!');
     console.log('═'.repeat(70));
     console.log(`⏱️  Total Time: ${time}s`);
     console.log(`🏢 Clubs Updated: ${stats.clubsUpdated}/${stats.clubsProcessed}`);
     console.log(`👤 Players Processed: ${stats.playersProcessed}`);
     console.log(`👤 Players Updated: ${stats.playersUpdated}`);
+    console.log(`⏭️  Players Skipped: ${stats.playersSkipped}`);
     console.log(`⚡ Average Rate: ${avgRate} players/second`);
     console.log(`❌ Errors: ${stats.errors}`);
     console.log('═'.repeat(70));
+    
+    // Final verification reminder
+    if (isProduction) {
+        console.log('\n✅ Updates applied to PRODUCTION database');
+    } else if (isDevelopment) {
+        console.log('\n⚠️  Updates applied to DEVELOPMENT database');
+    }
+    console.log('');
 }
 
 main().catch(console.error);
