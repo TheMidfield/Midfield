@@ -41,7 +41,22 @@ AND metadata::text LIKE '%www.thesportsdb.com%';
 - ✅ **2,776 players now have correct R2 URLs**
 - ✅ **Instant fix** (< 1 second execution)
 
-### Solution 2: Refactored Weekly Sync Logic
+### Solution 2: Two-Tier Weekly Sync
+
+**Architecture:**
+
+| Tier | Clubs | Sync Scope | Purpose |
+|------|-------|------------|---------|
+| **CORE** | 96 clubs (5 major leagues) | Club metadata + ALL players | Full data for supported clubs |
+| **STUB** | ~530 clubs (opponents, cups) | Club metadata ONLY | Light enrichment (badges, stadiums) for fixture displays |
+
+**Why Two-Tier:**
+- STUB clubs appear in Europa League, domestic cups, etc.
+- They need badge/stadium for fixture displays
+- But syncing their players wastes API quota
+- Core clubs get full treatment (players, transfers, new signings)
+
+### Solution 3: Refactored Weekly Sync Logic
 
 **File:** `scripts/sync-static-metadata.ts`
 
